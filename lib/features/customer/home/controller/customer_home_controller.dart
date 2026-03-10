@@ -33,7 +33,7 @@ class CustomerHomeController extends GetxController {
   void goToTrackBus() {
     closeSidebar(); // Closes sidebar if opened from there
     print("Navigating to Live Tracking...");
-    // Get.toNamed('/track-bus');
+    Get.toNamed('/track-bus');
   }
 
   void goToBookParcel() {

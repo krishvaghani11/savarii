@@ -91,7 +91,6 @@ class BookTicketView extends GetView<BookTicketController> {
                 ],
               ),
               // Swap locations icon - Centered vertically between the two input boxes
-              // We use a Padding with top: 20 to align it better between the two containers (ignoring the 'From' title)
               Padding(
                 padding: const EdgeInsets.only(right: 8.0, top: 25.0),
                 child: _buildSwapLocationsIcon(),
@@ -140,8 +139,7 @@ class BookTicketView extends GetView<BookTicketController> {
         onPressed: controller.swapLocations,
         icon: const Icon(Icons.sync, color: AppColors.white, size: 20),
         padding: EdgeInsets.zero,
-        constraints:
-            const BoxConstraints(), // Removes default minimum size to prevent overflow
+        constraints: const BoxConstraints(),
       ),
     );
   }
@@ -200,7 +198,7 @@ class BookTicketView extends GetView<BookTicketController> {
             onTap: () => controller.selectDate(context),
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
+                horizontal: 12.0,
                 vertical: 18.0,
               ),
               decoration: BoxDecoration(
@@ -212,14 +210,17 @@ class BookTicketView extends GetView<BookTicketController> {
                   const Icon(
                     Icons.calendar_today,
                     color: AppColors.primaryAccent,
-                    size: 20,
+                    size: 18,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   // Reactive Date text
-                  Obx(
-                    () => Text(
-                      "${controller.selectedDate.value.day}/${controller.selectedDate.value.month}/${controller.selectedDate.value.year}",
-                      style: AppTextStyles.bodyLarge,
+                  Expanded(
+                    child: Obx(
+                      () => Text(
+                        "${controller.selectedDate.value.day}/${controller.selectedDate.value.month}/${controller.selectedDate.value.year}",
+                        style: AppTextStyles.bodyLarge.copyWith(fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],
@@ -244,8 +245,7 @@ class BookTicketView extends GetView<BookTicketController> {
           ),
           const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            // Reduced padding
+            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
             decoration: BoxDecoration(
               color: AppColors.lightBackground,
               borderRadius: BorderRadius.circular(16.0),
@@ -253,10 +253,13 @@ class BookTicketView extends GetView<BookTicketController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(
-                  Icons.person,
-                  color: AppColors.primaryAccent,
-                  size: 18, // Slightly smaller icon
+                const Padding(
+                  padding: EdgeInsets.only(left: 4.0),
+                  child: Icon(
+                    Icons.person,
+                    color: AppColors.primaryAccent,
+                    size: 18,
+                  ),
                 ),
                 // Subtract button
                 IconButton(
@@ -267,13 +270,13 @@ class BookTicketView extends GetView<BookTicketController> {
                     size: 16,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(), // Prevents overflow
+                  constraints: const BoxConstraints(),
                 ),
                 // Reactive Passenger Count
                 Obx(
                   () => Text(
                     "${controller.passengerCount.value}",
-                    style: AppTextStyles.bodyLarge,
+                    style: AppTextStyles.bodyLarge.copyWith(fontSize: 14),
                   ),
                 ),
                 // Add button
@@ -285,7 +288,7 @@ class BookTicketView extends GetView<BookTicketController> {
                     size: 16,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(), // Prevents overflow
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),

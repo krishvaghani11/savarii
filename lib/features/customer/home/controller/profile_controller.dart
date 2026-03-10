@@ -12,12 +12,11 @@ class ProfileController extends GetxController {
 
   void goToEditProfile() {
     print("Navigating to Edit Profile...");
-    // Get.toNamed('/edit-profile');
+    Get.toNamed('/edit-profile');
   }
 
   void goToTicketHistory() {
     print("Navigating to Ticket History...");
-    // Switches the bottom navigation bar to the "Trips/Bookings" tab (Index 1)
     if (Get.isRegistered<MainLayoutController>()) {
       Get.find<MainLayoutController>().changeTab(1);
     } else {
@@ -37,7 +36,7 @@ class ProfileController extends GetxController {
 
   void goToSettings() {
     print("Navigating to Settings...");
-    // Get.toNamed('/settings');
+    Get.toNamed('/settings');
   }
 
   void logOut() {

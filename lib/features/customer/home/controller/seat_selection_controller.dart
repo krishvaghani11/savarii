@@ -49,17 +49,7 @@ class SeatSelectionController extends GetxController {
   double get totalPrice => selectedSeats.length * seatPrice;
 
   void proceedToPay() {
-    if (selectedSeats.isEmpty) {
-      Get.snackbar(
-        'No Seat Selected',
-        'Please select at least one seat to proceed.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-    print(
-      "Proceeding to pay for seats: ${selectedSeats.join(', ')} | Total: ₹$totalPrice",
-    );
-    // TODO: Navigate to Checkout/Payment Screen
+    print("Navigating to Payment Section....");
+    Get.toNamed('/payment-details');
   }
 }

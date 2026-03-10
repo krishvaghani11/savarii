@@ -19,4 +19,11 @@ class AppRoutes {
   static const String bookParcel = '/book-parcel';
   static const String reviewTrip = '/review-trip';
   static const String reportIssue = '/report-issue';
+  static const String settings = '/settings';
+  static const String notificationSettings = '/notification-settings';
+  static const String parcelPayment = '/parcel-payment';
+  static const String parcelConfirmation = '/parcel-confirmation';
+  static const String paymentDetails = '/payment-details';
+  static const String bookingConfirmation = '/booking-confirmation';
+  static const String trackBus = '/track-bus';
 }

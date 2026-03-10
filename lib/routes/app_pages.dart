@@ -9,26 +9,42 @@ import 'package:savarii/features/auth/view/role_selection_view.dart';
 import 'package:savarii/features/customer/home/bindings/about_us_binding.dart';
 import 'package:savarii/features/customer/home/bindings/book_parcel_binding.dart';
 import 'package:savarii/features/customer/home/bindings/book_ticket_binding.dart';
+import 'package:savarii/features/customer/home/bindings/booking_confirmation_binding.dart';
 import 'package:savarii/features/customer/home/bindings/bookings_binding.dart';
+import 'package:savarii/features/customer/home/bindings/edit_profile_binding.dart';
 import 'package:savarii/features/customer/home/bindings/help_support_binding.dart';
 import 'package:savarii/features/customer/home/bindings/language_binding.dart';
 import 'package:savarii/features/customer/home/bindings/main_layout_binding.dart';
+import 'package:savarii/features/customer/home/bindings/notification_settings_binding.dart';
+import 'package:savarii/features/customer/home/bindings/parcel_confirmation_binding.dart';
+import 'package:savarii/features/customer/home/bindings/parcel_payment_binding.dart';
+import 'package:savarii/features/customer/home/bindings/payment_details_binding.dart';
 import 'package:savarii/features/customer/home/bindings/report_issue_binding.dart';
 import 'package:savarii/features/customer/home/bindings/review_trip_binding.dart';
 import 'package:savarii/features/customer/home/bindings/search_results_binding.dart';
 import 'package:savarii/features/customer/home/bindings/seat_selection_binding.dart';
+import 'package:savarii/features/customer/home/bindings/settings_binding.dart';
+import 'package:savarii/features/customer/home/bindings/track_bus_binding.dart';
 import 'package:savarii/features/customer/home/bindings/wallet_binding.dart';
 import 'package:savarii/features/customer/home/view/about_us_view.dart';
 import 'package:savarii/features/customer/home/view/book_parcel_view.dart';
 import 'package:savarii/features/customer/home/view/book_ticket_view.dart';
+import 'package:savarii/features/customer/home/view/booking_confirmation_view.dart';
 import 'package:savarii/features/customer/home/view/bookings_view.dart';
+import 'package:savarii/features/customer/home/view/edit_profile_view.dart';
 import 'package:savarii/features/customer/home/view/help_support_view.dart';
 import 'package:savarii/features/customer/home/view/language_view.dart';
 import 'package:savarii/features/customer/home/view/main_layout_view.dart';
+import 'package:savarii/features/customer/home/view/notification_settings_view.dart';
+import 'package:savarii/features/customer/home/view/parcel_confirmation_view.dart';
+import 'package:savarii/features/customer/home/view/parcel_payment_view.dart';
+import 'package:savarii/features/customer/home/view/payment_details_view.dart';
 import 'package:savarii/features/customer/home/view/report_issue_view.dart';
 import 'package:savarii/features/customer/home/view/review_trip_view.dart';
 import 'package:savarii/features/customer/home/view/search_results_view.dart';
 import 'package:savarii/features/customer/home/view/seat_selection_view.dart';
+import 'package:savarii/features/customer/home/view/settings_view.dart';
+import 'package:savarii/features/customer/home/view/track_bus_view.dart';
 import 'package:savarii/features/customer/home/view/wallet_view.dart';
 import 'package:savarii/features/splash/view/splash_view.dart';
 
@@ -138,6 +154,52 @@ class AppPages {
       page: () => const ReportIssueView(),
       binding: ReportIssueBinding(),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/edit-profile',
+      page: () => const EditProfileView(),
+      binding: EditProfileBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.settings,
+      page: () => const SettingsView(),
+      binding: SettingsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.notificationSettings,
+      page: () => const NotificationSettingsView(),
+      binding: NotificationSettingsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.parcelPayment,
+      page: () => const ParcelPaymentView(),
+      binding: ParcelPaymentBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.parcelConfirmation,
+      page: () => const ParcelConfirmationView(),
+      binding: ParcelConfirmationBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.paymentDetails,
+      page: () => const PaymentDetailsView(),
+      binding: PaymentDetailsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bookingConfirmation,
+      page: () => const BookingConfirmationView(),
+      binding: BookingConfirmationBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.trackBus,
+      page: () => const TrackBusView(),
+      binding: TrackBusBinding(),
     ),
   ];
 }

@@ -17,4 +17,7 @@ class AppAssets {
   static const String busExteriorImage = '$_imagesPath/bus1.png';
   static const String busInteriorImage = '$_imagesPath/bus2.png';
   static const String parcelBoxImage = '$_imagesPath/parcel1.png';
+  static const String parcelSuccessImage = '$_imagesPath/parcelbooked.png';
+  static const String destinationCityImage = '$_imagesPath/cfmumbai.png';
+  static const String mapImage = '$_imagesPath/mappii.png';
 }

@@ -56,15 +56,9 @@ class BookingsView extends GetView<BookingsController> {
           children: [
             // 1. Active Tab
             _buildActiveTab(),
-            _buildCompletedTab(),
 
-            // 2. Completed Tab (Placeholder)
-            Center(
-              child: Text(
-                'No completed bookings yet.',
-                style: AppTextStyles.bodyMedium,
-              ),
-            ),
+            // 2. Completed Tab
+            _buildCompletedTab(),
 
             // 3. Cancelled Tab (Placeholder)
             Center(
@@ -106,7 +100,7 @@ class BookingsView extends GetView<BookingsController> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -233,7 +227,7 @@ class BookingsView extends GetView<BookingsController> {
               ),
             ),
             style: TextButton.styleFrom(
-              backgroundColor: AppColors.primaryAccent.withOpacity(0.08),
+              backgroundColor: AppColors.primaryAccent.withValues(alpha: 0.08),
               // Light red background
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
@@ -280,7 +274,7 @@ class BookingsView extends GetView<BookingsController> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -393,7 +387,6 @@ class BookingsView extends GetView<BookingsController> {
           const SizedBox(height: 20),
 
           // Row 3: Action Buttons (Book Again & Rate Trip)
-          // Row 3: Action Buttons (Report, Book Again & Rate Trip)
           Row(
             children: [
               // 1. New Report Button (Icon + Text)
@@ -428,7 +421,7 @@ class BookingsView extends GetView<BookingsController> {
                 child: ElevatedButton(
                   onPressed: () => controller.bookAgain(booking['type']),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryAccent.withOpacity(0.1),
+                    backgroundColor: AppColors.primaryAccent.withValues(alpha: 0.1),
                     // Light red
                     foregroundColor: AppColors.primaryAccent,
                     // Red text
@@ -468,7 +461,7 @@ class BookingsView extends GetView<BookingsController> {
                   ),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
-                      color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                      color: AppColors.secondaryGreyBlue.withValues(alpha: 0.2),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(

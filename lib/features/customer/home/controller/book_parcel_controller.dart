@@ -35,7 +35,7 @@ class BookParcelController extends GetxController {
   void continueToReview() {
     print("Continuing to Review step...");
     // TODO: Navigate to Review Parcel Screen
-    // Get.toNamed('/review-parcel');
+    Get.toNamed('/parcel-payment');
   }
 
   @override
