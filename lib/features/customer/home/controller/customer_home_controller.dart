@@ -56,6 +56,7 @@ class CustomerHomeController extends GetxController {
   void goToMyBookings() {
     closeSidebar();
     print("Navigating to My Bookings...");
+    Get.toNamed('/my-bookings');
   }
 
   void goToHelpAndSupport() {

@@ -19,11 +19,15 @@ import 'package:savarii/features/customer/home/bindings/notification_settings_bi
 import 'package:savarii/features/customer/home/bindings/parcel_confirmation_binding.dart';
 import 'package:savarii/features/customer/home/bindings/parcel_payment_binding.dart';
 import 'package:savarii/features/customer/home/bindings/payment_details_binding.dart';
+import 'package:savarii/features/customer/home/bindings/privacy_policy_binding.dart';
+import 'package:savarii/features/customer/home/bindings/privacy_settings_binding.dart';
 import 'package:savarii/features/customer/home/bindings/report_issue_binding.dart';
 import 'package:savarii/features/customer/home/bindings/review_trip_binding.dart';
 import 'package:savarii/features/customer/home/bindings/search_results_binding.dart';
 import 'package:savarii/features/customer/home/bindings/seat_selection_binding.dart';
+import 'package:savarii/features/customer/home/bindings/security_settings_binding.dart';
 import 'package:savarii/features/customer/home/bindings/settings_binding.dart';
+import 'package:savarii/features/customer/home/bindings/terms_conditions_binding.dart';
 import 'package:savarii/features/customer/home/bindings/track_bus_binding.dart';
 import 'package:savarii/features/customer/home/bindings/wallet_binding.dart';
 import 'package:savarii/features/customer/home/view/about_us_view.dart';
@@ -39,11 +43,15 @@ import 'package:savarii/features/customer/home/view/notification_settings_view.d
 import 'package:savarii/features/customer/home/view/parcel_confirmation_view.dart';
 import 'package:savarii/features/customer/home/view/parcel_payment_view.dart';
 import 'package:savarii/features/customer/home/view/payment_details_view.dart';
+import 'package:savarii/features/customer/home/view/privacy_policy_view.dart';
+import 'package:savarii/features/customer/home/view/privacy_settings_view.dart';
 import 'package:savarii/features/customer/home/view/report_issue_view.dart';
 import 'package:savarii/features/customer/home/view/review_trip_view.dart';
 import 'package:savarii/features/customer/home/view/search_results_view.dart';
 import 'package:savarii/features/customer/home/view/seat_selection_view.dart';
+import 'package:savarii/features/customer/home/view/security_settings_view.dart';
 import 'package:savarii/features/customer/home/view/settings_view.dart';
+import 'package:savarii/features/customer/home/view/terms_conditions_view.dart';
 import 'package:savarii/features/customer/home/view/track_bus_view.dart';
 import 'package:savarii/features/customer/home/view/wallet_view.dart';
 import 'package:savarii/features/splash/view/splash_view.dart';
@@ -85,7 +93,6 @@ class AppPages {
       binding: LocationAccessBinding(),
       transition: Transition.rightToLeft,
     ),
-    // Added the missing Main Layout route
     GetPage(
       name: AppRoutes.customerMainLayout,
       page: () => const MainLayoutView(),
@@ -113,7 +120,7 @@ class AppPages {
       name: AppRoutes.bookTicket,
       page: () => const BookTicketView(),
       binding: BookTicketBinding(),
-      transition: Transition.rightToLeft, // Sleek side-to-side transition
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.searchResults,
@@ -128,14 +135,16 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: '/wallet',
+      name: AppRoutes.wallet,
       page: () => const WalletView(),
       binding: WalletBinding(),
+      transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: '/bookings',
+      name: AppRoutes.myBookings,
       page: () => const BookingsView(),
       binding: BookingsBinding(),
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.bookParcel,
@@ -200,6 +209,30 @@ class AppPages {
       name: AppRoutes.trackBus,
       page: () => const TrackBusView(),
       binding: TrackBusBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.privacySettings,
+      page: () => const PrivacySettingsView(),
+      binding: PrivacySettingsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.securitySettings,
+      page: () => const SecuritySettingsView(),
+      binding: SecuritySettingsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.privacyPolicy,
+      page: () => const PrivacyPolicyView(),
+      binding: PrivacyPolicyBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.termsConditions,
+      page: () => const TermsConditionsView(),
+      binding: TermsConditionsBinding(),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

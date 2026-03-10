@@ -26,4 +26,9 @@ class AppRoutes {
   static const String paymentDetails = '/payment-details';
   static const String bookingConfirmation = '/booking-confirmation';
   static const String trackBus = '/track-bus';
+  static const String myBookings = '/my-bookings';
+  static const String privacySettings = '/privacy-settings';
+  static const String securitySettings = '/security-settings';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsConditions = '/terms-conditions';
 }

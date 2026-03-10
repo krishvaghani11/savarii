@@ -16,9 +16,15 @@ class SettingsController extends GetxController {
     Get.toNamed('/notification-settings');
   }
 
-  void goToPrivacy() => print("Navigating to Privacy Settings...");
+  void goToPrivacy() {
+    print("Navigating to Privacy Settings...");
+    Get.toNamed('/privacy-settings');
+  }
 
-  void goToSecurity() => print("Navigating to Security Settings...");
+  void goToSecurity() {
+    print("Navigating to Security Settings...");
+    Get.toNamed('/security-settings');
+  }
 
   // --- App Preferences Actions ---
   void goToLanguage() {
@@ -41,12 +47,19 @@ class SettingsController extends GetxController {
     Get.toNamed('/help-support'); // Reusing the help screen we built earlier!
   }
 
-  void goToTerms() => print("Opening Terms & Conditions...");
+  void goToTerms() {
+    print("Opening Terms & Conditions...");
+    Get.toNamed('/terms-conditions');
+  }
 
-  void goToPrivacyPolicy() => print("Opening Privacy Policy...");
+  void goToPrivacyPolicy() {
+    print("Opening Privacy Policy...");
+    Get.toNamed('/privacy-policy');
+  }
 
   void logout() {
     print("Initiating Logout...");
+
     // TODO: Add logout confirmation dialog and clear auth tokens
   }
 }
