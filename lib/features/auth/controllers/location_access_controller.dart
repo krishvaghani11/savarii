@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:savarii/routes/app_routes.dart';
 
 class LocationAccessController extends GetxController {
   void requestLocationAccess() {
@@ -11,7 +12,6 @@ class LocationAccessController extends GetxController {
 
   void skipForNow() {
     print("Skipping location for now...");
-    // Navigate to Customer Home Screen without location
-    // Get.offAllNamed(AppRoutes.customerHome);
+    Get.offAllNamed(AppRoutes.customerMainLayout);
   }
 }
