@@ -199,7 +199,7 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
             Expanded(
               child: _buildActionCard(
                 title: 'Wallet',
-                subtitle: '\$${controller.walletBalance} Balance',
+                subtitle: '\₹${controller.walletBalance} Balance',
                 icon: Icons.account_balance_wallet,
                 iconColor: Colors.teal,
                 onTap: controller.goToWallet,
