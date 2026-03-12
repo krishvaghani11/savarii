@@ -30,7 +30,7 @@ class VendorRegistrationController extends GetxController {
       );
 
       // TODO: Navigate to the Vendor Dashboard/Home screen
-      // Get.offAllNamed('/vendor-home');
+      Get.offAllNamed('/vendor-main');
     }
   }
 

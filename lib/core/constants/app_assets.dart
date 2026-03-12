@@ -18,4 +18,6 @@ class AppAssets {
   static const String parcelSuccessImage = '$_imagesPath/parcelbooked.png';
   static const String destinationCityImage = '$_imagesPath/cfmumbai.png';
   static const String mapImage = '$_imagesPath/mappii.png';
+  static const String busImagePlaceholder =
+      '$_imagesPath/bus3.png'; // Make sure this image is in your assets!
 }

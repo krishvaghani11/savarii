@@ -23,7 +23,7 @@ class VendorLoginController extends GetxController {
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade800,
     );
-    // Get.toNamed('/vendor-otp'); // Future step
+    Get.toNamed('/vendor-otp'); // Future step
   }
 
   void goToRegister() {

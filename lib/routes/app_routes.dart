@@ -35,4 +35,12 @@ class AppRoutes {
   //vendor side routes
   static const String vendorRegistration = '/vendor-registration';
   static const String vendorLogin = '/vendor-login';
+  static const String vendorOtp = '/vendor-otp';
+  static const String vendorMain = '/vendor-main';
+  static const String addBus = '/add-bus';
+  static const String vendorViewTickets = '/vendor-view-tickets';
+  static const String vendorBookTicket = '/vendor-book-ticket';
+  static const String vendorPaymentDetails = '/vendor-payment-details';
+  static const String vendorPaymentConfirmation =
+      '/vendor-payment-confirmation';
 }

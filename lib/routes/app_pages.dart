@@ -55,10 +55,24 @@ import 'package:savarii/features/customer/home/view/terms_conditions_view.dart';
 import 'package:savarii/features/customer/home/view/track_bus_view.dart';
 import 'package:savarii/features/customer/home/view/wallet_view.dart';
 import 'package:savarii/features/splash/view/splash_view.dart';
+import 'package:savarii/features/vender/bindings/add_bus_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_book_ticket_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_login_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_main_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_payment_confirmation_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_payment_details_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_registration_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_view_tickets_binding.dart';
+import 'package:savarii/features/vender/bindings/venodr_otp_binding.dart';
+import 'package:savarii/features/vender/view/add_bus_view.dart';
+import 'package:savarii/features/vender/view/vendor_book_ticket_view.dart';
 import 'package:savarii/features/vender/view/vendor_login_view.dart';
+import 'package:savarii/features/vender/view/vendor_main_view.dart';
+import 'package:savarii/features/vender/view/vendor_otp_view.dart';
+import 'package:savarii/features/vender/view/vendor_payment_confirmation_view.dart';
+import 'package:savarii/features/vender/view/vendor_payment_details_view.dart';
 import 'package:savarii/features/vender/view/vendor_registration_view.dart';
+import 'package:savarii/features/vender/view/vendor_view_tickets_view.dart';
 
 import '../features/splash/bindings/splash_binding.dart';
 import '../features/auth/bindings/role_selection_binding.dart';
@@ -250,6 +264,48 @@ class AppPages {
       name: AppRoutes.vendorLogin,
       page: () => const VendorLoginView(),
       binding: VendorLoginBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorOtp,
+      page: () => const VendorOtpView(),
+      binding: VendorOtpBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorMain,
+      page: () => const VendorMainView(),
+      binding: VendorMainBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.addBus,
+      page: () => const AddBusView(),
+      binding: AddBusBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorViewTickets,
+      page: () => const VendorViewTicketsView(),
+      binding: VendorViewTicketsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorBookTicket,
+      page: () => const VendorBookTicketView(),
+      binding: VendorBookTicketBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorPaymentDetails,
+      page: () => const VendorPaymentDetailsView(),
+      binding: VendorPaymentDetailsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorPaymentConfirmation,
+      page: () => const VendorPaymentConfirmationView(),
+      binding: VendorPaymentConfirmationBinding(),
       transition: Transition.rightToLeft,
     ),
   ];
