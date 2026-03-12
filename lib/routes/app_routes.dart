@@ -31,4 +31,8 @@ class AppRoutes {
   static const String securitySettings = '/security-settings';
   static const String privacyPolicy = '/privacy-policy';
   static const String termsConditions = '/terms-conditions';
+
+  //vendor side routes
+  static const String vendorRegistration = '/vendor-registration';
+  static const String vendorLogin = '/vendor-login';
 }

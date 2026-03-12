@@ -55,6 +55,10 @@ import 'package:savarii/features/customer/home/view/terms_conditions_view.dart';
 import 'package:savarii/features/customer/home/view/track_bus_view.dart';
 import 'package:savarii/features/customer/home/view/wallet_view.dart';
 import 'package:savarii/features/splash/view/splash_view.dart';
+import 'package:savarii/features/vender/bindings/vendor_login_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_registration_binding.dart';
+import 'package:savarii/features/vender/view/vendor_login_view.dart';
+import 'package:savarii/features/vender/view/vendor_registration_view.dart';
 
 import '../features/splash/bindings/splash_binding.dart';
 import '../features/auth/bindings/role_selection_binding.dart';
@@ -232,6 +236,20 @@ class AppPages {
       name: AppRoutes.termsConditions,
       page: () => const TermsConditionsView(),
       binding: TermsConditionsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // vendor side routes
+    GetPage(
+      name: AppRoutes.vendorRegistration,
+      page: () => const VendorRegistrationView(),
+      binding: VendorRegistrationBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorLogin,
+      page: () => const VendorLoginView(),
+      binding: VendorLoginBinding(),
       transition: Transition.rightToLeft,
     ),
   ];
