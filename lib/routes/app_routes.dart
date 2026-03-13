@@ -43,4 +43,11 @@ class AppRoutes {
   static const String vendorPaymentDetails = '/vendor-payment-details';
   static const String vendorPaymentConfirmation =
       '/vendor-payment-confirmation';
+  static const String vendorFleetTracking = '/vendor-fleet-tracking';
+  static const String vendorEditProfile = '/vendor-edit-profile';
+  static const String vendorAddTravels = '/vendor-add-travels';
+  static const String vendorTravelsDetail = '/vendor-travels-detail';
+  static const String vendorSettings = '/vendor-settings';
+  static const String vendorLanguage = '/vendor-language';
+  static const String vendorContactDeveloper = '/vendor-contact-developer';
 }

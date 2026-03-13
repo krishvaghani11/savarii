@@ -56,22 +56,36 @@ import 'package:savarii/features/customer/home/view/track_bus_view.dart';
 import 'package:savarii/features/customer/home/view/wallet_view.dart';
 import 'package:savarii/features/splash/view/splash_view.dart';
 import 'package:savarii/features/vender/bindings/add_bus_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_add_travels_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_book_ticket_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_contact_developer_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_edit_profile_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_fleet_tracking_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_language_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_login_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_main_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_payment_confirmation_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_payment_details_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_registration_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_settings_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_travels_detail_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_view_tickets_binding.dart';
 import 'package:savarii/features/vender/bindings/venodr_otp_binding.dart';
 import 'package:savarii/features/vender/view/add_bus_view.dart';
+import 'package:savarii/features/vender/view/vendor_add_travels_view.dart';
 import 'package:savarii/features/vender/view/vendor_book_ticket_view.dart';
+import 'package:savarii/features/vender/view/vendor_contact_developer_view.dart';
+import 'package:savarii/features/vender/view/vendor_edit_profile_view.dart';
+import 'package:savarii/features/vender/view/vendor_fleet_tracking_view.dart';
+import 'package:savarii/features/vender/view/vendor_language_view.dart';
 import 'package:savarii/features/vender/view/vendor_login_view.dart';
 import 'package:savarii/features/vender/view/vendor_main_view.dart';
 import 'package:savarii/features/vender/view/vendor_otp_view.dart';
 import 'package:savarii/features/vender/view/vendor_payment_confirmation_view.dart';
 import 'package:savarii/features/vender/view/vendor_payment_details_view.dart';
 import 'package:savarii/features/vender/view/vendor_registration_view.dart';
+import 'package:savarii/features/vender/view/vendor_settings_view.dart';
+import 'package:savarii/features/vender/view/vendor_travels_detail_view.dart';
 import 'package:savarii/features/vender/view/vendor_view_tickets_view.dart';
 
 import '../features/splash/bindings/splash_binding.dart';
@@ -306,6 +320,48 @@ class AppPages {
       name: AppRoutes.vendorPaymentConfirmation,
       page: () => const VendorPaymentConfirmationView(),
       binding: VendorPaymentConfirmationBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorFleetTracking,
+      page: () => const VendorFleetTrackingView(),
+      binding: VendorFleetTrackingBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorEditProfile,
+      page: () => const VendorEditProfileView(),
+      binding: VendorEditProfileBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorAddTravels,
+      page: () => const VendorAddTravelsView(),
+      binding: VendorAddTravelsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorTravelsDetail,
+      page: () => const VendorTravelsDetailView(),
+      binding: VendorTravelsDetailBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorSettings,
+      page: () => const VendorSettingsView(),
+      binding: VendorSettingsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorLanguage,
+      page: () => const VendorLanguageView(),
+      binding: VendorLanguageBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorContactDeveloper,
+      page: () => const VendorContactDeveloperView(),
+      binding: VendorContactDeveloperBinding(),
       transition: Transition.rightToLeft,
     ),
   ];

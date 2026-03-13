@@ -31,14 +31,25 @@ class VendorHomeController extends GetxController {
     Get.toNamed('/vendor-book-ticket');
   }
 
-  void busTracking() => print("Navigating to Fleet Tracking...");
+  void busTracking() {
+    print("Navigating to Fleet Tracking...");
+    Get.toNamed('/vendor-fleet-tracking');
+  }
 
   // Sidebar Actions
   void closeDrawer() => Get.back();
 
-  void goToLanguage() => print("Navigating to Language Selection...");
+  void goToLanguage() {
+    print("Navigating to Language Selection from Sidebar...");
+    Get.back(); // Closes the drawer first
+    Get.toNamed('/vendor-language');
+  }
 
-  void contactDeveloper() => print("Opening Contact Developer...");
+  void contactDeveloper() {
+    print("Opening Contact Developer...");
+    Get.back(); // Closes the drawer first
+    Get.toNamed('/vendor-contact-developer');
+  }
 
   void logout() {
     print("Logging out Vendor...");
