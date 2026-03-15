@@ -61,13 +61,16 @@ import 'package:savarii/features/vender/bindings/vendor_book_ticket_binding.dart
 import 'package:savarii/features/vender/bindings/vendor_contact_developer_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_edit_profile_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_fleet_tracking_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_help_center_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_language_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_login_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_main_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_payment_confirmation_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_payment_details_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_privacy_policy_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_registration_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_settings_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_terms_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_travels_detail_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_view_tickets_binding.dart';
 import 'package:savarii/features/vender/bindings/venodr_otp_binding.dart';
@@ -77,14 +80,17 @@ import 'package:savarii/features/vender/view/vendor_book_ticket_view.dart';
 import 'package:savarii/features/vender/view/vendor_contact_developer_view.dart';
 import 'package:savarii/features/vender/view/vendor_edit_profile_view.dart';
 import 'package:savarii/features/vender/view/vendor_fleet_tracking_view.dart';
+import 'package:savarii/features/vender/view/vendor_help_center_view.dart';
 import 'package:savarii/features/vender/view/vendor_language_view.dart';
 import 'package:savarii/features/vender/view/vendor_login_view.dart';
 import 'package:savarii/features/vender/view/vendor_main_view.dart';
 import 'package:savarii/features/vender/view/vendor_otp_view.dart';
 import 'package:savarii/features/vender/view/vendor_payment_confirmation_view.dart';
 import 'package:savarii/features/vender/view/vendor_payment_details_view.dart';
+import 'package:savarii/features/vender/view/vendor_privacy_policy_view.dart';
 import 'package:savarii/features/vender/view/vendor_registration_view.dart';
 import 'package:savarii/features/vender/view/vendor_settings_view.dart';
+import 'package:savarii/features/vender/view/vendor_terms_view.dart';
 import 'package:savarii/features/vender/view/vendor_travels_detail_view.dart';
 import 'package:savarii/features/vender/view/vendor_view_tickets_view.dart';
 
@@ -362,6 +368,24 @@ class AppPages {
       name: AppRoutes.vendorContactDeveloper,
       page: () => const VendorContactDeveloperView(),
       binding: VendorContactDeveloperBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorHelpCenter,
+      page: () => const VendorHelpCenterView(),
+      binding: VendorHelpCenterBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorPrivacyPolicy,
+      page: () => const VendorPrivacyPolicyView(),
+      binding: VendorPrivacyPolicyBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorTerms,
+      page: () => const VendorTermsView(),
+      binding: VendorTermsBinding(),
       transition: Transition.rightToLeft,
     ),
   ];

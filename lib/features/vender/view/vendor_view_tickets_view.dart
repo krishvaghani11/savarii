@@ -16,10 +16,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
         elevation: 0,
         centerTitle: true,
         title: Text('Bus Tickets', style: AppTextStyles.h3),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
-          onPressed: () => Get.back(),
-        ),
+
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list, color: AppColors.primaryDark),

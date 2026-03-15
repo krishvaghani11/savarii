@@ -50,4 +50,7 @@ class AppRoutes {
   static const String vendorSettings = '/vendor-settings';
   static const String vendorLanguage = '/vendor-language';
   static const String vendorContactDeveloper = '/vendor-contact-developer';
+  static const String vendorHelpCenter = '/vendor-help-center';
+  static const String vendorPrivacyPolicy = '/vendor-privacy-policy';
+  static const String vendorTerms = '/vendor-terms';
 }

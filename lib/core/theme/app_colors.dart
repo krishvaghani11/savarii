@@ -8,6 +8,10 @@ class AppColors {
   static const Color primaryAccent = Color(0xFFEF233C);
   static const Color dangerRed = Color(0xFFD90429);
 
+  // New Colors for UI Sections
+  static const Color headerPurple = Color(0xFF6C63FF);
+  static const Color bulletIconColor = Color(0xFF00BFA6);
+
   // Common Standard Colors
   static const Color white = Colors.white;
   static const Color black = Colors.black;

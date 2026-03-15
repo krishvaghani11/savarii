@@ -35,11 +35,20 @@ class VendorSettingsController extends GetxController {
     Get.toNamed('/vendor-language');
   }
 
-  void openHelpCenter() => print("Opening Help Center (External)...");
+  void openHelpCenter() {
+    print("Navigating to Help Center...");
+    Get.toNamed('/vendor-help-center');
+  }
 
-  void openPrivacyPolicy() => print("Navigating to Privacy Policy...");
+  void openPrivacyPolicy() {
+    print("Navigating to Privacy Policy...");
+    Get.toNamed('/vendor-privacy-policy');
+  }
 
-  void openTerms() => print("Navigating to Terms & Conditions...");
+  void openTerms() {
+    print("Navigating to Terms & Conditions...");
+    Get.toNamed('/vendor-terms');
+  }
 
   void deactivateAccount() {
     print("Initiating account deactivation...");
