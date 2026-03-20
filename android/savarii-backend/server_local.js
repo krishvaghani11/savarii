@@ -9,10 +9,7 @@ app.use(bodyParser.json());
 
 const PORT = 3000;
 
-// ===== TWILIO CONFIG =====
-const accountSid = "AC2b62249dc539f6882620170eaa1b685f";
-const authToken = "21fa8a69731ff537fb8b9f5d311c2632";
-const verifySid = "VAfe0bf4996d1b4e018e00c424c0ae38f5";
+
 
 const client = twilio(accountSid, authToken);
 
