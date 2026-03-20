@@ -117,11 +117,10 @@ class PhoneLoginView extends GetView<PhoneLoginController> {
                                           .withValues(alpha: 0.5),
                                     ),
                                     border: InputBorder.none,
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 16,
-                                        ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -137,13 +136,10 @@ class PhoneLoginView extends GetView<PhoneLoginController> {
                       child: RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
-                          style: AppTextStyles.caption.copyWith(
-                            height: 1.5,
-                          ),
+                          style: AppTextStyles.caption.copyWith(height: 1.5),
                           children: [
                             const TextSpan(
-                              text:
-                                  'By clicking continue, you agree to our ',
+                              text: 'By clicking continue, you agree to our ',
                             ),
                             TextSpan(
                               text: 'Terms of Service\n',
@@ -170,35 +166,64 @@ class PhoneLoginView extends GetView<PhoneLoginController> {
                     const Spacer(),
                     const SizedBox(height: 20), // Buffer for the keyboard
                     // Bottom Continue Button
-                    ElevatedButton(
-                      onPressed: controller.sendOtp,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        shadowColor: AppColors.primaryAccent.withValues(
-                          alpha: 0.4,
-                        ),
-                        elevation: 8,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Continue',
-                            style: AppTextStyles.buttonText.copyWith(
-                              fontSize: 18,
+                    Obx(
+                          () => SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: controller.isLoading.value
+                              ? null
+                              : () {
+                            final phone = controller.phoneController.text.trim();
+
+                            /// VALIDATION
+                            if (phone.isEmpty || phone.length != 10) {
+                              Get.snackbar(
+                                "Error",
+                                "Enter valid 10-digit number",
+                              );
+                              return;
+                            }
+
+                            /// CALL CONTROLLER
+                            controller.sendOtp("+91$phone");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryAccent,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
+                            shadowColor:
+                            AppColors.primaryAccent.withOpacity(0.4),
+                            elevation: 8,
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.arrow_forward,
-                            color: AppColors.white,
-                            size: 20,
+                          child: controller.isLoading.value
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Continue',
+                                style: AppTextStyles.buttonText.copyWith(
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.arrow_forward,
+                                color: AppColors.white,
+                                size: 20,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ],

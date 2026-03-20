@@ -79,7 +79,7 @@ class SettingsView extends GetView<SettingsController> {
                       title: 'Dark Mode',
                       trailingWidget: CupertinoSwitch(
                         value: controller.isDarkMode.value,
-                        activeColor: AppColors.primaryAccent,
+                        activeTrackColor: AppColors.primaryAccent,
                         onChanged: controller.toggleDarkMode,
                       ),
                       onTap: () => controller.toggleDarkMode(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/firestore_service.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class VendorRegistrationController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -13,24 +15,38 @@ class VendorRegistrationController extends GetxController {
   final TextEditingController permanentAddressController =
       TextEditingController();
 
-  void completeRegistration() {
-    if (formKey.currentState!.validate()) {
-      print("--- Vendor Registration Submitted ---");
-      print("Agency: ${travelsNameController.text}");
-      print("Owner: ${fullNameController.text}");
-      print("Phone: +91 ${mobileController.text}");
+  final FirestoreService _firestore = Get.find();
+  final AuthController _authController = Get.find();
 
-      Get.snackbar(
-        'Registration Successful',
-        'Welcome to Savarii! Your vendor account is under review.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade50,
-        colorText: Colors.green.shade800,
-        duration: const Duration(seconds: 3),
-      );
+  Future<void> completeRegistration() async {
+    if (!formKey.currentState!.validate()) return;
 
-      // TODO: Navigate to the Vendor Dashboard/Home screen
-      Get.offAllNamed('/vendor-main');
+    try {
+      final uid = _authController.uid!;
+
+      /// SAVE USER
+      await _firestore.createUser(uid, {
+        "phone": _authController.phone.value,
+        "role": "vendor",
+        "createdAt": DateTime.now(),
+      });
+
+      /// SAVE VENDOR DATA
+      await _firestore.createVendor(uid, {
+        "userId": uid,
+        "travelsName": travelsNameController.text,
+        "fullName": fullNameController.text,
+        "email": emailController.text,
+        "currentAddress": currentAddressController.text,
+        "permanentAddress": permanentAddressController.text,
+        "createdAt": DateTime.now(),
+      });
+
+      Get.snackbar("Success", "Registration completed");
+
+      Get.offAllNamed('/vendor-location-access');
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
     }
   }
 

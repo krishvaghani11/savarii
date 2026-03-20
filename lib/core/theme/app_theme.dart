@@ -13,7 +13,6 @@ class AppTheme {
         secondary: AppColors.secondaryGreyBlue,
         surface: AppColors.white,
         error: AppColors.dangerRed,
-        background: AppColors.lightBackground,
       ),
 
       // App Bar styling

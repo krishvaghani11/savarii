@@ -93,7 +93,7 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
                 children: [
                   const SizedBox(height: 4),
                   const Icon(Icons.circle, color: Colors.green, size: 12),
-                  Container(
+                  SizedBox(
                     width: 1.5,
                     height: 30,
                     // Dotted line effect using a Flex

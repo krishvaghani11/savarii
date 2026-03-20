@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../core/constants/app_assets.dart';
 
 class BookTicketController extends GetxController {
   // 1. Text Controllers for locations

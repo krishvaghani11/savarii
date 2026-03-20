@@ -59,7 +59,7 @@ class OTPVerificationView extends GetView<OTPVerificationController> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'We have sent the verification code to your\nmobile number ${controller.dummyPhoneNumber}',
+                      'We have sent the verification code to your\nmobile number ${controller.phoneNumber}',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.secondaryGreyBlue,
                         height: 1.5,
@@ -122,37 +122,49 @@ class OTPVerificationView extends GetView<OTPVerificationController> {
                     const SizedBox(height: 20),
 
                     // Bottom Verify Button
-                    ElevatedButton(
-                      onPressed: controller.onVerifyClicked,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 4,
-                        shadowColor: AppColors.primaryAccent.withValues(
-                          alpha: 0.3,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Verify',
-                            style: AppTextStyles.buttonText.copyWith(
-                              fontSize: 18,
+                    Obx(
+                          () => SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: controller.isLoading.value
+                              ? null
+                              : controller.onVerifyClicked,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryAccent,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
+                            elevation: 4,
+                            shadowColor:
+                            AppColors.primaryAccent.withValues(alpha: 0.3),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.check_circle,
-                            color: AppColors.white,
-                            size: 20,
+                          child: controller.isLoading.value
+                              ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                              : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Verify',
+                                style: AppTextStyles.buttonText.copyWith(
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.check_circle,
+                                color: AppColors.white,
+                                size: 20,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
+
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),

@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "twilio": "^5.13.0"
+  },
+  "name": "savarii",
+  "version": "1.0.0",
+  "description": "A new Flutter project.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krishvaghani11/savarii.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/krishvaghani11/savarii/issues"
+  },
+  "homepage": "https://github.com/krishvaghani11/savarii#readme"
+}

@@ -1,75 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/auth_api_service.dart';
+import '../../../core/services/firestore_service.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class VendorOtpController extends GetxController {
-  // Capture the phone number passed from the previous screen
-  String mobileNumber = "00000 00000";
+  final AuthApiService _api = Get.find();
+  final FirestoreService _firestore = Get.find();
+  final AuthController _authController = Get.find();
 
-  // Controllers and FocusNodes for the 6 OTP boxes
+  String mobileNumber = "";
+
   final List<TextEditingController> otpControllers = List.generate(
     6,
-    (index) => TextEditingController(),
+    (_) => TextEditingController(),
   );
-  final List<FocusNode> focusNodes = List.generate(6, (index) => FocusNode());
+
+  final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
 
   @override
   void onInit() {
     super.onInit();
-    if (Get.arguments != null && Get.arguments['mobile'] != null) {
-      mobileNumber = Get.arguments['mobile'];
+    mobileNumber = Get.arguments['mobile'];
+  }
+
+  String get enteredOtp => otpControllers.map((e) => e.text).join();
+
+  Future<void> verifyOtp() async {
+    try {
+      final otp = enteredOtp;
+
+      if (otp.length != 6) {
+        Get.snackbar("Error", "Enter valid OTP");
+        return;
+      }
+
+      final phone = "+91$mobileNumber";
+
+      /// VERIFY WITH TWILIO
+      final uid = await _api.verifyOtp(phone, otp);
+
+      _authController.uid = uid;
+
+      /// CHECK FIRESTORE
+      final doc = await _firestore.getUser(uid);
+
+      if (!doc.exists) {
+        /// NEW VENDOR → REGISTRATION
+        Get.toNamed('/vendor-registration');
+      } else {
+        /// EXISTING → LOGIN
+        final role = doc['role'];
+
+        if (role != "vendor") {
+          throw Exception("Not a vendor account");
+        }
+
+        Get.offAllNamed('/vendor-location-access');
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
     }
   }
 
-  void verifyOtp() {
-    // Combine the text from all 6 boxes
-    String otp = otpControllers.map((controller) => controller.text).join();
+  void resendOtp() async {
+    final phone = "+91$mobileNumber";
 
-    if (otp.length < 6) {
-      Get.snackbar(
-        'Incomplete OTP',
-        'Please enter all 6 digits.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
+    await _api.sendOtp(phone);
+
+    for (var c in otpControllers) {
+      c.clear();
     }
 
-    print("Verifying OTP: $otp for +91 $mobileNumber...");
+    focusNodes[0].requestFocus();
 
-    Get.snackbar(
-      'Verification Successful',
-      'Welcome to the Vendor Dashboard!',
-      backgroundColor: Colors.green.shade50,
-      colorText: Colors.green.shade800,
-      snackPosition: SnackPosition.BOTTOM,
-    );
-
-    // TODO: Route to Vendor Dashboard
-    Get.offAllNamed('/vendor-main');
-  }
-
-  void resendOtp() {
-    print("Resending OTP to +91 $mobileNumber...");
-    // Clear current input
-    for (var controller in otpControllers) {
-      controller.clear();
-    }
-    focusNodes[0].requestFocus(); // Reset focus to the first box
-
-    Get.snackbar(
-      'Code Resent',
-      'A new 6-digit code has been sent.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.snackbar("OTP", "OTP Resent");
   }
 
   @override
   void onClose() {
-    for (var controller in otpControllers) {
-      controller.dispose();
-    }
-    for (var node in focusNodes) {
-      node.dispose();
-    }
+    for (var c in otpControllers) c.dispose();
+    for (var f in focusNodes) f.dispose();
     super.onClose();
   }
 }

@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'auth_controller.dart';
 
 class PhoneLoginController extends GetxController {
+  final AuthController _authController = Get.find();
+
   // Controller for the text field
   final TextEditingController phoneController = TextEditingController();
+
+  // Loading state
+  RxBool get isLoading => _authController.isLoading;
 
   // Store the role passed from the previous screen
   late final String userRole;
@@ -13,6 +19,7 @@ class PhoneLoginController extends GetxController {
     super.onInit();
     // Retrieve the role argument (defaults to customer if null)
     userRole = Get.arguments?['role'] ?? 'customer';
+    _authController.selectedRole.value = userRole;
   }
 
   @override
@@ -21,21 +28,7 @@ class PhoneLoginController extends GetxController {
     super.onClose();
   }
 
-  void sendOtp() {
-    final phoneNumber = phoneController.text.trim();
-    if (phoneNumber.length < 10) {
-      Get.snackbar(
-        'Invalid Number',
-        'Please enter a valid 10-digit mobile number.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    // TODO: Integrate Firebase Auth here later
-    print('Sending OTP to +91 $phoneNumber for role: $userRole');
-    Get.toNamed('/otp-verify');
-    // Navigate to OTP verification screen (we will build this next)
-    // Get.toNamed('/otp-verify', arguments: {'phone': phoneNumber, 'role': userRole});
+  Future<void> sendOtp(String phoneNumber) async {
+    await _authController.sendOtp(phoneNumber);
   }
 }

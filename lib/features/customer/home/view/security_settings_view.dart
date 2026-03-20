@@ -189,7 +189,7 @@ class SecuritySettingsView extends GetView<SecuritySettingsController> {
       title: Text(title, style: AppTextStyles.bodyLarge),
       trailing: CupertinoSwitch(
         value: value,
-        activeColor: AppColors.primaryAccent,
+        activeTrackColor: AppColors.primaryAccent,
         onChanged: onChanged,
       ),
     );

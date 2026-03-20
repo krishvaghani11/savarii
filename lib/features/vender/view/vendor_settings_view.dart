@@ -297,7 +297,7 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
       ),
       trailing: CupertinoSwitch(
         value: value,
-        activeColor: AppColors.primaryAccent,
+        activeTrackColor: AppColors.primaryAccent,
         onChanged: onChanged,
       ),
     );

@@ -267,7 +267,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
           ),
         ),
         Text(
-          '\₹${amount.toStringAsFixed(2)}',
+          '₹${amount.toStringAsFixed(2)}',
           style: AppTextStyles.bodyMedium.copyWith(
             fontWeight: FontWeight.w600,
             color: AppColors.primaryDark,
@@ -352,7 +352,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                 ),
                 Obx(
                   () => Text(
-                    '\₹${controller.totalAmount.value.toStringAsFixed(2)}',
+                    '₹${controller.totalAmount.value.toStringAsFixed(2)}',
                     style: AppTextStyles.h2.copyWith(fontSize: 22),
                   ),
                 ),

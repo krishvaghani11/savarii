@@ -169,7 +169,6 @@ class ProfileView extends GetView<ProfileController> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    bool isLast = false,
   }) {
     return ListTile(
       leading: Icon(icon, color: AppColors.primaryDark, size: 22),

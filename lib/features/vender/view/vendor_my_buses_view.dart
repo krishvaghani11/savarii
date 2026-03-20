@@ -231,7 +231,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
               Obx(
                 () => CupertinoSwitch(
                   value: bus.isActive.value,
-                  activeColor: AppColors.primaryAccent,
+                  activeTrackColor: AppColors.primaryAccent,
                   onChanged: (val) => controller.toggleBusStatus(bus, val),
                 ),
               ),

@@ -1,33 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/auth_api_service.dart';
+import '../../../core/services/firestore_service.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class VendorLoginController extends GetxController {
   final TextEditingController mobileController = TextEditingController();
 
-  void login() {
-    if (mobileController.text.length < 10) {
-      Get.snackbar(
-        'Invalid Number',
-        'Please enter a valid mobile number.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+  final AuthApiService _api = Get.find();
+  final FirestoreService _firestore = Get.find();
+  final AuthController _authController = Get.find();
+
+  void login() async {
+    final phone = mobileController.text.trim();
+
+    if (phone.length != 10) {
+      Get.snackbar("Error", "Enter valid number");
       return;
     }
 
-    print("Logging in Vendor with +91 ${mobileController.text}");
-    // Simulate moving to an OTP screen or Dashboard
-    Get.snackbar(
-      'OTP Sent',
-      'An OTP has been sent to your registered mobile number.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade50,
-      colorText: Colors.green.shade800,
-    );
-    Get.toNamed('/vendor-otp'); // Future step
+    final fullPhone = "+91$phone";
+
+    try {
+      _authController.phone.value = fullPhone;
+      _authController.selectedRole.value = "vendor";
+
+      /// SEND OTP (TWILIO)
+      await _api.sendOtp(fullPhone);
+
+      Get.toNamed('/vendor-otp', arguments: {"mobile": phone});
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    }
   }
 
   void goToRegister() {
-    print("Navigating to Vendor Registration...");
     Get.toNamed('/vendor-registration');
   }
 

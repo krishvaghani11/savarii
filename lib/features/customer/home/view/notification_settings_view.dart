@@ -260,7 +260,7 @@ class NotificationSettingsView extends GetView<NotificationSettingsController> {
           : null,
       trailing: CupertinoSwitch(
         value: value,
-        activeColor: AppColors.primaryAccent, // Red when ON
+        activeTrackColor: AppColors.primaryAccent, // Red when ON
         onChanged: onChanged,
       ),
     );

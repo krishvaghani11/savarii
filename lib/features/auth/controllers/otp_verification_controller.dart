@@ -1,44 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/auth_api_service.dart';
+import '../../../core/services/firestore_service.dart';
+import 'auth_controller.dart';
 
 class OTPVerificationController extends GetxController {
-  // Dummy data for UI display
-  final String dummyPhoneNumber = "+91 00000 00000";
+  final AuthApiService _api = Get.find();
+  final FirestoreService _firestore = Get.find();
+  final AuthController _authController = Get.find();
 
-  // Basic controllers just to hold the UI structure
+  String get phoneNumber => _authController.phone.value;
+
   final List<TextEditingController> otpControllers = List.generate(
     6,
     (index) => TextEditingController(),
   );
+
   final List<FocusNode> focusNodes = List.generate(6, (index) => FocusNode());
 
-  @override
+  var isLoading = false.obs;
+
   void onOTPChanged(String value, int index) {
-    // Handle Pasting a full 6-digit code
     if (value.length > 1) {
       for (int i = 0; i < value.length; i++) {
         if (index + i < 6) {
           otpControllers[index + i].text = value[i];
         }
       }
-      int focusTarget = (index + value.length).clamp(0, 5);
-      focusNodes[focusTarget].requestFocus();
+      focusNodes[(index + value.length).clamp(0, 5)].requestFocus();
       return;
     }
 
-    // Handle standard typing: Move focus to the NEXT box
     if (value.length == 1 && index < 5) {
       focusNodes[index + 1].requestFocus();
-    }
-    // Handle backspace: Move focus to the PREVIOUS box
-    else if (value.isEmpty && index > 0) {
+    } else if (value.isEmpty && index > 0) {
       focusNodes[index - 1].requestFocus();
     }
   }
 
-  void onVerifyClicked() {
-    Get.offAllNamed('/location-access');
-    // Placeholder for when you add logic later
-    print("Verify button clicked");
+  String get enteredOtp => otpControllers.map((e) => e.text).join();
+
+  Future<void> onVerifyClicked() async {
+    try {
+      final otp = enteredOtp;
+
+      if (otp.length != 6) {
+        Get.snackbar("Error", "Enter valid OTP");
+        return;
+      }
+
+      isLoading.value = true;
+
+      /// ✅ TWILIO VERIFY (NOT FIREBASE)
+      final uid = await _api.verifyOtp(_authController.phone.value, otp);
+
+      final doc = await _firestore.getUser(uid);
+
+      if (!doc.exists) {
+        if (_authController.selectedRole.value == "customer") {
+          await _createCustomer(uid);
+          Get.offAllNamed('/location-access');
+        } else {
+          _authController.uid = uid;
+          Get.toNamed('/vendor-registration');
+        }
+      } else {
+        final role = doc['role'];
+
+        if (role != _authController.selectedRole.value) {
+          throw Exception("Wrong role selected");
+        }
+
+        Get.offAllNamed('/location-access');
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _createCustomer(String uid) async {
+    await _firestore.createUser(uid, {
+      "phone": _authController.phone.value,
+      "role": "customer",
+      "createdAt": DateTime.now(),
+    });
+
+    await _firestore.createWallet(uid);
+  }
+
+  @override
+  void onClose() {
+    for (var c in otpControllers) c.dispose();
+    for (var f in focusNodes) f.dispose();
+    super.onClose();
   }
 }

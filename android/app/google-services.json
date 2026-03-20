@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1057909747567",
+    "firebase_url": "https://savarii-96869-default-rtdb.firebaseio.com",
+    "project_id": "savarii-96869",
+    "storage_bucket": "savarii-96869.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057909747567:android:6570ff5efba52e2702429a",
+        "android_client_info": {
+          "package_name": "com.example.savarii"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfAEyO5kzvx201leCdPLGAMHabuwNpZSs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

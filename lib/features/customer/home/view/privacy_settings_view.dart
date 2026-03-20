@@ -39,7 +39,7 @@ class PrivacySettingsView extends GetView<PrivacySettingsController> {
                       subtitle: 'Control who can see your profile details.',
                       trailingWidget: CupertinoSwitch(
                         value: controller.profileVisibility.value,
-                        activeColor: AppColors.primaryAccent,
+                        activeTrackColor: AppColors.primaryAccent,
                         onChanged: controller.toggleProfileVisibility,
                       ),
                       onTap: () => controller.toggleProfileVisibility(
@@ -98,7 +98,7 @@ class PrivacySettingsView extends GetView<PrivacySettingsController> {
                       subtitle: 'Find friends using Savarii.',
                       trailingWidget: CupertinoSwitch(
                         value: controller.contactsSync.value,
-                        activeColor: AppColors.primaryAccent,
+                        activeTrackColor: AppColors.primaryAccent,
                         onChanged: controller.toggleContactsSync,
                       ),
                       onTap: () => controller.toggleContactsSync(

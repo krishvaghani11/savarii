@@ -63,6 +63,7 @@ import 'package:savarii/features/vender/bindings/vendor_edit_profile_binding.dar
 import 'package:savarii/features/vender/bindings/vendor_fleet_tracking_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_help_center_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_language_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_location_access_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_login_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_main_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_payment_confirmation_binding.dart';
@@ -82,6 +83,7 @@ import 'package:savarii/features/vender/view/vendor_edit_profile_view.dart';
 import 'package:savarii/features/vender/view/vendor_fleet_tracking_view.dart';
 import 'package:savarii/features/vender/view/vendor_help_center_view.dart';
 import 'package:savarii/features/vender/view/vendor_language_view.dart';
+import 'package:savarii/features/vender/view/vendor_location_access_view.dart';
 import 'package:savarii/features/vender/view/vendor_login_view.dart';
 import 'package:savarii/features/vender/view/vendor_main_view.dart';
 import 'package:savarii/features/vender/view/vendor_otp_view.dart';
@@ -93,7 +95,6 @@ import 'package:savarii/features/vender/view/vendor_settings_view.dart';
 import 'package:savarii/features/vender/view/vendor_terms_view.dart';
 import 'package:savarii/features/vender/view/vendor_travels_detail_view.dart';
 import 'package:savarii/features/vender/view/vendor_view_tickets_view.dart';
-
 import '../features/splash/bindings/splash_binding.dart';
 import '../features/auth/bindings/role_selection_binding.dart';
 import 'app_routes.dart';
@@ -386,6 +387,12 @@ class AppPages {
       name: AppRoutes.vendorTerms,
       page: () => const VendorTermsView(),
       binding: VendorTermsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorLocationAccess,
+      page: () => const VendorLocationAccessView(),
+      binding: VendorLocationAccessBinding(),
       transition: Transition.rightToLeft,
     ),
   ];
