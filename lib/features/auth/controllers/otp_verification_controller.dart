@@ -51,8 +51,11 @@ class OTPVerificationController extends GetxController {
 
       isLoading.value = true;
 
-      /// ✅ TWILIO VERIFY (NOT FIREBASE)
+      /// ✅ VERIFY OTP
       final uid = await _api.verifyOtp(_authController.phone.value, otp);
+
+      // CRITICAL: Store UID in AuthController before moving to next screen
+      _authController.uid = uid;
 
       final doc = await _firestore.getUser(uid);
 
@@ -61,7 +64,7 @@ class OTPVerificationController extends GetxController {
           await _createCustomer(uid);
           Get.offAllNamed('/location-access');
         } else {
-          _authController.uid = uid;
+          // Navigating to vendor registration
           Get.toNamed('/vendor-registration');
         }
       } else {

@@ -14,7 +14,8 @@ class PhoneLoginBinding extends Bindings {
       Get.lazyPut<FirestoreService>(() => FirestoreService());
     }
     if (!Get.isRegistered<AuthController>()) {
-      Get.lazyPut<AuthController>(() => AuthController());
+      // Set permanent: true to keep the UID and Phone during the whole session
+      Get.put<AuthController>(AuthController(), permanent: true);
     }
     Get.lazyPut<PhoneLoginController>(() => PhoneLoginController());
   }

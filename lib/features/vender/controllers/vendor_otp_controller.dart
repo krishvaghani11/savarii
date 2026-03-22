@@ -46,10 +46,9 @@ class VendorOtpController extends GetxController {
       final doc = await _firestore.getUser(uid);
 
       if (!doc.exists) {
-        /// NEW VENDOR → REGISTRATION
+        Get.snackbar("New User", "Please complete registration");
         Get.toNamed('/vendor-registration');
       } else {
-        /// EXISTING → LOGIN
         final role = doc['role'];
 
         if (role != "vendor") {

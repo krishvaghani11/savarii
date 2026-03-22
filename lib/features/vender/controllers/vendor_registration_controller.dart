@@ -8,7 +8,8 @@ class VendorRegistrationController extends GetxController {
 
   final TextEditingController travelsNameController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController mobileController = TextEditingController();
+  final TextEditingController mobileController =
+      TextEditingController(); // UI only
   final TextEditingController emailController = TextEditingController();
   final TextEditingController currentAddressController =
       TextEditingController();
@@ -18,15 +19,50 @@ class VendorRegistrationController extends GetxController {
   final FirestoreService _firestore = Get.find();
   final AuthController _authController = Get.find();
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Pre-fill the mobile number if available
+    if (_authController.phone.value.isNotEmpty) {
+      // Remove +91 for display if present
+      String displayPhone = _authController.phone.value;
+      if (displayPhone.startsWith('+91')) {
+        displayPhone = displayPhone.substring(3);
+      }
+      mobileController.text = displayPhone;
+    }
+  }
+
   Future<void> completeRegistration() async {
     if (!formKey.currentState!.validate()) return;
 
     try {
-      final uid = _authController.uid!;
+      final uid = _authController.uid;
+
+      if (uid == null || uid.isEmpty) {
+        Get.snackbar("Error", "Authentication session expired. Please login again.");
+        return;
+      }
+
+      /// 🔥 Prevent duplicate users
+      final existing = await _firestore.getUser(uid);
+      if (existing.exists) {
+        Get.snackbar("Error", "User already registered");
+        return;
+      }
+
+      /// 🔥 Validate email
+      if (!GetUtils.isEmail(emailController.text.trim())) {
+        Get.snackbar("Error", "Invalid email");
+        return;
+      }
+
+      /// 🔥 Use verified phone (NOT input field)
+      final phone = _authController.phone.value;
 
       /// SAVE USER
       await _firestore.createUser(uid, {
-        "phone": _authController.phone.value,
+        "phone": phone,
         "role": "vendor",
         "createdAt": DateTime.now(),
       });
@@ -34,11 +70,11 @@ class VendorRegistrationController extends GetxController {
       /// SAVE VENDOR DATA
       await _firestore.createVendor(uid, {
         "userId": uid,
-        "travelsName": travelsNameController.text,
-        "fullName": fullNameController.text,
-        "email": emailController.text,
-        "currentAddress": currentAddressController.text,
-        "permanentAddress": permanentAddressController.text,
+        "travelsName": travelsNameController.text.trim(),
+        "fullName": fullNameController.text.trim(),
+        "email": emailController.text.trim(),
+        "currentAddress": currentAddressController.text.trim(),
+        "permanentAddress": permanentAddressController.text.trim(),
         "createdAt": DateTime.now(),
       });
 

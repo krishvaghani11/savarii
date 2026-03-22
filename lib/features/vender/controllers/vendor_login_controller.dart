@@ -11,17 +11,21 @@ class VendorLoginController extends GetxController {
   final FirestoreService _firestore = Get.find();
   final AuthController _authController = Get.find();
 
+  var isLoading = false.obs;
+
   void login() async {
-    final phone = mobileController.text.trim();
-
-    if (phone.length != 10) {
-      Get.snackbar("Error", "Enter valid number");
-      return;
-    }
-
-    final fullPhone = "+91$phone";
-
     try {
+      isLoading.value = true;
+
+      final phone = mobileController.text.trim();
+
+      if (phone.length != 10) {
+        Get.snackbar("Error", "Enter valid number");
+        return;
+      }
+
+      final fullPhone = "+91$phone";
+
       _authController.phone.value = fullPhone;
       _authController.selectedRole.value = "vendor";
 
@@ -31,6 +35,8 @@ class VendorLoginController extends GetxController {
       Get.toNamed('/vendor-otp', arguments: {"mobile": phone});
     } catch (e) {
       Get.snackbar("Error", e.toString());
+    } finally {
+      isLoading.value = false;
     }
   }
 
