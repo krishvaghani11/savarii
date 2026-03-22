@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:savarii/features/auth/controllers/auth_controller.dart';
 
 class SettingsController extends GetxController {
   // Reactive state for Dark Mode switch
@@ -59,7 +60,10 @@ class SettingsController extends GetxController {
 
   void logout() {
     print("Initiating Logout...");
-
-    // TODO: Add logout confirmation dialog and clear auth tokens
+    if (Get.isRegistered<AuthController>()) {
+      Get.find<AuthController>().logout();
+    } else {
+      Get.offAllNamed('/role-selection');
+    }
   }
 }

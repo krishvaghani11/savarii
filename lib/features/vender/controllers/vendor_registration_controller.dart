@@ -23,52 +23,54 @@ class VendorRegistrationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (_authController.phone.value.isNotEmpty) {
-      String displayPhone = _authController.phone.value;
-      if (displayPhone.startsWith('+91')) {
-        displayPhone = displayPhone.substring(3);
-      }
-      mobileController.text = displayPhone;
+    // Pre-fill phone if already set (e.g. coming from login screen)
+    final existingPhone = _authController.phone.value;
+    if (existingPhone.isNotEmpty) {
+      String display = existingPhone;
+      if (display.startsWith('+91')) display = display.substring(3);
+      mobileController.text = display;
     }
   }
 
   Future<void> completeRegistration() async {
-    print("UID: ${_authController.uid}");
     if (!formKey.currentState!.validate()) return;
     if (isLoading.value) return;
 
-    // Unfocus to prevent disposed controller errors during navigation
     FocusManager.instance.primaryFocus?.unfocus();
 
     try {
-      final uid = _authController.uid;
-
-      if (uid == null || uid.isEmpty) {
-        Get.offAllNamed('/vendor-login');
-        Get.snackbar("Session Expired", "Please login again");
-        return;
-      }
-
       isLoading.value = true;
 
-      final phone = _authController.phone.value;
+      final rawPhone = mobileController.text.trim();
 
-      /// CHECK EXISTING
+      // Validate phone length
+      if (rawPhone.length != 10) {
+        Get.snackbar("Error", "Enter a valid 10-digit mobile number");
+        return;
+      }
+
+      // UID is derived directly from the phone number (same as what backend returns)
+      final uid = "+91$rawPhone";
+      final phone = "+91$rawPhone";
+
+      // Validate email
+      if (!GetUtils.isEmail(emailController.text.trim())) {
+        Get.snackbar("Error", "Enter a valid email address");
+        return;
+      }
+
+      // Check if already registered
       final existing = await _firestore.getUser(uid);
       if (existing.exists) {
-        Get.snackbar("Error", "User already registered");
+        Get.snackbar(
+          "Already Registered",
+          "This number is already registered. Please login instead.",
+        );
         isLoading.value = false;
         return;
       }
 
-      /// VALIDATE EMAIL
-      if (!GetUtils.isEmail(emailController.text.trim())) {
-        Get.snackbar("Error", "Invalid email");
-        isLoading.value = false;
-        return;
-      }
-
-      /// CREATE USER
+      // ── Save user doc ──
       await _firestore.createUser(uid, {
         "phone": phone,
         "role": "vendor",
@@ -77,7 +79,7 @@ class VendorRegistrationController extends GetxController {
         "isLoggedIn": true,
       });
 
-      /// CREATE VENDOR
+      // ── Save vendor profile doc ──
       await _firestore.createVendor(uid, {
         "userId": uid,
         "travelsName": travelsNameController.text.trim(),
@@ -88,7 +90,12 @@ class VendorRegistrationController extends GetxController {
         "createdAt": DateTime.now(),
       });
 
-      Get.snackbar("Success", "Registration completed");
+      // ── Store session in AuthController ──
+      _authController.uid = uid;
+      _authController.phone.value = phone;
+      _authController.isLoggedIn.value = true;
+
+      Get.snackbar("Success", "Registration completed!");
       Get.offAllNamed('/vendor-location-access');
     } catch (e) {
       Get.snackbar("Error", e.toString());

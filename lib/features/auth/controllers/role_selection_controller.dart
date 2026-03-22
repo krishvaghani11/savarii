@@ -19,13 +19,13 @@ class RoleSelectionController extends GetxController {
       return;
     }
 
-    // 2. Route based on the selection
+    // 2. Route based on the selection (Temporary change as requested)
     if (selectedRole.value == 'customer') {
-      print("Navigating to Customer Login...");
-      Get.toNamed('/phone-login'); // Navigates to your phone_login_view.dart
+      print("Temporary Navigation: Customer -> Location Access");
+      Get.toNamed('/location-access'); // Direct to customer location access
     } else if (selectedRole.value == 'vendor') {
-      print("Navigating to Vendor Registration...");
-      Get.toNamed('/vendor-login'); // Navigates to the vendor flow
+      print("Temporary Navigation: Vendor -> Vendor Location Access");
+      Get.toNamed('/vendor-location-access'); // Direct to vendor location access
     }
   }
 }

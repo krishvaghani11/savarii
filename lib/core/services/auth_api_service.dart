@@ -20,8 +20,8 @@ class AuthApiService {
     }
   }
 
-  /// VERIFY OTP
-  Future<String> verifyOtp(String phone, String otp) async {
+  /// VERIFY OTP — returns phone as uid on success, null if backend misbehaves
+  Future<String?> verifyOtp(String phone, String otp) async {
     final response = await http
         .post(
           Uri.parse("$baseUrl/verify-otp"),
@@ -36,6 +36,6 @@ class AuthApiService {
     }
 
     final data = jsonDecode(response.body);
-    return data['uid'];
+    return data['uid'] as String?;
   }
 }

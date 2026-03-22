@@ -8,7 +8,7 @@ class FirestoreService {
   }
 
   Future<void> createUser(String uid, Map<String, dynamic> data) {
-    return _db.collection('users').doc(uid).set(data);
+    return _db.collection('users').doc(uid).set(data, SetOptions(merge: true));
   }
 
   Future<void> createWallet(String uid) {

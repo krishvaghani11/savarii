@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:savarii/features/auth/controllers/auth_controller.dart';
 import 'package:savarii/features/customer/home/controller/main_layout_controller.dart';
 
 class ProfileController extends GetxController {
@@ -41,6 +42,10 @@ class ProfileController extends GetxController {
 
   void logOut() {
     print("Logging out...");
-    // Get.offAllNamed('/role-selection');
+    if (Get.isRegistered<AuthController>()) {
+      Get.find<AuthController>().logout();
+    } else {
+      Get.offAllNamed('/role-selection');
+    }
   }
 }

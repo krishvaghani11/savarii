@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:savarii/features/auth/controllers/auth_controller.dart';
 import 'package:savarii/features/customer/home/controller/main_layout_controller.dart';
 
 class CustomerHomeController extends GetxController {
@@ -80,6 +81,10 @@ class CustomerHomeController extends GetxController {
   void logout() {
     closeSidebar();
     print("Logging out user...");
-    // Get.offAllNamed('/role-selection');
+    if (Get.isRegistered<AuthController>()) {
+      Get.find<AuthController>().logout();
+    } else {
+      Get.offAllNamed('/role-selection');
+    }
   }
 }

@@ -54,6 +54,14 @@ class OTPVerificationController extends GetxController {
       /// ✅ VERIFY OTP
       final uid = await _api.verifyOtp(_authController.phone.value, otp);
 
+      if (uid == null || uid.isEmpty) {
+        Get.snackbar(
+          "Error",
+          "OTP verification failed: server did not return a UID. Please contact support.",
+        );
+        return;
+      }
+
       // CRITICAL: Store UID in AuthController before moving to next screen
       _authController.uid = uid;
 

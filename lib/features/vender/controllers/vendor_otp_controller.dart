@@ -18,6 +18,8 @@ class VendorOtpController extends GetxController {
 
   final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
 
+  final RxBool isLoading = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -26,55 +28,81 @@ class VendorOtpController extends GetxController {
 
   String get enteredOtp => otpControllers.map((e) => e.text).join();
 
+  /// ─── EXISTING VENDOR: Verify OTP → Check Firestore → Location ───
   Future<void> verifyOtp() async {
     try {
       final otp = enteredOtp;
 
       if (otp.length != 6) {
-        Get.snackbar("Error", "Enter valid OTP");
+        Get.snackbar("Error", "Enter a valid 6-digit OTP");
         return;
       }
 
+      isLoading.value = true;
+
       final phone = "+91$mobileNumber";
 
-      /// VERIFY WITH TWILIO
+      // Verify with Twilio backend — returns uid (which equals phone)
       final uid = await _api.verifyOtp(phone, otp);
 
+      if (uid == null || uid.isEmpty) {
+        Get.snackbar("Error", "OTP verification failed. Please try again.");
+        return;
+      }
+
+      // Store session
       _authController.uid = uid;
       _authController.phone.value = phone;
+      _authController.isLoggedIn.value = true;
 
-      /// CHECK FIRESTORE
+      // Check Firestore for existing vendor
       final doc = await _firestore.getUser(uid);
 
       if (!doc.exists) {
-        Get.snackbar("New User", "Please complete registration");
-        Get.toNamed('/vendor-registration');
-      } else {
-        final role = doc['role'];
-
-        if (role != "vendor") {
-          throw Exception("Not a vendor account");
-        }
-
-        Get.offAllNamed('/vendor-location-access');
+        // Account not found — show error and redirect to register
+        Get.snackbar(
+          "Not Registered",
+          "No vendor account found. Please register first.",
+        );
+        Get.offAllNamed('/vendor-login');
+        return;
       }
+
+      final role = doc['role'];
+      if (role != "vendor") {
+        Get.snackbar("Error", "This number is not registered as a vendor.");
+        Get.offAllNamed('/vendor-login');
+        return;
+      }
+
+      // Update last login
+      await _firestore.createUser(uid, {
+        "lastLogin": DateTime.now(),
+        "isLoggedIn": true,
+      });
+
+      Get.offAllNamed('/vendor-location-access');
     } catch (e) {
       Get.snackbar("Error", e.toString());
+    } finally {
+      isLoading.value = false;
     }
   }
 
   void resendOtp() async {
-    final phone = "+91$mobileNumber";
+    try {
+      final phone = "+91$mobileNumber";
+      await _api.sendOtp(phone);
 
-    await _api.sendOtp(phone);
+      for (var c in otpControllers) {
+        c.clear();
+      }
+      focusNodes[0].requestFocus();
 
-    for (var c in otpControllers) {
-      c.clear();
+      Get.snackbar("OTP", "OTP resent successfully");
+    } catch (e) {
+      Get.snackbar("Error", "Failed to resend OTP: ${e.toString()}");
     }
-
-    focusNodes[0].requestFocus();
-
-    Get.snackbar("OTP", "OTP Resent");
   }
 
   @override
