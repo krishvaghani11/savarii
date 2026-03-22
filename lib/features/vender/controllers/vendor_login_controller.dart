@@ -30,6 +30,7 @@ class VendorLoginController extends GetxController {
       _authController.selectedRole.value = "vendor";
 
       /// SEND OTP (TWILIO)
+      _authController.uid = null;
       await _api.sendOtp(fullPhone);
 
       Get.toNamed('/vendor-otp', arguments: {"mobile": phone});

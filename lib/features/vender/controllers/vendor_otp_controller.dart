@@ -41,6 +41,7 @@ class VendorOtpController extends GetxController {
       final uid = await _api.verifyOtp(phone, otp);
 
       _authController.uid = uid;
+      _authController.phone.value = phone;
 
       /// CHECK FIRESTORE
       final doc = await _firestore.getUser(uid);

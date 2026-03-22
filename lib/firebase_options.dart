@@ -57,6 +57,8 @@ class DefaultFirebaseOptions {
     appId: '1:1057909747567:android:6570ff5efba52e2702429a',
     messagingSenderId: '1057909747567',
     projectId: 'savarii-96869',
+    databaseURL: 'https://savarii-96869-default-rtdb.firebaseio.com',
     storageBucket: 'savarii-96869.firebasestorage.app',
   );
+
 }

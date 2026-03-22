@@ -10,11 +10,14 @@ class VendorLoginBinding extends Bindings {
     if (!Get.isRegistered<AuthApiService>()) {
       Get.lazyPut<AuthApiService>(() => AuthApiService());
     }
+
     if (!Get.isRegistered<FirestoreService>()) {
       Get.lazyPut<FirestoreService>(() => FirestoreService());
     }
+
+    /// 🔥 FIX HERE
     if (!Get.isRegistered<AuthController>()) {
-      Get.lazyPut<AuthController>(() => AuthController());
+      Get.put<AuthController>(AuthController(), permanent: true);
     }
 
     Get.lazyPut<VendorLoginController>(() => VendorLoginController());
