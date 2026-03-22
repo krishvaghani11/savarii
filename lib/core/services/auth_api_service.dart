@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthApiService {
-  static const String computerIp = "172.20.10.3";
-  final String baseUrl = "https://abc123.ngrok-free.app";
+  final String baseUrl = "https://savarii-backend.vercel.app/api";
 
   /// SEND OTP
   Future<void> sendOtp(String phone) async {
