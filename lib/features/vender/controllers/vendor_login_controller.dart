@@ -1,56 +1,86 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/services/auth_api_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 
 class VendorLoginController extends GetxController {
-  final TextEditingController mobileController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-  final AuthApiService _api = Get.find();
   final AuthController _authController = Get.find();
 
   var isLoading = false.obs;
+  var isPasswordHidden = true.obs;
 
-  /// ─── EXISTING VENDOR: Enter phone → Send OTP → Verify OTP → Location ───
+  void togglePasswordVisibility() {
+    isPasswordHidden.value = !isPasswordHidden.value;
+  }
+
+  /// ─── EMAIL LOGIN FLOW ───
   void login() async {
     try {
-      isLoading.value = true;
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
 
-      final phone = mobileController.text.trim();
-
-      if (phone.length != 10) {
-        Get.snackbar("Error", "Enter a valid 10-digit mobile number");
+      if (!GetUtils.isEmail(email)) {
+        Get.snackbar(
+          "Invalid Email",
+          "Please enter a valid email address.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+      if (password.isEmpty) {
+        Get.snackbar(
+          "Missing Password",
+          "Please enter your password.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
-      final fullPhone = "+91$phone";
+      isLoading.value = true;
 
-      // Store phone and role before navigating
-      _authController.phone.value = fullPhone;
+      // Store role context
       _authController.selectedRole.value = "vendor";
-      _authController.uid = null;
 
-      // Send OTP via Twilio
-      await _api.sendOtp(fullPhone);
+      // ❌ DELETE lines 38-45 (mock):
+      // TODO: Connect this to your Firebase Auth / AuthApiService
+      await Future.delayed(const Duration(seconds: 2));
+      Get.offAllNamed('/vendor-location-access');
 
-      Get.toNamed('/vendor-otp', arguments: {"mobile": phone});
+      // ✅ REPLACE WITH:
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final uid = credential.user!.uid;
+      await _authController.saveVendorSession(vendorUid: uid, vendorPhone: '');
+      Get.offAllNamed('/vendor-location-access');
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      Get.snackbar(
+        "Login Failed",
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// ─── NEW VENDOR: Go directly to registration form ───
+  void forgotPassword() {
+    print("Navigating to forgot password...");
+    Get.toNamed('/vendor-forgot-password');
+  }
+
   void goToRegister() {
-    // New vendors fill the registration form directly.
-    // No OTP at this stage — phone in the form is used as UID.
     Get.toNamed('/vendor-registration');
   }
 
   @override
   void onClose() {
-    mobileController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
     super.onClose();
   }
 }

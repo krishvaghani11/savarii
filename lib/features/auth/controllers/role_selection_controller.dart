@@ -1,6 +1,10 @@
 import 'package:get/get.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../../routes/app_routes.dart';
 
 class RoleSelectionController extends GetxController {
+  final AuthController _authController = Get.find();
+
   // Reactive variable to keep track of what the user tapped
   final RxString selectedRole = ''.obs;
 
@@ -19,13 +23,16 @@ class RoleSelectionController extends GetxController {
       return;
     }
 
-    // 2. Route based on the selection (Temporary change as requested)
+    // 2. Store role in AuthController so the OTP flow knows the selected role
+    _authController.selectedRole.value = selectedRole.value;
+
+    // 3. Route based on selection
     if (selectedRole.value == 'customer') {
-      print("Temporary Navigation: Customer -> Location Access");
-      Get.toNamed('/location-access'); // Direct to customer location access
+      // Customer → Phone login (OTP flow)
+      Get.toNamed(AppRoutes.customerLogin);
     } else if (selectedRole.value == 'vendor') {
-      print("Temporary Navigation: Vendor -> Vendor Location Access");
-      Get.toNamed('/vendor-location-access'); // Direct to vendor location access
+      // Vendor → Vendor login (OTP + registration flow)
+      Get.toNamed(AppRoutes.vendorLogin);
     }
   }
 }

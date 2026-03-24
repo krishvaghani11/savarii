@@ -1,10 +1,14 @@
 import 'package:get/get.dart';
+import 'package:savarii/features/auth/bindings/customer_forgot_password_binding.dart';
+import 'package:savarii/features/auth/bindings/customer_registration_binding.dart';
+import 'package:savarii/features/auth/bindings/customer_reset_password_binding.dart';
 import 'package:savarii/features/auth/bindings/location_access_binding.dart';
-import 'package:savarii/features/auth/bindings/otp_verification_binding.dart';
-import 'package:savarii/features/auth/bindings/phone_login_binding.dart';
+import 'package:savarii/features/auth/bindings/customer%20_login_binding.dart';
+import 'package:savarii/features/auth/view/customer_forgot_password_view.dart';
+import 'package:savarii/features/auth/view/customer_registration_view.dart';
+import 'package:savarii/features/auth/view/customer_reset_password_view.dart';
 import 'package:savarii/features/auth/view/location_access_view.dart';
-import 'package:savarii/features/auth/view/otp_verification_view.dart';
-import 'package:savarii/features/auth/view/phone_login_view.dart';
+import 'package:savarii/features/auth/view/customer_login_view.dart';
 import 'package:savarii/features/auth/view/role_selection_view.dart';
 import 'package:savarii/features/customer/home/bindings/about_us_binding.dart';
 import 'package:savarii/features/customer/home/bindings/book_parcel_binding.dart';
@@ -61,6 +65,7 @@ import 'package:savarii/features/vender/bindings/vendor_book_ticket_binding.dart
 import 'package:savarii/features/vender/bindings/vendor_contact_developer_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_edit_profile_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_fleet_tracking_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_forgot_password_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_help_center_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_language_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_location_access_binding.dart';
@@ -70,27 +75,28 @@ import 'package:savarii/features/vender/bindings/vendor_payment_confirmation_bin
 import 'package:savarii/features/vender/bindings/vendor_payment_details_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_privacy_policy_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_registration_binding.dart';
+import 'package:savarii/features/vender/bindings/vendor_reset_password_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_settings_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_terms_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_travels_detail_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_view_tickets_binding.dart';
-import 'package:savarii/features/vender/bindings/venodr_otp_binding.dart';
 import 'package:savarii/features/vender/view/add_bus_view.dart';
 import 'package:savarii/features/vender/view/vendor_add_travels_view.dart';
 import 'package:savarii/features/vender/view/vendor_book_ticket_view.dart';
 import 'package:savarii/features/vender/view/vendor_contact_developer_view.dart';
 import 'package:savarii/features/vender/view/vendor_edit_profile_view.dart';
 import 'package:savarii/features/vender/view/vendor_fleet_tracking_view.dart';
+import 'package:savarii/features/vender/view/vendor_forgot_password_view.dart';
 import 'package:savarii/features/vender/view/vendor_help_center_view.dart';
 import 'package:savarii/features/vender/view/vendor_language_view.dart';
 import 'package:savarii/features/vender/view/vendor_location_access_view.dart';
 import 'package:savarii/features/vender/view/vendor_login_view.dart';
 import 'package:savarii/features/vender/view/vendor_main_view.dart';
-import 'package:savarii/features/vender/view/vendor_otp_view.dart';
 import 'package:savarii/features/vender/view/vendor_payment_confirmation_view.dart';
 import 'package:savarii/features/vender/view/vendor_payment_details_view.dart';
 import 'package:savarii/features/vender/view/vendor_privacy_policy_view.dart';
 import 'package:savarii/features/vender/view/vendor_registration_view.dart';
+import 'package:savarii/features/vender/view/vendor_reset_password_view.dart';
 import 'package:savarii/features/vender/view/vendor_settings_view.dart';
 import 'package:savarii/features/vender/view/vendor_terms_view.dart';
 import 'package:savarii/features/vender/view/vendor_travels_detail_view.dart';
@@ -115,16 +121,10 @@ class AppPages {
       transition: Transition.fadeIn,
     ),
     GetPage(
-      name: AppRoutes.phoneLogin,
-      page: () => const PhoneLoginView(),
-      binding: PhoneLoginBinding(),
+      name: AppRoutes.customerLogin,
+      page: () => const CustomerLoginView(),
+      binding: CustomerLoginBinding(),
       transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.otpVerify,
-      page: () => const OTPVerificationView(),
-      binding: OTPVerificationBinding(),
-      transition: Transition.fadeIn,
     ),
     GetPage(
       name: AppRoutes.locationAccess,
@@ -288,12 +288,6 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.vendorOtp,
-      page: () => const VendorOtpView(),
-      binding: VendorOtpBinding(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.vendorMain,
       page: () => const VendorMainView(),
       binding: VendorMainBinding(),
@@ -393,6 +387,36 @@ class AppPages {
       name: AppRoutes.vendorLocationAccess,
       page: () => const VendorLocationAccessView(),
       binding: VendorLocationAccessBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorForgotPassword,
+      page: () => const VendorForgotPasswordView(),
+      binding: VendorForgotPasswordBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorResetPassword,
+      page: () => const VendorResetPasswordView(),
+      binding: VendorResetPasswordBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.customerRegistration,
+      page: () => const CustomerRegistrationView(),
+      binding: CustomerRegistrationBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.customerForgotPassword,
+      page: () => const CustomerForgotPasswordView(),
+      binding: CustomerForgotPasswordBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.customerResetPassword,
+      page: () => const CustomerResetPasswordView(),
+      binding: CustomerResetPasswordBinding(),
       transition: Transition.rightToLeft,
     ),
   ];

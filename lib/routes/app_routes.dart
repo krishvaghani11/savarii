@@ -4,8 +4,9 @@ class AppRoutes {
 
   static const String splash = '/splash';
   static const String roleSelection = '/role-selection';
-  static const String phoneLogin = '/phone-login';
-  static const String otpVerify = '/otp-verify';
+  static const String customerLogin = '/customer-login';
+  static const String customerRegistration = '/customer-registration';
+  static const String customerForgotPassword = '/customer-forgot-password';
   static const String locationAccess = '/location-access';
   static const String customerHome = '/customer-home';
   static const String customerMainLayout = '/customer-main-layout';
@@ -35,7 +36,6 @@ class AppRoutes {
   //vendor side routes
   static const String vendorRegistration = '/vendor-registration';
   static const String vendorLogin = '/vendor-login';
-  static const String vendorOtp = '/vendor-otp';
   static const String vendorMain = '/vendor-main';
   static const String addBus = '/add-bus';
   static const String vendorViewTickets = '/vendor-view-tickets';
@@ -54,4 +54,7 @@ class AppRoutes {
   static const String vendorPrivacyPolicy = '/vendor-privacy-policy';
   static const String vendorTerms = '/vendor-terms';
   static const String vendorLocationAccess = '/vendor-location-access';
+  static const String vendorForgotPassword = '/vendor-forgot-password';
+  static const String vendorResetPassword = '/vendor-reset-password';
+  static const String customerResetPassword = '/customer-reset-password';
 }

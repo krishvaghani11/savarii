@@ -10,8 +10,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
-      // Using the light greyish background
+      backgroundColor: AppColors.lightBackground, // Using the light greyish background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -55,9 +54,9 @@ class VendorLoginView extends GetView<VendorLoginController> {
                     ),
                     const SizedBox(height: 48),
 
-                    // Mobile Number Label
+                    // Email Address Label
                     Text(
-                      'Mobile Number',
+                      'Email Address',
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
@@ -65,42 +64,74 @@ class VendorLoginView extends GetView<VendorLoginController> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Phone Input Field
-                    _buildPhoneInput(),
+                    // Email Input Field
+                    _buildEmailInput(),
+                    const SizedBox(height: 24),
+
+                    // Password Label
+                    Text(
+                      'Password',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Password Input Field
+                    _buildPasswordInput(),
+                    const SizedBox(height: 8),
+
+                    // Forgot Password Link
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: controller.forgotPassword,
+                        child: Text(
+                          'Forgot Password?',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.primaryAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 32),
 
                     // Login Button
-                    ElevatedButton(
-                      onPressed: controller.login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryAccent,
-                        minimumSize: const Size(double.infinity, 54),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                        shadowColor: AppColors.primaryAccent.withOpacity(
-                          0.4,
-                        ), // Subtle red shadow
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Login',
-                            style: AppTextStyles.buttonText.copyWith(
-                              fontSize: 16,
+                    Obx(() => ElevatedButton(
+                          onPressed: controller.isLoading.value ? null : controller.login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryAccent,
+                            minimumSize: const Size(double.infinity, 54),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
+                            elevation: 0,
+                            shadowColor: AppColors.primaryAccent.withOpacity(0.4),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.arrow_forward,
-                            color: AppColors.white,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
+                          child: controller.isLoading.value
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Login',
+                                      style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(
+                                      Icons.arrow_forward,
+                                      color: AppColors.white,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                        )),
                   ],
                 ),
               ),
@@ -139,7 +170,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
 
   // --- Sub-Widgets ---
 
-  Widget _buildPhoneInput() {
+  Widget _buildEmailInput() {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -153,49 +184,63 @@ class VendorLoginView extends GetView<VendorLoginController> {
         ],
       ),
       child: TextField(
-        controller: controller.mobileController,
-        keyboardType: TextInputType.phone,
-        style: AppTextStyles.bodyLarge.copyWith(letterSpacing: 1.5),
+        controller: controller.emailController,
+        keyboardType: TextInputType.emailAddress,
+        style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
-          hintText: '00000 00000',
+          hintText: 'vendor@example.com',
           hintStyle: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.secondaryGreyBlue.withOpacity(0.5),
-            letterSpacing: 1.5,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
           ),
-          prefixIcon: Container(
-            width: 100,
-            // <-- Increased width from 70 to 100 to fit the flag nicely!
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('🇮🇳', style: TextStyle(fontSize: 18)),
-                // <-- ADDED THE FLAG HERE
-                const SizedBox(width: 4),
-                Text(
-                  '+91',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.secondaryGreyBlue,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  width: 1,
-                  height: 20,
-                  color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-                ),
-                // Thin divider
-              ],
-            ),
-          ),
         ),
       ),
     );
+  }
+
+  Widget _buildPasswordInput() {
+    return Obx(() => Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller.passwordController,
+        obscureText: controller.isPasswordHidden.value,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: '........',
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.5),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          suffixIcon: IconButton(
+            icon: Icon(
+              controller.isPasswordHidden.value
+                  ? Icons.visibility_off
+                  : Icons.visibility,
+              color: AppColors.secondaryGreyBlue,
+              size: 20,
+            ),
+            onPressed: controller.togglePasswordVisibility,
+          ),
+        ),
+      ),
+    ));
   }
 }

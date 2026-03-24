@@ -1,10 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../core/services/auth_api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../routes/app_routes.dart';
 
+/// Keys used for persisting vendor session
+const _kUid = 'session_uid';
+const _kPhone = 'session_phone';
+const _kRole = 'session_role';
+
 class AuthController extends GetxController {
-  final AuthApiService _api = Get.find();
   final FirestoreService _firestore = Get.find();
 
   var selectedRole = ''.obs;
@@ -14,85 +19,74 @@ class AuthController extends GetxController {
 
   String? uid;
 
-  /// ==============================
-  /// SEND OTP
-  /// ==============================
-  Future<void> sendOtp(String phoneNumber) async {
-    try {
-      isLoading.value = true;
-
-      /// CLEAR OLD SESSION
-      uid = null;
-
-      phone.value = phoneNumber;
-
-      await _api.sendOtp(phoneNumber);
-
-      Get.toNamed(AppRoutes.otpVerify);
-    } catch (e) {
-      Get.snackbar("Error", e.toString());
-    } finally {
-      isLoading.value = false;
-    }
+  // ─────────────────────────────────────────────
+  // LIFECYCLE: restore session from SharedPrefs
+  // ─────────────────────────────────────────────
+  @override
+  void onInit() {
+    super.onInit();
+    _restoreSession();
   }
 
-  /// ==============================
-  /// VERIFY OTP
-  /// ==============================
-  Future<void> verifyOtp(String otp) async {
-    try {
-      isLoading.value = true;
+  /// Reads the persisted uid/phone/role from disk and populates in-memory state.
+  Future<void> _restoreSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUid = prefs.getString(_kUid);
+    final savedPhone = prefs.getString(_kPhone);
+    final savedRole = prefs.getString(_kRole);
 
-      /// VERIFY WITH TWILIO
-      final verifiedUid = await _api.verifyOtp(phone.value, otp);
-
-      /// 🔥 STORE SESSION
-      uid = verifiedUid;
+    if (savedUid != null && savedUid.isNotEmpty) {
+      uid = savedUid;
+      phone.value = savedPhone ?? '';
+      selectedRole.value = savedRole ?? '';
       isLoggedIn.value = true;
-
-      final doc = await _firestore.getUser(uid!);
-
-      /// ==============================
-      /// NEW USER FLOW
-      /// ==============================
-      if (!doc.exists) {
-        if (selectedRole.value == "customer") {
-          await _createCustomer();
-
-          Get.offAllNamed(AppRoutes.locationAccess);
-        } else {
-          /// Vendor → go to registration
-          Get.toNamed(AppRoutes.vendorRegistration);
-        }
-      }
-      /// ==============================
-      /// EXISTING USER FLOW
-      /// ==============================
-      else {
-        final role = doc['role'];
-
-        if (role != selectedRole.value) {
-          throw Exception("Wrong role selected");
-        }
-
-        /// 🔥 UPDATE LOGIN STATUS
-        await _firestore.createUser(uid!, {
-          "lastLogin": DateTime.now(),
-          "isLoggedIn": true,
-        });
-
-        Get.offAllNamed(AppRoutes.locationAccess);
-      }
-    } catch (e) {
-      Get.snackbar("Auth Error", e.toString());
-    } finally {
-      isLoading.value = false;
+      debugPrint(
+        '🔐 [AuthController] Session restored: uid=$uid role=$selectedRole',
+      );
     }
   }
 
-  /// ==============================
-  /// CREATE CUSTOMER
-  /// ==============================
+  /// Writes uid/phone/role to SharedPreferences so it survives cold starts.
+  Future<void> _saveSession({
+    required String uid,
+    required String phone,
+    required String role,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kUid, uid);
+    await prefs.setString(_kPhone, phone);
+    await prefs.setString(_kRole, role);
+  }
+
+  /// Call this when the user logs out to clear the persisted session.
+  Future<void> _clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kUid);
+    await prefs.remove(_kPhone);
+    await prefs.remove(_kRole);
+  }
+
+  // ─────────────────────────────────────────────
+  // VENDOR SESSION (called by VendorOtpController
+  // and VendorRegistrationController)
+  // ─────────────────────────────────────────────
+  /// Persists a vendor session after successful OTP login or registration.
+  Future<void> saveVendorSession({
+    required String vendorUid,
+    required String vendorPhone,
+  }) async {
+    uid = vendorUid;
+    phone.value = vendorPhone;
+    selectedRole.value = 'vendor';
+    isLoggedIn.value = true;
+    await _saveSession(uid: vendorUid, phone: vendorPhone, role: 'vendor');
+    debugPrint('✅ [AuthController] Vendor session saved: uid=$uid');
+  }
+
+
+  // ─────────────────────────────────────────────
+  // CREATE CUSTOMER (new user)
+  // ─────────────────────────────────────────────
   Future<void> _createCustomer() async {
     await _firestore.createUser(uid!, {
       "phone": phone.value,
@@ -101,13 +95,12 @@ class AuthController extends GetxController {
       "lastLogin": DateTime.now(),
       "isLoggedIn": true,
     });
-
     await _firestore.createWallet(uid!);
   }
 
-  /// ==============================
-  /// CREATE VENDOR (AFTER REGISTRATION)
-  /// ==============================
+  // ─────────────────────────────────────────────
+  // CREATE VENDOR (after registration form)
+  // ─────────────────────────────────────────────
   Future<void> createVendor({
     required String name,
     required String email,
@@ -117,11 +110,9 @@ class AuthController extends GetxController {
     try {
       if (uid == null || uid!.isEmpty) {
         Get.snackbar("Session Expired", "Please login again");
-        Get.offAllNamed(AppRoutes.phoneLogin);
+        Get.offAllNamed(AppRoutes.customerLogin);
         return;
       }
-
-      /// CREATE USER
       await _firestore.createUser(uid!, {
         "phone": phone.value,
         "role": "vendor",
@@ -129,8 +120,6 @@ class AuthController extends GetxController {
         "lastLogin": DateTime.now(),
         "isLoggedIn": true,
       });
-
-      /// CREATE VENDOR DATA
       await _firestore.createVendor(uid!, {
         "userId": uid,
         "name": name,
@@ -139,22 +128,21 @@ class AuthController extends GetxController {
         "address": address,
         "createdAt": DateTime.now(),
       });
-
       Get.offAllNamed(AppRoutes.locationAccess);
     } catch (e) {
       Get.snackbar("Error", e.toString());
     }
   }
 
-  /// ==============================
-  /// LOGOUT (FUTURE USE)
-  /// ==============================
-  void logout() {
+  // ─────────────────────────────────────────────
+  // LOGOUT
+  // ─────────────────────────────────────────────
+  Future<void> logout() async {
+    await _clearSession();
     uid = null;
     phone.value = "";
     selectedRole.value = "";
     isLoggedIn.value = false;
-
-    Get.offAllNamed(AppRoutes.phoneLogin);
+    Get.offAllNamed(AppRoutes.customerLogin);
   }
 }

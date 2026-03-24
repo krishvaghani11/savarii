@@ -9,151 +9,150 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
   const VendorRegistrationView({super.key});
 
   @override
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text('Vendor Registration', style: AppTextStyles.h3),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
-          onPressed: () => Get.back(),
-        ),
-      ),
       body: SafeArea(
-        // The SingleChildScrollView now wraps EVERYTHING, including the footer
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 1. The Form Content (with padding)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24.0,
-                  vertical: 16.0,
-                ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
                 child: Form(
                   key: controller.formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        'Create Vendor Account',
-                        style: AppTextStyles.h2.copyWith(fontSize: 22),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Please fill in the details below to register your travel agency with Savarii.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.secondaryGreyBlue,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      _buildTextField(
-                        label: 'Travels Name',
-                        hint: 'Enter agency name',
-                        icon: Icons.directions_bus_outlined,
-                        controller: controller.travelsNameController,
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTextField(
-                        label: 'Full Name',
-                        hint: 'Enter owner name',
-                        icon: Icons.person_outline,
-                        controller: controller.fullNameController,
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(
-                        'Mobile Number',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildMobileField(),
-                      const SizedBox(height: 16),
-
-                      _buildTextField(
-                        label: 'Email Address',
-                        hint: 'name@agency.com',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        controller: controller.emailController,
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTextField(
-                        label: 'Current Office Address',
-                        hint: 'Enter current office location',
-                        icon: Icons.location_on_outlined,
-                        controller: controller.currentAddressController,
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTextField(
-                        label: 'Permanent Address',
-                        hint: 'As per legal documents',
-                        icon: Icons.home_outlined,
-                        controller: controller.permanentAddressController,
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 32),
-
-                      ElevatedButton(
-                        onPressed: controller.completeRegistration,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryAccent,
-                          minimumSize: const Size(double.infinity, 54),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      // Header Section
+                      Center(
+                        child: Column(
                           children: [
                             Text(
-                              'Complete Registration',
-                              style: AppTextStyles.buttonText.copyWith(
-                                fontSize: 16,
-                              ),
+                              'Vendor Registration',
+                              style: AppTextStyles.h1.copyWith(fontSize: 28),
                             ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.arrow_forward,
-                              color: AppColors.white,
-                              size: 20,
+                            const SizedBox(height: 8),
+                            Text(
+                              'Create your Savarii vendor account',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.secondaryGreyBlue,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 48),
 
-                      Text(
-                        "By registering, you agree to Savarii's Terms of Service and\nPrivacy Policy.",
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.secondaryGreyBlue,
-                        ),
+                      // Full Name Field
+                      _buildLabel('FULL NAME'),
+                      _buildTextField(
+                        hint: 'Enter your full name',
+                        icon: Icons.badge_outlined,
+                        controller: controller.fullNameController,
                       ),
-                      const SizedBox(height: 24), // Buffer before the footer
+                      const SizedBox(height: 20),
+
+                      // Mobile Number Field
+                      _buildLabel('MOBILE NUMBER'),
+                      _buildMobileField(),
+                      const SizedBox(height: 20),
+
+                      // Email Address Field
+                      _buildLabel('EMAIL ADDRESS'),
+                      _buildTextField(
+                        hint: 'vendor@example.com',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        controller: controller.emailController,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Password Field
+                      _buildLabel('PASSWORD'),
+                      Obx(() => _buildPasswordField(
+                            hint: '........',
+                            controller: controller.passwordController,
+                            isHidden: controller.isPasswordHidden.value,
+                            onToggleVisibility: controller.togglePasswordVisibility,
+                          )),
+                      const SizedBox(height: 20),
+
+                      // Confirm Password Field
+                      _buildLabel('CONFIRM PASSWORD'),
+                      Obx(() => _buildPasswordField(
+                            hint: '........',
+                            controller: controller.confirmPasswordController,
+                            isHidden: controller.isConfirmPasswordHidden.value,
+                            onToggleVisibility: controller.toggleConfirmPasswordVisibility,
+                          )),
+                      const SizedBox(height: 40),
+
+                      // Register Button
+                      Obx(() => ElevatedButton(
+                            onPressed: controller.isLoading.value ? null : controller.completeRegistration,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryAccent,
+                              minimumSize: const Size(double.infinity, 54),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                              shadowColor: AppColors.primaryAccent.withOpacity(0.4),
+                            ),
+                            child: controller.isLoading.value
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Register',
+                                        style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.arrow_forward,
+                                        color: AppColors.white,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                          )),
                     ],
                   ),
                 ),
               ),
+            ),
 
-              // 2. Trust Badges Footer (Now scrolls with the rest of the page!)
-              _buildTrustBadgesFooter(),
-            ],
-          ),
+            // Footer Section
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Already have an account? ",
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.secondaryGreyBlue,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: controller.goToLogin,
+                    child: Text(
+                      'Login',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.primaryAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -161,59 +160,88 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
 
   // --- Sub-Widgets ---
 
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        text,
+        style: AppTextStyles.bodyLarge.copyWith(
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+          letterSpacing: 0.5,
+          color: AppColors.primaryDark.withOpacity(0.8),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTextField({
-    required String label,
     required String hint,
     required IconData icon,
     required TextEditingController controller,
-    int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+        ),
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.5),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          prefixIcon: Icon(icon, color: AppColors.secondaryGreyBlue.withOpacity(0.7), size: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required String hint,
+    required TextEditingController controller,
+    required bool isHidden,
+    required VoidCallback onToggleVisibility,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+        ),
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isHidden,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.5),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          prefixIcon: Icon(Icons.lock_outline, color: AppColors.secondaryGreyBlue.withOpacity(0.7), size: 20),
+          suffixIcon: IconButton(
+            icon: Icon(
+              isHidden ? Icons.visibility_off : Icons.visibility,
+              color: AppColors.secondaryGreyBlue.withOpacity(0.7),
+              size: 20,
+            ),
+            onPressed: onToggleVisibility,
           ),
         ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-            ),
-          ),
-          child: TextFormField(
-            controller: controller,
-            maxLines: maxLines,
-            keyboardType: keyboardType,
-            style: AppTextStyles.bodyLarge,
-            validator: (value) =>
-                value!.isEmpty ? 'This field is required' : null,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.secondaryGreyBlue.withOpacity(0.6),
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-              prefixIcon: Padding(
-                padding: EdgeInsets.only(bottom: maxLines > 1 ? 40.0 : 0),
-                // Aligns icon to top for multiline
-                child: Icon(icon, color: AppColors.secondaryGreyBlue, size: 20),
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -221,38 +249,32 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
       ),
       child: TextFormField(
         controller: controller.mobileController,
         keyboardType: TextInputType.phone,
-        style: AppTextStyles.bodyLarge,
-        validator: (value) =>
-            value!.isEmpty ? 'Mobile number is required' : null,
+        style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
-          hintText: 'Enter mobile number',
+          hintText: '98765 43210',
           hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+            color: AppColors.secondaryGreyBlue.withOpacity(0.5),
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           prefixIcon: Container(
-            width: 90, // Fixed width for the prefix section
+            width: 90, 
             alignment: Alignment.center,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text('🇮🇳', style: TextStyle(fontSize: 18)),
-                // Indian Flag Emoji
                 const SizedBox(width: 4),
                 Text(
                   '+91',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -261,55 +283,11 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                   height: 20,
                   color: AppColors.secondaryGreyBlue.withOpacity(0.3),
                 ),
-                // Divider
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTrustBadgesFooter() {
-    return Container(
-      width: double.infinity,
-      // Ensures full width
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      // Adjusted padding for better look
-      decoration: BoxDecoration(
-        color: AppColors.lightBackground,
-        // Keep this slightly different background color
-        border: Border(
-          top: BorderSide(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildBadge(Icons.verified_user, 'SECURE'),
-          _buildBadge(Icons.support_agent, '24/7 SUPPORT'),
-          _buildBadge(Icons.speed, 'FAST APPROVAL'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBadge(IconData icon, String text) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: AppColors.primaryAccent, size: 20),
-        const SizedBox(height: 6),
-        Text(
-          text,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.primaryDark,
-            fontSize: 9,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ],
     );
   }
 }

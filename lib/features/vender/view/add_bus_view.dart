@@ -44,12 +44,14 @@ class AddBusView extends GetView<AddBusController> {
                               'Bus Name',
                               'e.g. Scania Touring',
                               controller.busNameController,
+                              validator: controller.validateRequired,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
                               'Bus Number',
                               'e.g. MH 12 AB 1234',
                               controller.busNumberController,
+                              validator: controller.validateRequired,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
@@ -58,6 +60,7 @@ class AddBusView extends GetView<AddBusController> {
                               controller.totalSeatsController,
                               keyboardType: TextInputType.number,
                               suffixIcon: Icons.event_seat,
+                              validator: controller.validateNumber,
                             ),
                           ],
                         ),
@@ -83,6 +86,7 @@ class AddBusView extends GetView<AddBusController> {
                       _buildSectionHeader(Icons.alt_route, 'ROUTE & SCHEDULE'),
                       _buildCardContainer(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Row(
                               children: [
@@ -91,6 +95,7 @@ class AddBusView extends GetView<AddBusController> {
                                     'From',
                                     'Origin',
                                     controller.fromController,
+                                    validator: controller.validateRequired,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -99,6 +104,7 @@ class AddBusView extends GetView<AddBusController> {
                                     'To',
                                     'Destination',
                                     controller.toController,
+                                    validator: controller.validateRequired,
                                   ),
                                 ),
                               ],
@@ -123,13 +129,82 @@ class AddBusView extends GetView<AddBusController> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+
+                            // --- DYNAMIC BOARDING POINTS ---
+                            _buildSubHeaderWithAddButton(
+                              'BOARDING POINTS',
+                              controller.addBoardingPoint,
+                            ),
+
+                            // Input Row
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: _buildSimpleTextField(
+                                    controller.bpNameController,
+                                    'Point Name',
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: _buildSimpleTimePicker(
+                                    controller.bpTime,
+                                    () => controller.pickBpTime(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // Saved List of Boarding Points
+                            Obx(
+                              () => Column(
+                                children: List.generate(
+                                  controller.savedBoardingPoints.length,
+                                  (index) => _buildSavedBoardingPoint(index),
+                                ),
+                              ),
+                            ),
+
+                            // --- DYNAMIC REST STOPS ---
+                            _buildSubHeaderWithAddButton(
+                              'REST STOPS',
+                              controller.addRestStop,
+                            ),
+
+                            // Inputs Column
+                            _buildInputField(
+                              'REST STOP NAME/ADDRESS',
+                              'e.g. Highway Plaza, NH48',
+                              controller.rsNameController,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildInputField(
+                              'DURATION/ESTIMATED TIME',
+                              'e.g. 20 mins',
+                              controller.rsDurationController,
+                            ),
+
+                            // Saved List of Rest Stops
+                            Obx(
+                              () => Column(
+                                children: List.generate(
+                                  controller.savedRestStops.length,
+                                  (index) => _buildSavedRestStop(index),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
                             _buildInputField(
                               'Ticket Price',
-                              '0.00',
+                              '0',
                               controller.priceController,
                               keyboardType: TextInputType.number,
                               prefixText: '₹ ',
+                              validator: controller.validateNumber,
                             ),
                           ],
                         ),
@@ -148,19 +223,22 @@ class AddBusView extends GetView<AddBusController> {
                               'Driver Name',
                               'e.g. John Doe',
                               controller.driverNameController,
+                              validator: controller.validateRequired,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
                               'Driver Mobile Number',
-                              'e.g. +91 9876543210',
+                              'e.g. +91 98765 43210',
                               controller.driverMobileController,
                               keyboardType: TextInputType.phone,
+                              validator: controller.validateRequired,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
                               'License Number',
-                              'e.g. ABC123456789',
+                              'e.g. GJ01-20220012345',
                               controller.licenseController,
+                              validator: controller.validateRequired,
                             ),
                           ],
                         ),
@@ -248,6 +326,269 @@ class AddBusView extends GetView<AddBusController> {
     );
   }
 
+  // Red Add Button built directly into the sub-header matching the screenshot
+  Widget _buildSubHeaderWithAddButton(String title, VoidCallback onAdd) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24.0, bottom: 12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.primaryDark,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+          GestureDetector(
+            onTap: onAdd,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primaryAccent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.add, color: AppColors.white, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Add',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Simple Input row for Boarding Points
+  Widget _buildSimpleTextField(TextEditingController ctrl, String hint) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextFormField(
+        controller: ctrl,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 15,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Simple Time picker for Boarding Points
+  Widget _buildSimpleTimePicker(RxString timeVal, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        decoration: BoxDecoration(
+          color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Obx(
+              () => Text(
+                timeVal.value,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: timeVal.value == '--:-- --'
+                      ? AppColors.secondaryGreyBlue.withOpacity(0.6)
+                      : AppColors.primaryDark,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.access_time,
+              color: AppColors.secondaryGreyBlue,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Row showing Saved Boarding Point
+  Widget _buildSavedBoardingPoint(int index) {
+    final bp = controller.savedBoardingPoints[index];
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                bp['pointName']!,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.primaryDark,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 15,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        bp['time']!,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.primaryDark,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.access_time,
+                        color: AppColors.secondaryGreyBlue,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: -8,
+                  top: -8,
+                  child: GestureDetector(
+                    onTap: () => controller.removeBoardingPoint(index),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 12,
+                        color: AppColors.secondaryGreyBlue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Row showing Saved Rest Stop
+  Widget _buildSavedRestStop(int index) {
+    final rs = controller.savedRestStops[index];
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                rs['stopName']!,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.primaryDark,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 15,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    rs['duration']!,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.primaryDark,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: -8,
+                  top: -8,
+                  child: GestureDetector(
+                    onTap: () => controller.removeRestStop(index),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 12,
+                        color: AppColors.secondaryGreyBlue,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInputField(
     String label,
     String hint,
@@ -255,6 +596,7 @@ class AddBusView extends GetView<AddBusController> {
     TextInputType keyboardType = TextInputType.text,
     IconData? suffixIcon,
     String? prefixText,
+    FormFieldValidator<String>? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,13 +612,14 @@ class AddBusView extends GetView<AddBusController> {
         Container(
           decoration: BoxDecoration(
             color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-            // Light grey input background
             borderRadius: BorderRadius.circular(12),
           ),
           child: TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             style: AppTextStyles.bodyMedium,
+            validator: validator,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: AppTextStyles.bodyMedium.copyWith(
@@ -295,6 +638,16 @@ class AddBusView extends GetView<AddBusController> {
                     )
                   : null,
               border: InputBorder.none,
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: Colors.red, width: 1),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: Colors.red, width: 1.5),
+              ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 14,

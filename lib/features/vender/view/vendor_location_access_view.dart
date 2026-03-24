@@ -30,7 +30,9 @@ class VendorLocationAccessView extends GetView<VendorLocationAccessController> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryAccent.withValues(alpha: 0.1),
+                            color: AppColors.primaryAccent.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
@@ -102,7 +104,9 @@ class VendorLocationAccessView extends GetView<VendorLocationAccessController> {
                           height: 200,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.1),
+                            color: AppColors.secondaryGreyBlue.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Column(

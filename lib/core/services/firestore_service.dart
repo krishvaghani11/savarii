@@ -11,6 +11,10 @@ class FirestoreService {
     return _db.collection('users').doc(uid).set(data, SetOptions(merge: true));
   }
 
+  Future<void> addBusData(Map<String, dynamic> data) async {
+    await _db.collection('buses').add(data);
+  }
+
   Future<void> createWallet(String uid) {
     return _db.collection('wallets').doc(uid).set({
       "userId": uid,

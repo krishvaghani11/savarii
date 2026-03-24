@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../auth/controllers/auth_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class VendorRegistrationController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  final TextEditingController travelsNameController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController currentAddressController =
-      TextEditingController();
-  final TextEditingController permanentAddressController =
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
       TextEditingController();
 
   final FirestoreService _firestore = Get.find();
@@ -20,51 +19,67 @@ class VendorRegistrationController extends GetxController {
 
   final RxBool isLoading = false.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    // Pre-fill phone if already set (e.g. coming from login screen)
-    final existingPhone = _authController.phone.value;
-    if (existingPhone.isNotEmpty) {
-      String display = existingPhone;
-      if (display.startsWith('+91')) display = display.substring(3);
-      mobileController.text = display;
-    }
+  // Password Visibility States
+  final RxBool isPasswordHidden = true.obs;
+  final RxBool isConfirmPasswordHidden = true.obs;
+
+  void togglePasswordVisibility() {
+    isPasswordHidden.value = !isPasswordHidden.value;
+  }
+
+  void toggleConfirmPasswordVisibility() {
+    isConfirmPasswordHidden.value = !isConfirmPasswordHidden.value;
   }
 
   Future<void> completeRegistration() async {
-    if (!formKey.currentState!.validate()) return;
-    if (isLoading.value) return;
+    // Basic validations
+    if (fullNameController.text.trim().isEmpty) {
+      Get.snackbar("Error", "Please enter your full name");
+      return;
+    }
+
+    final rawPhone = mobileController.text.trim();
+    if (rawPhone.length != 10) {
+      Get.snackbar("Error", "Enter a valid 10-digit mobile number");
+      return;
+    }
+
+    if (!GetUtils.isEmail(emailController.text.trim())) {
+      Get.snackbar("Error", "Enter a valid email address");
+      return;
+    }
+
+    if (passwordController.text.length < 6) {
+      Get.snackbar("Error", "Password must be at least 6 characters");
+      return;
+    }
+
+    if (passwordController.text != confirmPasswordController.text) {
+      Get.snackbar("Error", "Passwords do not match");
+      return;
+    }
 
     FocusManager.instance.primaryFocus?.unfocus();
 
     try {
       isLoading.value = true;
 
-      final rawPhone = mobileController.text.trim();
-
-      // Validate phone length
-      if (rawPhone.length != 10) {
-        Get.snackbar("Error", "Enter a valid 10-digit mobile number");
-        return;
-      }
-
-      // UID is derived directly from the phone number (same as what backend returns)
-      final uid = "+91$rawPhone";
+      final email = emailController.text.trim();
       final phone = "+91$rawPhone";
 
-      // Validate email
-      if (!GetUtils.isEmail(emailController.text.trim())) {
-        Get.snackbar("Error", "Enter a valid email address");
-        return;
-      }
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: email,
+            password: passwordController.text,
+          );
+      final uid = credential.user!.uid;
 
-      // Check if already registered
+      // Check if already registered (using email as ID check for the mock)
       final existing = await _firestore.getUser(uid);
       if (existing.exists) {
         Get.snackbar(
           "Already Registered",
-          "This number is already registered. Please login instead.",
+          "This email is already registered. Please login instead.",
         );
         isLoading.value = false;
         return;
@@ -73,6 +88,7 @@ class VendorRegistrationController extends GetxController {
       // ── Save user doc ──
       await _firestore.createUser(uid, {
         "phone": phone,
+        "email": email,
         "role": "vendor",
         "createdAt": DateTime.now(),
         "lastLogin": DateTime.now(),
@@ -82,20 +98,24 @@ class VendorRegistrationController extends GetxController {
       // ── Save vendor profile doc ──
       await _firestore.createVendor(uid, {
         "userId": uid,
-        "travelsName": travelsNameController.text.trim(),
         "fullName": fullNameController.text.trim(),
-        "email": emailController.text.trim(),
-        "currentAddress": currentAddressController.text.trim(),
-        "permanentAddress": permanentAddressController.text.trim(),
+        "email": email,
         "createdAt": DateTime.now(),
       });
 
-      // ── Store session in AuthController ──
-      _authController.uid = uid;
-      _authController.phone.value = phone;
-      _authController.isLoggedIn.value = true;
+      // ── Store session — persists to disk so it survives cold restarts ──
+      await _authController.saveVendorSession(
+        vendorUid: uid,
+        vendorPhone: phone,
+      );
 
-      Get.snackbar("Success", "Registration completed!");
+      Get.snackbar(
+        "Success",
+        "Account created successfully!",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      // Navigate to Location Access after successful registration
       Get.offAllNamed('/vendor-location-access');
     } catch (e) {
       Get.snackbar("Error", e.toString());
@@ -104,14 +124,17 @@ class VendorRegistrationController extends GetxController {
     }
   }
 
+  void goToLogin() {
+    Get.back(); // Or Get.toNamed('/vendor-login') depending on your routing flow
+  }
+
   @override
   void onClose() {
-    travelsNameController.dispose();
     fullNameController.dispose();
     mobileController.dispose();
     emailController.dispose();
-    currentAddressController.dispose();
-    permanentAddressController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
     super.onClose();
   }
 }

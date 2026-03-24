@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:savarii/routes/app_routes.dart';
 
 class SplashController extends GetxController {
-  // Observable for the custom loader progress (ranges from 0.0 to 1.0)
   final progress = 0.0.obs;
 
   @override
@@ -18,11 +17,8 @@ class SplashController extends GetxController {
       progress.value = i / 100;
     }
 
-    // Hold for a split second at 100% before navigating
+    // Always start from Role Selection — user must choose Customer or Vendor
     await Future.delayed(const Duration(milliseconds: 200));
     Get.offNamed(AppRoutes.roleSelection);
-
-    // Navigate to the next screen (uncomment when your routes are ready)
-    // Get.offNamed('/role-selection');
   }
 }
