@@ -67,6 +67,7 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
                 ),
                 const SizedBox(height: 12),
                 Text(
+                  // Updated text to match the email link flow
                   'Enter your registered email address to receive password reset instructions.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -115,10 +116,10 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
                 ),
                 const SizedBox(height: 24),
 
-                // 4. Confirm Button
+                // 4. Send Link Button
                 Obx(() => ElevatedButton(
-                      // CONNECTED TO NEW METHOD HERE
-                      onPressed: controller.isLoading.value ? null : controller.verifyEmailAndProceed,
+                      // Connected to the updated send link method
+                      onPressed: controller.isLoading.value ? null : controller.sendResetLink,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryAccent,
                         minimumSize: const Size(double.infinity, 54),
@@ -138,7 +139,8 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Confirm',
+                                  // Button text updated
+                                  'Sent Link to Email',
                                   style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                                 ),
                                 const SizedBox(width: 8),

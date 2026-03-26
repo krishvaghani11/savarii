@@ -70,8 +70,8 @@ class CustomerForgotPasswordView extends GetView<CustomerForgotPasswordControlle
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  // Slightly updated text to match the direct flow logic
-                  'Enter your registered email address to verify your account and create a new password.',
+                  // Updated text to match the new email link flow mockup
+                  'Enter your registered email address to\nreceive password reset instructions.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.secondaryGreyBlue,
@@ -119,9 +119,9 @@ class CustomerForgotPasswordView extends GetView<CustomerForgotPasswordControlle
                 ),
                 const SizedBox(height: 24),
 
-                // 4. Confirm Button
+                // 4. Send Link Button
                 Obx(() => ElevatedButton(
-                      onPressed: controller.isLoading.value ? null : controller.verifyEmailAndProceed,
+                      onPressed: controller.isLoading.value ? null : controller.sendResetLink,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryAccent,
                         minimumSize: const Size(double.infinity, 54),
@@ -141,7 +141,8 @@ class CustomerForgotPasswordView extends GetView<CustomerForgotPasswordControlle
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Confirm',
+                                  // Button text updated to match new mockup
+                                  'Sent Link to Email',
                                   style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                                 ),
                                 const SizedBox(width: 8),

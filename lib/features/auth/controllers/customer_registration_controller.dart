@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../auth/controllers/auth_controller.dart'; // Update path if needed
+import '../../../core/services/firestore_service.dart';
+import '../../../models/user_model.dart';
 
 class CustomerRegistrationController extends GetxController {
   final AuthController _authController = Get.find();
@@ -75,18 +77,21 @@ class CustomerRegistrationController extends GetxController {
     try {
       isLoading.value = true;
 
-      // ❌ DELETE lines 60-66 (mock):
-      // TODO: Implement actual Firebase/Backend Registration logic here
-      await Future.delayed(const Duration(seconds: 2));
-      Get.offAllNamed('/location-access');
-
-      // ✅ REPLACE WITH:
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
       final uid = credential.user!.uid;
       await credential.user!.updateDisplayName(fullName);
-      await _authController.saveVendorSession(vendorUid: uid, vendorPhone: '');
-      Get.offAllNamed('/location-access');
+      
+      final firestoreService = Get.find<FirestoreService>();
+      await firestoreService.createUserProfile(
+        UserModel(
+          uid: uid,
+          email: email,
+          role: 'customer',
+          createdAt: DateTime.now(),
+        ),
+      );
+      // AuthController will auto-route using authStateChanges
     } catch (e) {
       Get.snackbar(
         "Registration Failed",

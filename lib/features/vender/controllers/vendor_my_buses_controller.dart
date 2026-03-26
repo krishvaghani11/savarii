@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/firestore_service.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../../routes/app_routes.dart';
 
-// Dummy model for the bus data
+// Dynamic model for the bus data
 class VendorBusModel {
   final String id;
   final String name;
@@ -22,88 +25,112 @@ class VendorBusModel {
     required this.type,
     required bool isActive,
   }) : isActive = isActive.obs;
+
+  factory VendorBusModel.fromMap(Map<String, dynamic> map, String docId) {
+    final route = map['route'] as Map<String, dynamic>? ?? {};
+    return VendorBusModel(
+      id: docId,
+      name: map['busName'] ?? '',
+      regNumber: map['busNumber'] ?? '',
+      origin: route['from'] ?? '',
+      destination: route['to'] ?? '',
+      totalSeats: '${map['totalSeats'] ?? '0'} Seats',
+      type: map['busType'] ?? '',
+      isActive: map['isActive'] ?? true,
+    );
+  }
 }
 
 class VendorMyBusesController extends GetxController {
   final TextEditingController searchController = TextEditingController();
 
+  final FirestoreService _firestore = Get.find<FirestoreService>();
+  final AuthController _auth = Get.find<AuthController>();
+
   // Tab Management (0: All, 1: Active, 2: Inactive)
   final RxInt selectedTab = 0.obs;
 
-  // Dummy Fleet Data
-  final RxList<VendorBusModel> allBuses = <VendorBusModel>[
-    VendorBusModel(
-      id: 'B1',
-      name: 'Volvo B11R Multi-Axle',
-      regNumber: 'KA-01-F-1234',
-      origin: 'Bangalore',
-      destination: 'Goa',
-      totalSeats: '42 Sleeper',
-      type: 'AC Sleeper (2+1)',
-      isActive: true,
-    ),
-    VendorBusModel(
-      id: 'B2',
-      name: 'Scania Metrolink HD',
-      regNumber: 'MH-04-GP-5678',
-      origin: 'Mumbai',
-      destination: 'Pune',
-      totalSeats: '49 Seater',
-      type: 'Luxury Semi-Sleeper',
-      isActive: false,
-    ),
-    VendorBusModel(
-      id: 'B3',
-      name: 'Mercedes-Benz SHD',
-      regNumber: 'DL-01-AX-9999',
-      origin: 'Delhi',
-      destination: 'Manali',
-      totalSeats: '36 Sleeper',
-      type: 'AC Sleeper',
-      isActive: true,
-    ),
-  ].obs;
+  // Real Fleet Data
+  final RxList<VendorBusModel> allBuses = <VendorBusModel>[].obs;
 
-  // Derived list based on selected tab
+  @override
+  void onInit() {
+    super.onInit();
+    fetchBuses();
+  }
+
+  void fetchBuses() {
+    final uid = _auth.uid;
+    if (uid == null) return;
+    
+    _firestore.getVendorBusesStream(uid).listen((busList) {
+      allBuses.assignAll(busList.map((data) => VendorBusModel.fromMap(data, data['id'])).toList());
+    });
+  }
+
+  // Derived list based on selected tab and search query
   List<VendorBusModel> get filteredBuses {
+    var buses = allBuses.toList();
+    
+    // Apply Tab Filter
     if (selectedTab.value == 1) {
-      return allBuses.where((bus) => bus.isActive.value).toList();
+      buses = buses.where((bus) => bus.isActive.value).toList();
     } else if (selectedTab.value == 2) {
-      return allBuses.where((bus) => !bus.isActive.value).toList();
+      buses = buses.where((bus) => !bus.isActive.value).toList();
     }
-    return allBuses;
+
+    // Apply Search Filter
+    final query = searchController.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      buses = buses.where((bus) => 
+        bus.name.toLowerCase().contains(query) || 
+        bus.regNumber.toLowerCase().contains(query)).toList();
+    }
+
+    return buses;
   }
 
   void setTab(int index) {
     selectedTab.value = index;
   }
 
-  void toggleBusStatus(VendorBusModel bus, bool newValue) {
-    bus.isActive.value = newValue;
-    // The UI will automatically react because the list and items are observable!
-    Get.snackbar(
-      'Status Updated',
-      '${bus.name} is now ${newValue ? 'Active' : 'Inactive'}.',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
+  Future<void> toggleBusStatus(VendorBusModel bus, bool newValue) async {
+    final originalValue = bus.isActive.value;
+    bus.isActive.value = newValue; // Optimistic update
+    
+    try {
+      await _firestore.updateBusStatus(bus.id, newValue);
+      Get.snackbar(
+        'Status Updated',
+        '${bus.name} is now ${newValue ? 'Active' : 'Inactive'}.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade50,
+        colorText: Colors.green.shade800,
+        duration: const Duration(seconds: 2),
+      );
+    } catch (e) {
+      bus.isActive.value = originalValue; // Revert
+      Get.snackbar(
+        'Update Failed',
+        'Could not update status. Try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade800,
+      );
+    }
   }
 
   void goToAddBus() {
-    print("Navigating to Add Bus & Route...");
-    Get.toNamed(
-      '/vendor-add-travels',
-    ); // Or '/add-bus' depending on your exact routing setup
+    Get.toNamed(AppRoutes.addBus); // Navigate to create mode
   }
 
   void editBusDetails(String busId) {
-    print("Editing details for bus $busId");
-    // Get.toNamed('/vendor-edit-bus', arguments: {'id': busId});
+    // Navigate to add-bus passing the busId in arguments to trigger Edit Mode
+    Get.toNamed(AppRoutes.addBus, arguments: {'busId': busId});
   }
 
   void viewLiveRoute(String busId) {
-    print("Viewing live route for bus $busId");
-    Get.toNamed('/vendor-fleet-tracking');
+    Get.toNamed(AppRoutes.vendorFleetTracking);
   }
 
   void viewHistory(String busId) {

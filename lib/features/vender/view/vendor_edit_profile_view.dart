@@ -63,11 +63,7 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
                       ),
                       const SizedBox(height: 20),
 
-                      _buildLabel('Travels Name'),
-                      _buildTextField(
-                        controller.travelsNameController,
-                        hint: 'Enter travels name',
-                      ),
+                      
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -92,39 +88,57 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
           clipBehavior: Clip.none,
           children: [
             // Avatar
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/vendor_profile.png'),
-                  // Replace with actual asset if available
-                  fit: BoxFit.cover,
+            Obx(() {
+              final selectedFile = controller.selectedImage.value;
+              final existingUrl = controller.existingImageUrl.value;
+              
+              ImageProvider? imageProvider;
+              if (selectedFile != null) {
+                imageProvider = FileImage(selectedFile);
+              } else if (existingUrl.isNotEmpty) {
+                imageProvider = NetworkImage(existingUrl);
+              } else {
+                imageProvider = const AssetImage('assets/images/vendor_profile.png');
+              }
+              
+              return Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              child: const Icon(
-                Icons.person,
-                size: 50,
-                color: Colors.transparent,
-              ), // Fallback
-            ),
+                child: (selectedFile == null && existingUrl.isEmpty)
+                    ? const Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Colors.transparent, // fallback handled by asset
+                      )
+                    : null,
+              );
+            }),
             // Red Camera Icon
             Positioned(
               bottom: 0,
               right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryAccent,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.white, width: 2),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  color: AppColors.white,
-                  size: 14,
+              child: GestureDetector(
+                onTap: controller.changePhoto,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryAccent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.white, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: AppColors.white,
+                    size: 14,
+                  ),
                 ),
               ),
             ),
@@ -226,8 +240,8 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
           top: BorderSide(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
         ),
       ),
-      child: ElevatedButton(
-        onPressed: controller.saveChanges,
+      child: Obx(() => ElevatedButton(
+        onPressed: controller.isLoading.value ? null : controller.saveChanges,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryAccent,
           minimumSize: const Size(double.infinity, 54),
@@ -236,11 +250,20 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
           ),
           elevation: 0,
         ),
-        child: Text(
-          'Save Changes',
-          style: AppTextStyles.buttonText.copyWith(fontSize: 16),
-        ),
-      ),
+        child: controller.isLoading.value
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: AppColors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                'Save Changes',
+                style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+              ),
+      )),
     );
   }
 }

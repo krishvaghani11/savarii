@@ -23,66 +23,60 @@ class VendorDrawer extends GetView<VendorHomeController> {
               padding: const EdgeInsets.symmetric(vertical: 24.0),
               child: Column(
                 children: [
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.lightBackground,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryAccent.withOpacity(0.4),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      // Using a text placeholder to match the mockup's light circle
-                      child: Icon(
-                        Icons.menu_book,
-                        color: AppColors.secondaryGreyBlue,
-                        size: 30,
+                  Obx(() {
+                    final imageUrl = controller.vendorProfileImageUrl.value;
+                    ImageProvider? imageProvider;
+                    if (imageUrl.isNotEmpty) {
+                      imageProvider = NetworkImage(imageUrl);
+                    }
+
+                    return Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.lightBackground,
+                        image: imageProvider != null
+                            ? DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryAccent.withOpacity(0.4),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
+                      child: imageProvider == null
+                          ? const Center(
+                              child: Icon(
+                                Icons.person,
+                                color: AppColors.secondaryGreyBlue,
+                                size: 40,
+                              ),
+                            )
+                          : null,
+                    );
+                  }),
                   const SizedBox(height: 16),
-                  Text(
+                  Obx(() => Text(
                     controller.vendorName,
                     style: AppTextStyles.h2.copyWith(
                       color: Colors.white,
                       fontSize: 20,
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 4),
-                  Text(
-                    controller.mobileNumber,
+                  Obx(() => Text(
+                    controller.vendorPhone,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Colors.white70,
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryAccent.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: AppColors.primaryAccent.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Text(
-                      controller.agencyName,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.primaryAccent,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),

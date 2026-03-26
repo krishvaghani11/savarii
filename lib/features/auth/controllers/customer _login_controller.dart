@@ -50,20 +50,11 @@ class CustomerLoginController extends GetxController {
     try {
       isLoading.value = true;
 
-      // ❌ DELETE lines 44-50 (mock):
-      // TODO: Implement actual Firebase/Backend Email+Password login logic here
-      // Example: await _authController.loginWithEmail(email, password);
-      await Future.delayed(const Duration(seconds: 2)); // Mock network delay
-      Get.offAllNamed('/customer-home');
-
-      // ✅ REPLACE WITH:
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      final uid = credential.user!.uid;
-      await _authController.saveVendorSession(vendorUid: uid, vendorPhone: '');
-      Get.offAllNamed('/customer-home');
+      // AuthController listener will handle the automatic routing based on role
     } catch (e) {
       Get.snackbar(
         "Login Failed",

@@ -5,7 +5,7 @@ class CustomerForgotPasswordController extends GetxController {
   final TextEditingController emailController = TextEditingController();
   final RxBool isLoading = false.obs;
 
-  void verifyEmailAndProceed() async {
+  void sendResetLink() async {
     final email = emailController.text.trim();
 
     if (!GetUtils.isEmail(email)) {
@@ -20,17 +20,23 @@ class CustomerForgotPasswordController extends GetxController {
     try {
       isLoading.value = true;
       
-      // Optional: Check here if the customer email actually exists in your Firestore DB
-      // final userDoc = await _firestore.getUser(email.toLowerCase());
-      // if (!userDoc.exists) throw Exception("Account not found for this email.");
+      // TODO: Connect to Firebase Auth to actually send the password reset email
+      // Example: await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       
-      await Future.delayed(const Duration(seconds: 1)); // Brief delay for smooth UX
+      await Future.delayed(const Duration(seconds: 2)); // Simulating network request
 
-      // Navigate DIRECTLY to the customer reset password screen, passing the email
-      Get.toNamed('/customer-reset-password', arguments: {'email': email});
+      // Show success message
+      Get.snackbar(
+        "Link Sent!",
+        "Password reset instructions have been sent to $email.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade50,
+        colorText: Colors.green.shade800,
+      );
 
-      // Clear the field after navigating
+      // Clear the field and return the user to the login screen automatically
       emailController.clear();
+      Future.delayed(const Duration(seconds: 1), () => Get.back());
       
     } catch (e) {
       Get.snackbar("Error", e.toString(), snackPosition: SnackPosition.BOTTOM);

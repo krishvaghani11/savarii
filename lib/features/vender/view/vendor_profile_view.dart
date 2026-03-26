@@ -53,26 +53,30 @@ class VendorProfileView extends GetView<VendorProfileController> {
                 ),
                 child: Column(
                   children: [
-                    _buildInfoCard(
-                      icon: Icons.email,
-                      label: 'EMAIL ADDRESS',
-                      value: controller.email,
-                      trailing: const Icon(
-                        Icons.verified,
-                        color: Colors.green,
-                        size: 20,
+                    Obx(
+                      () => _buildInfoCard(
+                        icon: Icons.email,
+                        label: 'EMAIL ADDRESS',
+                        value: controller.vendorEmail,
+                        trailing: const Icon(
+                          Icons.verified,
+                          color: Colors.green,
+                          size: 20,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _buildInfoCard(
-                      icon: Icons.directions_bus,
-                      label: 'TRAVELS NAME',
-                      value: controller.travelsName,
-                      trailing: const Icon(
-                        Icons.chevron_right,
-                        color: AppColors.secondaryGreyBlue,
-                      ),
-                    ),
+                    Obx(() {
+                      return _buildInfoCard(
+                        icon: Icons.directions_bus,
+                        label: 'TRAVELS NAME',
+                        value: controller.vendorBusinessName,
+                        trailing: const Icon(
+                          Icons.chevron_right,
+                          color: AppColors.secondaryGreyBlue,
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -161,28 +165,39 @@ class VendorProfileView extends GetView<VendorProfileController> {
         Stack(
           children: [
             // Profile Picture
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.primaryAccent.withOpacity(0.2),
-                  width: 3,
+            Obx(() {
+              final imageUrl = controller.profileImageUrl.value;
+                  
+              ImageProvider? imageProvider;
+              if (imageUrl.isNotEmpty) {
+                imageProvider = NetworkImage(imageUrl);
+              } else {
+                imageProvider = const AssetImage('assets/images/person1.png');
+              }
+              
+              return Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primaryAccent.withOpacity(0.2),
+                    width: 3,
+                  ),
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/person1.png'),
-                  // Use your placeholder or actual asset
-                  fit: BoxFit.cover,
-                ),
-              ),
-              // Fallback if image asset is missing
-              child: const Icon(
-                Icons.person,
-                size: 50,
-                color: Colors.transparent,
-              ),
-            ),
+                child: imageUrl.isEmpty
+                    ? const Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Colors.transparent,
+                      )
+                    : null,
+              );
+            }),
             // Edit Badge
             Positioned(
               bottom: 0,
@@ -207,15 +222,19 @@ class VendorProfileView extends GetView<VendorProfileController> {
           ],
         ),
         const SizedBox(height: 16),
-        Text(
-          controller.vendorName,
-          style: AppTextStyles.h2.copyWith(fontSize: 22),
+        Obx(
+          () => Text(
+            controller.vendorName,
+            style: AppTextStyles.h2.copyWith(fontSize: 22),
+          ),
         ),
         const SizedBox(height: 4),
-        Text(
-          controller.phone,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.secondaryGreyBlue,
+        Obx(
+          () => Text(
+            controller.vendorPhone,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.secondaryGreyBlue,
+            ),
           ),
         ),
       ],

@@ -24,11 +24,6 @@ class VendorSettingsController extends GetxController {
   }
 
   // Navigation Actions
-  void changeMobileNumber() => print("Navigating to Change Mobile Number...");
-
-  void changeEmail() => print("Navigating to Change Email...");
-
-  void updateAddress() => print("Navigating to Update Address...");
 
   void changeLanguage() {
     print("Opening Language Selector from Settings...");

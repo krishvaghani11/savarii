@@ -44,19 +44,11 @@ class VendorLoginController extends GetxController {
       // Store role context
       _authController.selectedRole.value = "vendor";
 
-      // ❌ DELETE lines 38-45 (mock):
-      // TODO: Connect this to your Firebase Auth / AuthApiService
-      await Future.delayed(const Duration(seconds: 2));
-      Get.offAllNamed('/vendor-location-access');
-
-      // ✅ REPLACE WITH:
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      final uid = credential.user!.uid;
-      await _authController.saveVendorSession(vendorUid: uid, vendorPhone: '');
-      Get.offAllNamed('/vendor-location-access');
+      // AuthController listener will handle routing automatically
     } catch (e) {
       Get.snackbar(
         "Login Failed",

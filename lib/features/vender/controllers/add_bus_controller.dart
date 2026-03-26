@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/services/firestore_service.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../../routes/app_routes.dart';
 
 class AddBusController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -14,6 +14,55 @@ class AddBusController extends GetxController {
 
   /// LOADING STATE
   final RxBool isLoading = false.obs;
+
+  String? editBusId;
+  final RxBool isEditing = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (Get.arguments != null && Get.arguments['busId'] != null) {
+      editBusId = Get.arguments['busId'];
+      isEditing.value = true;
+      _loadBusData(editBusId!);
+    }
+  }
+
+  Future<void> _loadBusData(String busId) async {
+    isLoading.value = true;
+    try {
+      final data = await _firestore.getBusById(busId);
+      if (data != null) {
+        busNameController.text = data['busName'] ?? '';
+        busNumberController.text = data['busNumber'] ?? '';
+        totalSeatsController.text = (data['totalSeats'] ?? '').toString();
+        selectedBusType.value = data['busType'] ?? 'AC Sleeper';
+        
+        final route = data['route'] as Map<String, dynamic>? ?? {};
+        fromController.text = route['from'] ?? '';
+        toController.text = route['to'] ?? '';
+        departureTime.value = route['departureTime'] ?? '--:-- --';
+        arrivalTime.value = route['arrivalTime'] ?? '--:-- --';
+        priceController.text = (route['ticketPrice'] ?? '').toString();
+
+        final driver = data['driver'] as Map<String, dynamic>? ?? {};
+        driverNameController.text = driver['name'] ?? '';
+        driverMobileController.text = driver['mobile'] ?? '';
+        licenseController.text = driver['licenseNumber'] ?? '';
+
+        if (route['boardingPoints'] != null) {
+          savedBoardingPoints.assignAll(List<Map<String, String>>.from(route['boardingPoints'].map((x) => Map<String, String>.from(x))));
+        }
+        if (route['restStops'] != null) {
+          savedRestStops.assignAll(List<Map<String, String>>.from(route['restStops'].map((x) => Map<String, String>.from(x))));
+        }
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load bus details');
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   // Text Controllers
   final TextEditingController busNameController = TextEditingController();
@@ -266,21 +315,36 @@ class AddBusController extends GetxController {
 
       debugPrint('🚌 [AddBus] Saving to Firestore: $busData');
 
-      // 6️⃣ Write to Firestore
-      await _firestore.addBusData(busData);
+      // 6️⃣ Write to Firestore (Update or Add)
+      if (isEditing.value && editBusId != null) {
+        // Prevent resetting the active status or creation date during an edit
+        busData.remove('isActive');
+        busData.remove('createdAt');
+        
+        await _firestore.updateBusData(editBusId!, busData);
+        debugPrint('✅ [AddBus] Bus updated successfully!');
+        Get.snackbar(
+          'Success',
+          'Bus updated successfully!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade50,
+          colorText: Colors.green.shade800,
+          duration: const Duration(seconds: 3),
+        );
+      } else {
+        await _firestore.addBusData(busData);
+        debugPrint('✅ [AddBus] Bus saved successfully!');
+        Get.snackbar(
+          'Success',
+          'Bus added successfully!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade50,
+          colorText: Colors.green.shade800,
+          duration: const Duration(seconds: 3),
+        );
+      }
 
-      debugPrint('✅ [AddBus] Bus saved successfully!');
-
-      Get.snackbar(
-        'Success',
-        'Bus added successfully!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade50,
-        colorText: Colors.green.shade800,
-        duration: const Duration(seconds: 3),
-      );
-
-      Get.back();
+      Get.offAllNamed(AppRoutes.vendorMain);
     } catch (e, stack) {
       debugPrint('❌ [AddBus] Error saving bus: $e');
       debugPrint('❌ [AddBus] Stack: $stack');

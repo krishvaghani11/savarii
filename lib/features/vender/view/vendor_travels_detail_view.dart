@@ -82,121 +82,143 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
   }
 
   Widget _buildHeaderCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Bus Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  AppAssets.busImagePlaceholder, // Use your bus asset here
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 80,
-                    height: 80,
-                    color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-                    child: const Icon(
-                      Icons.directions_bus,
-                      color: AppColors.secondaryGreyBlue,
-                    ),
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bus Image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Builder(
+                    builder: (context) {
+                      final imageUrl = controller.travelsImageUrl.value;
+                      if (imageUrl.isNotEmpty) {
+                        return Image.network(
+                          imageUrl,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 80,
+                            height: 80,
+                            color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                            child: const Icon(
+                              Icons.directions_bus,
+                              color: AppColors.secondaryGreyBlue,
+                            ),
+                          ),
+                        );
+                      }
+                      return Container(
+                        width: 80,
+                        height: 80,
+                        color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                        child: const Icon(
+                          Icons.directions_bus,
+                          color: AppColors.secondaryGreyBlue,
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              // Name and Badges
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _buildBadge(
-                          'VERIFIED',
-                          AppColors.primaryAccent.withOpacity(0.1),
-                          AppColors.primaryAccent,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildBadge(
-                          'SAVARII PARTNER',
-                          AppColors.secondaryGreyBlue.withOpacity(0.1),
-                          AppColors.primaryDark,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      controller.travelsName,
-                      style: AppTextStyles.h2.copyWith(
-                        fontSize: 18,
-                        height: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          color: AppColors.secondaryGreyBlue,
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          controller.establishedDate,
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.secondaryGreyBlue,
-                            fontStyle: FontStyle.italic,
+                const SizedBox(width: 16),
+                // Name and Badges
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          _buildBadge(
+                            'VERIFIED',
+                            AppColors.primaryAccent.withOpacity(0.1),
+                            AppColors.primaryAccent,
                           ),
+                          const SizedBox(width: 8),
+                          _buildBadge(
+                            'SAVARII PARTNER',
+                            AppColors.secondaryGreyBlue.withOpacity(0.1),
+                            AppColors.primaryDark,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        controller.travelsName.value,
+                        style: AppTextStyles.h2.copyWith(
+                          fontSize: 18,
+                          height: 1.2,
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_today,
+                            color: AppColors.secondaryGreyBlue,
+                            size: 12,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            controller.establishedDate.value,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.secondaryGreyBlue,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Divider(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-            height: 1,
-          ),
-          const SizedBox(height: 16),
-          // Stats Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatCol(controller.fleetSize, 'FLEET SIZE'),
-              Container(
-                width: 1,
-                height: 30,
-                color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-              ),
-              _buildStatCol(controller.rating, 'RATING', isRating: true),
-              Container(
-                width: 1,
-                height: 30,
-                color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-              ),
-              _buildStatCol(controller.routes, 'ROUTES'),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 20),
+            Divider(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+              height: 1,
+            ),
+            const SizedBox(height: 16),
+            // Stats Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStatCol(controller.fleetSize.value, 'FLEET SIZE'),
+                Container(
+                  width: 1,
+                  height: 30,
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                ),
+                _buildStatCol(
+                  controller.rating.value,
+                  'RATING',
+                  isRating: true,
+                ),
+                Container(
+                  width: 1,
+                  height: 30,
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                ),
+                _buildStatCol(controller.routes.value, 'ROUTES'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -247,180 +269,181 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
   }
 
   Widget _buildBusinessInfoCard() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildInfoTile(
-            Icons.badge_outlined,
-            'REGISTRATION NUMBER',
-            controller.regNumber,
-          ),
-          _buildInfoTile(
-            Icons.receipt_long_outlined,
-            'GST NUMBER',
-            controller.gstNumber,
-          ),
-          _buildInfoTile(
-            Icons.domain_outlined,
-            'BUSINESS TYPE',
-            controller.businessType,
-          ),
-          _buildInfoTile(
-            Icons.person_outline,
-            'OWNER NAME',
-            controller.ownerName,
-            isLast: true,
-          ),
-        ],
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            _buildInfoTile(
+              Icons.receipt_long_outlined,
+              'GST NUMBER',
+              controller.gstNumber.value,
+            ),
+            _buildInfoTile(
+              Icons.domain_outlined,
+              'BUSINESS TYPE',
+              controller.businessType.value,
+            ),
+            _buildInfoTile(
+              Icons.person_outline,
+              'OWNER NAME',
+              controller.ownerName.value,
+              isLast: true,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCoverageCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'PRIMARY ROUTES COVERED',
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.secondaryGreyBlue,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            controller.primaryRoutes,
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'PRIMARY ROUTES COVERED',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.secondaryGreyBlue,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          // Map Snapshot
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  AppAssets.locationMapImage, // Your map asset
-                  height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+            const SizedBox(height: 6),
+            Text(
+              controller.primaryRoutes.value,
+              style: AppTextStyles.bodyLarge.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Map Snapshot
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    AppAssets.locationMapImage, // Your map asset
                     height: 120,
-                    color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 120,
+                      color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                    ),
                   ),
                 ),
-              ),
-              Positioned(
-                bottom: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 4),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.circle,
-                        color: AppColors.primaryAccent,
-                        size: 8,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Live Operations Active',
-                        style: AppTextStyles.caption.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                          color: AppColors.primaryDark,
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 4),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.circle,
+                          color: AppColors.primaryAccent,
+                          size: 8,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 6),
+                        Text(
+                          'Live Operations Active',
+                          style: AppTextStyles.caption.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            color: AppColors.primaryDark,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildContactInfoCard() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildInfoTile(
-            Icons.phone_in_talk_outlined,
-            'PRIMARY MOBILE',
-            controller.primaryMobile,
-            trailingIcon: Icons.copy,
-            onTrailingTap: () => controller.copyToClipboard(
-              controller.primaryMobile,
-              "Mobile Number",
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          _buildInfoTile(
-            Icons.email_outlined,
-            'SUPPORT EMAIL',
-            controller.supportEmail,
-            trailingIcon: Icons.send,
-            onTrailingTap: controller.sendEmail,
-          ),
-          _buildInfoTile(
-            Icons.location_on_outlined,
-            'OFFICE ADDRESS',
-            controller.officeAddress,
-            isLast: true,
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          children: [
+            _buildInfoTile(
+              Icons.phone_in_talk_outlined,
+              'PRIMARY MOBILE',
+              controller.primaryMobile.value,
+              trailingIcon: Icons.copy,
+              onTrailingTap: () => controller.copyToClipboard(
+                controller.primaryMobile.value,
+                "Mobile Number",
+              ),
+            ),
+            _buildInfoTile(
+              Icons.email_outlined,
+              'SUPPORT EMAIL',
+              controller.supportEmail.value,
+              trailingIcon: Icons.send,
+              onTrailingTap: controller.sendEmail,
+            ),
+            _buildInfoTile(
+              Icons.location_on_outlined,
+              'OFFICE ADDRESS',
+              controller.officeAddress.value,
+              isLast: true,
+            ),
+          ],
+        ),
       ),
     );
   }

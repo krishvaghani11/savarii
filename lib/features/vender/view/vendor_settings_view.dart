@@ -28,33 +28,7 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. ACCOUNT SETTINGS
-              _buildSectionTitle('ACCOUNT SETTINGS'),
-              _buildCardGroup([
-                _buildActionTile(
-                  Icons.phone_android,
-                  'Change Mobile Number',
-                  onTap: controller.changeMobileNumber,
-                  useRedIcon: true,
-                ),
-                _buildDivider(),
-                _buildActionTile(
-                  Icons.mail_outline,
-                  'Change Email',
-                  onTap: controller.changeEmail,
-                  useRedIcon: true,
-                ),
-                _buildDivider(),
-                _buildActionTile(
-                  Icons.location_on_outlined,
-                  'Update Address',
-                  onTap: controller.updateAddress,
-                  useRedIcon: true,
-                ),
-              ]),
-              const SizedBox(height: 24),
-
-              // 2. NOTIFICATION SETTINGS
+              // 1. NOTIFICATION SETTINGS
               _buildSectionTitle('NOTIFICATION SETTINGS'),
               Obx(
                 () => _buildCardGroup([

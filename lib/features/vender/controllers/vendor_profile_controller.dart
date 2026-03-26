@@ -1,16 +1,69 @@
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:savarii/routes/app_routes.dart';
+import '../../../core/services/firestore_service.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../../models/vendor_model.dart';
 
 class VendorProfileController extends GetxController {
-  // Vendor Dummy Data
-  final String vendorName = "Vikram Malhotra";
-  final String phone = "+91 98765 43210";
+  final AuthController _auth = Get.find<AuthController>();
+  final FirestoreService _firestore = Get.find<FirestoreService>();
+
+  final Rx<VendorModel?> vendorProfile = Rx<VendorModel?>(null);
+  final RxString profileImageUrl = ''.obs;
+  final RxString activeTravelsName = ''.obs;
+
+  String get vendorName => vendorProfile.value?.name ?? 'Vendor';
+  String get vendorPhone {
+    final p = vendorProfile.value?.phone;
+    if (p != null && p.isNotEmpty) return p;
+    return 'Not Provided';
+  }
+  String get vendorEmail {
+    final e = vendorProfile.value?.email;
+    if (e != null && e.isNotEmpty) return e;
+    return FirebaseAuth.instance.currentUser?.email ?? 'No Email';
+  }
+  String get vendorBusinessName {
+    if (activeTravelsName.value.isNotEmpty) return activeTravelsName.value;
+    final b = vendorProfile.value?.businessName;
+    if (b != null && b.isNotEmpty) return b;
+    return 'Not Set';
+  }
+
   final String trips = "1,248";
   final String rating = "4.8";
   final String vehicles = "12";
 
-  final String email = "v.malhotra@savarii.com";
-  final String travelsName = "Malhotra Express Travels";
+  @override
+  void onInit() {
+    super.onInit();
+    _loadVendorProfile();
+  }
+
+  void _loadVendorProfile() {
+    final uid = _auth.uid;
+    if (uid != null) {
+      _firestore.getVendorProfileStream(uid).listen((profile) {
+        if (profile != null) {
+          vendorProfile.value = profile;
+        }
+      });
+      _firestore.getTravelsDetailStream(uid).listen((data) {
+        if (data != null && data['travelsName'] != null) {
+          activeTravelsName.value = data['travelsName'];
+        }
+      });
+      _loadProfileImage(uid);
+    }
+  }
+
+  Future<void> _loadProfileImage(String uid) async {
+    final url = await _firestore.getProfileImageUrl(uid);
+    if (url != null) {
+      profileImageUrl.value = url;
+    }
+  }
 
   // Actions
   void editProfileImage() {}
@@ -45,8 +98,6 @@ class VendorProfileController extends GetxController {
       'You have been successfully logged out.',
       snackPosition: SnackPosition.BOTTOM,
     );
-    Get.offAllNamed(
-      AppRoutes.roleSelection,
-    ); // Route back to the very beginning
+    _auth.logout(); // Explicitly terminate the session completely
   }
 }

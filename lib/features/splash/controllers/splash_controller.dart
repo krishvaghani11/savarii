@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:savarii/routes/app_routes.dart';
+import 'package:savarii/features/auth/controllers/auth_controller.dart';
 
 class SplashController extends GetxController {
   final progress = 0.0.obs;
@@ -17,8 +18,17 @@ class SplashController extends GetxController {
       progress.value = i / 100;
     }
 
-    // Always start from Role Selection — user must choose Customer or Vendor
+    // Always start from Role Selection — if not already logged in
     await Future.delayed(const Duration(milliseconds: 200));
-    Get.offNamed(AppRoutes.roleSelection);
+    
+    // Check if AuthController is already handling a logged-in session
+    // If true, AuthController will automatically route them to the correct dashboard.
+    // If false, send them to Role Selection.
+    if (!Get.isRegistered<AuthController>()) return;
+    final authController = Get.find<AuthController>();
+    
+    if (!authController.isLoggedIn.value) {
+      Get.offNamed(AppRoutes.roleSelection);
+    }
   }
 }

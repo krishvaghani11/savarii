@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+
 import '../controllers/vendor_add_travels_controller.dart';
 
 class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
@@ -10,7 +11,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: AppColors.lightBackground, // Light greyish background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -26,10 +27,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                 child: Form(
                   key: controller.formKey,
                   child: Column(
@@ -43,30 +41,23 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildLabel('Travels Name'),
-                            _buildTextField(
-                              'Enter agency name',
-                              controller.travelsNameController,
-                            ),
+                            _buildTextField('Enter agency name', controller.travelsNameController),
                             const SizedBox(height: 16),
-                            _buildLabel('Business Reg. No.'),
-                            _buildTextField(
-                              'BRN123456',
-                              controller.regNoController,
-                            ),
-                            const SizedBox(height: 16),
+                            
                             _buildLabel('GST Number'),
-                            _buildTextField(
-                              '22AAAAA0000A1Z5',
-                              controller.gstController,
-                            ),
+                            _buildTextField('22AAAAA0000A1Z5', controller.gstController),
                             const SizedBox(height: 16),
+                            
                             _buildLabel('Business Type'),
                             _buildDropdown(
                               items: controller.businessTypes,
                               selectedValue: controller.selectedBusinessType,
-                              onChanged: (val) =>
-                                  controller.selectedBusinessType.value = val!,
+                              onChanged: (val) => controller.selectedBusinessType.value = val!,
                             ),
+                            const SizedBox(height: 16),
+                            
+                            _buildLabel('Travels Established Date'),
+                            _buildDatePickerField(context),
                           ],
                         ),
                       ),
@@ -80,30 +71,70 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildLabel('Primary Contact Person'),
-                            _buildTextField(
-                              'Full name of contact person',
-                              controller.contactPersonController,
-                            ),
+                            _buildTextField('Full name of contact person', controller.contactPersonController),
                             const SizedBox(height: 16),
+                            
                             _buildLabel('Primary Mobile Number'),
-                            _buildTextField(
-                              '9876543210',
-                              controller.mobileController,
-                              isPhone: true,
-                            ),
+                            _buildMobileField(),
                             const SizedBox(height: 16),
+                            
                             _buildLabel('Support Email'),
                             _buildTextField(
-                              'support@travels.com',
-                              controller.emailController,
-                              keyboardType: TextInputType.emailAddress,
+                              'support@travels.com', 
+                              controller.emailController, 
+                              keyboardType: TextInputType.emailAddress
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 16),
 
-                      // 3. OFFICE ADDRESS
+                      // 3. PRIMARY ROUTES (Dynamic List)
+                      _buildSectionCard(
+                        icon: Icons.route_outlined,
+                        title: 'Primary Routes',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel('Add Route'),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'From - To (e.g., Delhi - Jaipur)', 
+                                    controller.routeInputController
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: controller.addRoute,
+                                  child: Container(
+                                    height: 52,
+                                    width: 52,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryAccent.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.add, color: AppColors.primaryAccent),
+                                  ),
+                                )
+                              ],
+                            ),
+                            
+                            // Added Routes List
+                            Obx(() => Column(
+                                  children: List.generate(
+                                    controller.savedRoutes.length,
+                                    (index) => _buildSavedRoute(index),
+                                  ),
+                                )),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 4. OFFICE ADDRESS
                       _buildSectionCard(
                         icon: Icons.location_on,
                         title: 'Office Address',
@@ -112,23 +143,110 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                           children: [
                             _buildLabel('Address Line'),
                             _buildTextField(
-                              'Plot No, Building, Street name...',
-                              controller.addressController,
-                              maxLines: 3,
+                              'Plot No, Building, Street name...', 
+                              controller.addressController, 
+                              maxLines: 3
                             ),
                             const SizedBox(height: 16),
+                            
                             _buildLabel('City'),
-                            _buildTextField(
-                              'Enter city',
-                              controller.cityController,
-                            ),
+                            _buildTextField('Enter city', controller.cityController),
                             const SizedBox(height: 16),
+                            
                             _buildLabel('State'),
                             _buildDropdown(
                               items: controller.states,
                               selectedValue: controller.selectedState,
-                              onChanged: (val) =>
-                                  controller.selectedState.value = val!,
+                              onChanged: (val) => controller.selectedState.value = val!,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 5. TRAVELS IMAGES
+                      _buildSectionCard(
+                        icon: Icons.image,
+                        title: 'Travels Images',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                // "Add Image" Box
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: controller.pickImage,
+                                    child: Container(
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        // A custom dashed border effect or subtle solid border
+                                        border: Border.all(
+                                          color: AppColors.secondaryGreyBlue.withOpacity(0.3),
+                                          width: 1.5,
+                                          style: BorderStyle.solid, 
+                                        ),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.add_photo_alternate, color: AppColors.secondaryGreyBlue.withOpacity(0.8), size: 28),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Add Image', 
+                                            style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue.withOpacity(0.8))
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                // "Placeholder/Added Image" Box
+                                Expanded(
+                                  child: Obx(() {
+                                    final file = controller.selectedImage.value;
+                                    final existingUrl = controller.existingImageUrl.value;
+                                    
+                                    ImageProvider? imageProvider;
+                                    if (file != null) {
+                                      imageProvider = FileImage(file);
+                                    } else if (existingUrl.isNotEmpty) {
+                                      imageProvider = NetworkImage(existingUrl);
+                                    }
+                                    
+                                    return Container(
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.secondaryGreyBlue.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(16),
+                                        image: imageProvider != null
+                                            ? DecorationImage(
+                                                image: imageProvider,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                      ),
+                                      child: imageProvider == null
+                                          ? const Center(
+                                              child: Icon(Icons.image, color: AppColors.secondaryGreyBlue, size: 28),
+                                            )
+                                          : null,
+                                    );
+                                  }),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Upload high-quality images of your office or buses\n(Max 5MB per image).',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.secondaryGreyBlue,
+                                fontSize: 11,
+                                height: 1.4,
+                              ),
                             ),
                           ],
                         ),
@@ -140,7 +258,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
               ),
             ),
 
-            // 4. Sticky Bottom Button
+            // Sticky Bottom Button
             _buildStickyRegisterButton(),
           ],
         ),
@@ -174,7 +292,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
           Row(
             children: [
               Icon(icon, color: AppColors.primaryAccent, size: 20),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 title,
                 style: AppTextStyles.bodyLarge.copyWith(
@@ -209,7 +327,6 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
     TextEditingController textController, {
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
-    bool isPhone = false,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -220,8 +337,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
       child: TextFormField(
         controller: textController,
         maxLines: maxLines,
-        keyboardType: isPhone ? TextInputType.phone : keyboardType,
-        validator: (value) => value!.isEmpty ? 'Required' : null,
+        keyboardType: keyboardType,
         style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
           hintText: hint,
@@ -231,28 +347,83 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: maxLines > 1 ? 16 : 14,
+            vertical: maxLines > 1 ? 16 : 15,
           ),
-          prefixIcon: isPhone
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 16.0, right: 12.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '+91',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.secondaryGreyBlue,
-                        ),
-                      ),
-                    ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+      ),
+      child: Row(
+        children: [
+          // Grey +91 block
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+            decoration: BoxDecoration(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.08),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12), 
+                bottomLeft: Radius.circular(12)
+              ),
+            ),
+            child: Text(
+              '+91',
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.secondaryGreyBlue),
+            ),
+          ),
+          // Input field
+          Expanded(
+            child: TextFormField(
+              controller: controller.mobileController,
+              keyboardType: TextInputType.phone,
+              style: AppTextStyles.bodyMedium,
+              decoration: InputDecoration(
+                hintText: '9876543210',
+                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDatePickerField(BuildContext context) {
+    return GestureDetector(
+      onTap: () => controller.pickDate(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F8FA),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Obx(() => Text(
+                  controller.establishedDate.value.isEmpty 
+                      ? 'mm/dd/yyyy' 
+                      : controller.establishedDate.value,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: controller.establishedDate.value.isEmpty
+                        ? AppColors.secondaryGreyBlue.withOpacity(0.6)
+                        : AppColors.primaryDark,
                   ),
-                )
-              : null,
-          prefixIconConstraints: isPhone
-              ? const BoxConstraints(minWidth: 0, minHeight: 0)
-              : null,
+                )),
+            const Icon(Icons.calendar_today_outlined, color: AppColors.secondaryGreyBlue, size: 18),
+          ],
         ),
       ),
     );
@@ -275,10 +446,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
           child: DropdownButton<String>(
             value: selectedValue.value,
             isExpanded: true,
-            icon: const Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.secondaryGreyBlue,
-            ),
+            icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.secondaryGreyBlue),
             items: items.map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -299,32 +467,67 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
     );
   }
 
-  Widget _buildStickyRegisterButton() {
+  Widget _buildSavedRoute(int index) {
+    final route = controller.savedRoutes[index];
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: AppColors.lightBackground),
-      child: ElevatedButton(
-        onPressed: controller.registerTravels,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryAccent,
-          minimumSize: const Size(double.infinity, 54),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Register Travels',
-              style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              route,
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryDark),
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.how_to_reg, color: AppColors.white, size: 20),
-          ],
-        ),
+          ),
+          GestureDetector(
+            onTap: () => controller.removeRoute(index),
+            child: const Icon(Icons.close, color: AppColors.secondaryGreyBlue, size: 18),
+          ),
+        ],
       ),
     );
   }
-}
+
+  Widget _buildStickyRegisterButton() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.lightBackground,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Obx(() => ElevatedButton(
+        onPressed: controller.isLoading.value ? null : controller.registerTravels,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryAccent,
+          minimumSize: const Size(double.infinity, 54),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
+        ),
+        child: controller.isLoading.value 
+          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Register Travels', style: AppTextStyles.buttonText.copyWith(fontSize: 16)),
+                const SizedBox(width: 8),
+                const Icon(Icons.person_add_alt_1, color: AppColors.white, size: 20), // Matches mockup icon
+              ],
+            ),
+      )),
+    );
+  }
+}   

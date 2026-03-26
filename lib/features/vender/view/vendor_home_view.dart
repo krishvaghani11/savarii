@@ -24,18 +24,29 @@ class VendorHomeView extends GetView<VendorHomeController> {
             padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
             child: GestureDetector(
               onTap: () => Scaffold.of(context).openDrawer(),
-              child: const CircleAvatar(
-                backgroundColor: AppColors.primaryDark, // Dark circle
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 20,
-                ), // User Icon
-              ),
+              child: Obx(() {
+                final imageUrl = controller.vendorProfileImageUrl.value;
+                ImageProvider? imageProvider;
+                if (imageUrl.isNotEmpty) {
+                  imageProvider = NetworkImage(imageUrl);
+                }
+
+                return CircleAvatar(
+                  backgroundColor: AppColors.primaryDark, // Dark circle
+                  backgroundImage: imageProvider,
+                  child: imageProvider == null
+                      ? const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 20,
+                        )
+                      : null, // User Icon
+                );
+              }),
             ),
           ),
         ),
-        title: Text('Savarii Vendor', style: AppTextStyles.h3),
+        title: Obx(() => Text(controller.vendorName, style: AppTextStyles.h3)),
         centerTitle: false,
         actions: [
           IconButton(
@@ -220,39 +231,14 @@ class VendorHomeView extends GetView<VendorHomeController> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
+              Obx(() => Text(
                 controller.vendorName,
                 style: AppTextStyles.h1.copyWith(
                   color: Colors.white,
                   fontSize: 24,
                 ),
-              ),
+              )),
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.verified, color: Colors.white, size: 14),
-                    const SizedBox(width: 6),
-                    Text(
-                      controller.agencyName,
-                      style: AppTextStyles.caption.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ],

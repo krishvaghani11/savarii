@@ -1,12 +1,10 @@
 import 'package:get/get.dart';
 import 'package:savarii/features/auth/bindings/customer_forgot_password_binding.dart';
 import 'package:savarii/features/auth/bindings/customer_registration_binding.dart';
-import 'package:savarii/features/auth/bindings/customer_reset_password_binding.dart';
 import 'package:savarii/features/auth/bindings/location_access_binding.dart';
 import 'package:savarii/features/auth/bindings/customer%20_login_binding.dart';
 import 'package:savarii/features/auth/view/customer_forgot_password_view.dart';
 import 'package:savarii/features/auth/view/customer_registration_view.dart';
-import 'package:savarii/features/auth/view/customer_reset_password_view.dart';
 import 'package:savarii/features/auth/view/location_access_view.dart';
 import 'package:savarii/features/auth/view/customer_login_view.dart';
 import 'package:savarii/features/auth/view/role_selection_view.dart';
@@ -75,7 +73,6 @@ import 'package:savarii/features/vender/bindings/vendor_payment_confirmation_bin
 import 'package:savarii/features/vender/bindings/vendor_payment_details_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_privacy_policy_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_registration_binding.dart';
-import 'package:savarii/features/vender/bindings/vendor_reset_password_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_settings_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_terms_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_travels_detail_binding.dart';
@@ -96,7 +93,6 @@ import 'package:savarii/features/vender/view/vendor_payment_confirmation_view.da
 import 'package:savarii/features/vender/view/vendor_payment_details_view.dart';
 import 'package:savarii/features/vender/view/vendor_privacy_policy_view.dart';
 import 'package:savarii/features/vender/view/vendor_registration_view.dart';
-import 'package:savarii/features/vender/view/vendor_reset_password_view.dart';
 import 'package:savarii/features/vender/view/vendor_settings_view.dart';
 import 'package:savarii/features/vender/view/vendor_terms_view.dart';
 import 'package:savarii/features/vender/view/vendor_travels_detail_view.dart';
@@ -396,12 +392,6 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.vendorResetPassword,
-      page: () => const VendorResetPasswordView(),
-      binding: VendorResetPasswordBinding(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.customerRegistration,
       page: () => const CustomerRegistrationView(),
       binding: CustomerRegistrationBinding(),
@@ -411,12 +401,6 @@ class AppPages {
       name: AppRoutes.customerForgotPassword,
       page: () => const CustomerForgotPasswordView(),
       binding: CustomerForgotPasswordBinding(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.customerResetPassword,
-      page: () => const CustomerResetPasswordView(),
-      binding: CustomerResetPasswordBinding(),
       transition: Transition.rightToLeft,
     ),
   ];

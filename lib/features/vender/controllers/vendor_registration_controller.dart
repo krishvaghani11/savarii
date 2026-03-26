@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/services/firestore_service.dart';
-import '../../auth/controllers/auth_controller.dart';
+import '../../../models/user_model.dart';
+import '../../../models/vendor_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class VendorRegistrationController extends GetxController {
@@ -15,7 +16,6 @@ class VendorRegistrationController extends GetxController {
       TextEditingController();
 
   final FirestoreService _firestore = Get.find();
-  final AuthController _authController = Get.find();
 
   final RxBool isLoading = false.obs;
 
@@ -65,7 +65,6 @@ class VendorRegistrationController extends GetxController {
       isLoading.value = true;
 
       final email = emailController.text.trim();
-      final phone = "+91$rawPhone";
 
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
@@ -74,9 +73,9 @@ class VendorRegistrationController extends GetxController {
           );
       final uid = credential.user!.uid;
 
-      // Check if already registered (using email as ID check for the mock)
-      final existing = await _firestore.getUser(uid);
-      if (existing.exists) {
+      // Check if already registered
+      final existing = await _firestore.getUserProfile(uid);
+      if (existing != null) {
         Get.snackbar(
           "Already Registered",
           "This email is already registered. Please login instead.",
@@ -86,27 +85,27 @@ class VendorRegistrationController extends GetxController {
       }
 
       // ── Save user doc ──
-      await _firestore.createUser(uid, {
-        "phone": phone,
-        "email": email,
-        "role": "vendor",
-        "createdAt": DateTime.now(),
-        "lastLogin": DateTime.now(),
-        "isLoggedIn": true,
-      });
+      await _firestore.createUserProfile(
+        UserModel(
+          uid: uid,
+          email: email,
+          role: 'vendor',
+          createdAt: DateTime.now(),
+        ),
+      );
 
       // ── Save vendor profile doc ──
-      await _firestore.createVendor(uid, {
-        "userId": uid,
-        "fullName": fullNameController.text.trim(),
-        "email": email,
-        "createdAt": DateTime.now(),
-      });
-
-      // ── Store session — persists to disk so it survives cold restarts ──
-      await _authController.saveVendorSession(
-        vendorUid: uid,
-        vendorPhone: phone,
+      await _firestore.createVendorProfile(
+        VendorModel(
+          uid: uid,
+          userId: uid,
+          name: fullNameController.text.trim(),
+          email: email,
+          phone: rawPhone,
+          businessName: '', // Assuming not collected in this form
+          address: '',      // Assuming not collected in this form
+          createdAt: DateTime.now(),
+        )
       );
 
       Get.snackbar(
@@ -115,8 +114,7 @@ class VendorRegistrationController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
 
-      // Navigate to Location Access after successful registration
-      Get.offAllNamed('/vendor-location-access');
+      // AuthController will handle routing automatically
     } catch (e) {
       Get.snackbar("Error", e.toString());
     } finally {
