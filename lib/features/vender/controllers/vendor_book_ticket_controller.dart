@@ -69,7 +69,11 @@ class VendorBookTicketController extends GetxController {
     selectedBusId.value = busId;
     final bus = availableBuses.firstWhere((b) => b['id'] == busId, orElse: () => {});
     if (bus.isEmpty) return;
-    
+
+    // Load already booked seats from the bus document
+    final List<dynamic> rawBooked = bus['bookedSeats'] ?? [];
+    bookedSeats.assignAll(rawBooked.map((s) => s.toString()).toList());
+
     final Map<String, dynamic> route = bus['route'] ?? {};
     
     // Setup dynamic Boarding Points

@@ -170,4 +170,10 @@ class FirestoreService extends GetxService {
               .toList(),
         );
   }
+
+  Future<void> addBookedSeatsToBus(String busId, List<String> seats) async {
+    await _db.collection('buses').doc(busId).update({
+      'bookedSeats': FieldValue.arrayUnion(seats),
+    });
+  }
 }

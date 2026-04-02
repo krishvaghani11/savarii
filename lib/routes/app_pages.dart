@@ -97,6 +97,8 @@ import 'package:savarii/features/vender/view/vendor_settings_view.dart';
 import 'package:savarii/features/vender/view/vendor_terms_view.dart';
 import 'package:savarii/features/vender/view/vendor_travels_detail_view.dart';
 import 'package:savarii/features/vender/view/vendor_view_tickets_view.dart';
+import 'package:savarii/features/vender/view/vendor_razorpay_view.dart';
+import 'package:savarii/features/vender/bindings/vendor_razorpay_binding.dart';
 import '../features/splash/bindings/splash_binding.dart';
 import '../features/auth/bindings/role_selection_binding.dart';
 import 'app_routes.dart';
@@ -317,6 +319,12 @@ class AppPages {
       name: AppRoutes.vendorPaymentConfirmation,
       page: () => const VendorPaymentConfirmationView(),
       binding: VendorPaymentConfirmationBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vendorRazorpay,
+      page: () => const VendorRazorpayView(),
+      binding: VendorRazorpayBinding(),
       transition: Transition.rightToLeft,
     ),
     GetPage(

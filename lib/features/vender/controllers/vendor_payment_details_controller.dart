@@ -1,10 +1,6 @@
 import 'package:get/get.dart';
-import 'package:savarii/core/services/auth_services.dart';
-import 'package:savarii/core/services/firestore_service.dart';
 
 class VendorPaymentDetailsController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
-  final FirestoreService _firestoreService = Get.find<FirestoreService>();
   // Dynamic Booking Data
   late final String busId;
   late final String busName;
@@ -62,42 +58,23 @@ class VendorPaymentDetailsController extends GetxController {
   }
 
   Future<void> proceedToPay() async {
-    print(
-      "Processing payment of ₹$totalAmount via ${selectedPaymentMethod.value}...",
-    );
-
-    // Generate Mock PNR id
-    final pnr = 'PNR${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+    print("Navigating to Razorpay for ₹$totalAmount...");
 
     final payload = {
-      'vendorId': _authService.currentUser?.uid ?? '',
-      'createdAt': DateTime.now().toIso8601String(),
-      'bookingId': pnr,
-      'passengerName': passengerName,
-      'passengerPhone': passengerPhone, 
-      'origin': origin,
-      'destination': destination,
+      'busId': busId,
+      'busName': busName,
+      'busImage': busImage,
+      'boardingPoint': origin,
+      'droppingPoint': destination,
       'journeyDate': date,
       'departureTime': departureTime,
-      'route': '$origin to $destination',
-      'busAndSeat': '$busName | $seat',
-      'busImage': busImage,
-      'paymentMethod': selectedPaymentMethod.value,
-      'ticketPrice': baseFare,
-      'gst': gst,
-      'platformFee': platformFee,
-      'totalPaid': totalAmount
+      'selectedSeats': seat,
+      'passengerName': passengerName,
+      'passengerPhone': passengerPhone,
+      'totalBaseFare': baseFare,
     };
 
-    try {
-      // Save permanently to Firestore
-      await _firestoreService.addTicket(payload);
-      print("Ticket $pnr successfully saved to Firestore");
-
-      // Route to the Success Screen
-      Get.offNamed('/vendor-payment-confirmation', arguments: payload);
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to save ticket: $e');
-    }
+    // Navigate to the Razorpay gateway screen
+    Get.toNamed('/vendor-razorpay', arguments: payload);
   }
 }

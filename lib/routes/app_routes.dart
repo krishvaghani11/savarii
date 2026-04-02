@@ -57,4 +57,5 @@ class AppRoutes {
   static const String vendorForgotPassword = '/vendor-forgot-password';
   static const String vendorResetPassword = '/vendor-reset-password';
   static const String customerResetPassword = '/customer-reset-password';
+  static const String vendorRazorpay = '/vendor-razorpay';
 }
