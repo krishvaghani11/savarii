@@ -8,7 +8,7 @@ import '../../../routes/app_routes.dart';
 class AddBusController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  /// SERVICES — resolved lazily to always get the live permanent singleton
+  /// SERVICES
   FirestoreService get _firestore => Get.find<FirestoreService>();
   AuthController get _auth => Get.find<AuthController>();
 
@@ -53,6 +53,12 @@ class AddBusController extends GetxController {
         if (route['boardingPoints'] != null) {
           savedBoardingPoints.assignAll(List<Map<String, String>>.from(route['boardingPoints'].map((x) => Map<String, String>.from(x))));
         }
+        
+        // Load dropping points if they exist
+        if (route['droppingPoints'] != null) {
+          savedDroppingPoints.assignAll(List<Map<String, String>>.from(route['droppingPoints'].map((x) => Map<String, String>.from(x))));
+        }
+        
         if (route['restStops'] != null) {
           savedRestStops.assignAll(List<Map<String, String>>.from(route['restStops'].map((x) => Map<String, String>.from(x))));
         }
@@ -80,19 +86,20 @@ class AddBusController extends GetxController {
   final RxString departureTime = '--:-- --'.obs;
   final RxString arrivalTime = '--:-- --'.obs;
 
-  // --- Controllers and Lists for dynamic form inputs ---
-
   // Boarding Point Inputs
   final TextEditingController bpNameController = TextEditingController();
   final RxString bpTime = '--:-- --'.obs;
-  final RxList<Map<String, String>> savedBoardingPoints =
-      <Map<String, String>>[].obs;
+  final RxList<Map<String, String>> savedBoardingPoints = <Map<String, String>>[].obs;
+
+  // NEW: Dropping Point Inputs
+  final TextEditingController dpNameController = TextEditingController();
+  final RxString dpTime = '--:-- --'.obs;
+  final RxList<Map<String, String>> savedDroppingPoints = <Map<String, String>>[].obs;
 
   // Rest Stop Inputs
   final TextEditingController rsNameController = TextEditingController();
   final TextEditingController rsDurationController = TextEditingController();
-  final RxList<Map<String, String>> savedRestStops =
-      <Map<String, String>>[].obs;
+  final RxList<Map<String, String>> savedRestStops = <Map<String, String>>[].obs;
 
   final List<String> busTypes = [
     'AC Sleeper',
@@ -102,7 +109,7 @@ class AddBusController extends GetxController {
     'Luxury',
   ];
 
-  // ─── Validators (used by the Form) ───────────────────────────────────────
+  // ─── Validators ────────────────────────────────────────────────────────
 
   String? validateRequired(String? value) {
     if (value == null || value.trim().isEmpty) return 'This field is required';
@@ -114,8 +121,6 @@ class AddBusController extends GetxController {
     if (int.tryParse(value.trim()) == null) return 'Enter a valid number';
     return null;
   }
-
-  // ─── Bus Type ────────────────────────────────────────────────────────────
 
   void selectBusType(String type) {
     selectedBusType.value = type;
@@ -162,6 +167,53 @@ class AddBusController extends GetxController {
     if (picked != null) {
       final localizations = MaterialLocalizations.of(context);
       bpTime.value = localizations.formatTimeOfDay(
+        picked,
+        alwaysUse24HourFormat: false,
+      );
+    }
+  }
+
+  /// DROPPING POINT LOGIC
+  void addDroppingPoint() {
+    if (dpNameController.text.trim().isEmpty || dpTime.value == '--:-- --') {
+      Get.snackbar(
+        'Incomplete Details',
+        'Please enter both the dropping point name and time before adding.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    savedDroppingPoints.add({
+      'pointName': dpNameController.text.trim(),
+      'time': dpTime.value,
+    });
+
+    dpNameController.clear();
+    dpTime.value = '--:-- --';
+  }
+
+  void removeDroppingPoint(int index) {
+    savedDroppingPoints.removeAt(index);
+  }
+
+  Future<void> pickDpTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(primary: Color(0xFFE82E59)),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final localizations = MaterialLocalizations.of(context);
+      dpTime.value = localizations.formatTimeOfDay(
         picked,
         alwaysUse24HourFormat: false,
       );
@@ -223,11 +275,8 @@ class AddBusController extends GetxController {
     }
   }
 
-  /// ===============================
-  /// SAVE BUS + ROUTE (MAIN LOGIC)
-  /// ===============================
+  /// SAVE BUS + ROUTE
   Future<void> saveBusAndRoute() async {
-    // 1️⃣ Form validation (all required fields must pass their validators)
     if (!formKey.currentState!.validate()) {
       Get.snackbar(
         "Incomplete Form",
@@ -238,7 +287,6 @@ class AddBusController extends GetxController {
       return;
     }
 
-    // 2️⃣ Time validation — these are NOT in the Form so check separately
     if (departureTime.value == '--:-- --' ||
         arrivalTime.value == '--:-- --') {
       Get.snackbar(
@@ -249,7 +297,24 @@ class AddBusController extends GetxController {
       return;
     }
 
-    // 3️⃣ Safe parse of numeric fields
+    if (savedBoardingPoints.isEmpty) {
+      Get.snackbar(
+        "Boarding Point Required",
+        "Please add at least one boarding point.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    if (savedDroppingPoints.isEmpty) {
+      Get.snackbar(
+        "Dropping Point Required",
+        "Please add at least one dropping point.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     final seats = int.tryParse(totalSeatsController.text.trim());
     if (seats == null) {
       Get.snackbar("Invalid Input", "Total seats must be a valid number.");
@@ -265,9 +330,7 @@ class AddBusController extends GetxController {
     try {
       isLoading.value = true;
 
-      // 4️⃣ Auth check — uid is persisted to SharedPreferences so survives cold starts
       final uid = _auth.uid;
-      debugPrint('🚌 [AddBus] uid at save time: $uid');
 
       if (uid == null || uid.isEmpty) {
         Get.snackbar(
@@ -279,7 +342,6 @@ class AddBusController extends GetxController {
         return;
       }
 
-      // 5️⃣ Build the Firestore document
       final busData = {
         // BUS DETAILS
         "vendorId": uid,
@@ -298,6 +360,7 @@ class AddBusController extends GetxController {
           "arrivalTime": arrivalTime.value,
           "ticketPrice": price,
           "boardingPoints": savedBoardingPoints.toList(),
+          "droppingPoints": savedDroppingPoints.toList(), // ADDED HERE
           "restStops": savedRestStops.toList(),
         },
 
@@ -313,46 +376,35 @@ class AddBusController extends GetxController {
         "createdAt": DateTime.now().toIso8601String(),
       };
 
-      debugPrint('🚌 [AddBus] Saving to Firestore: $busData');
-
-      // 6️⃣ Write to Firestore (Update or Add)
       if (isEditing.value && editBusId != null) {
-        // Prevent resetting the active status or creation date during an edit
         busData.remove('isActive');
         busData.remove('createdAt');
         
         await _firestore.updateBusData(editBusId!, busData);
-        debugPrint('✅ [AddBus] Bus updated successfully!');
         Get.snackbar(
           'Success',
           'Bus updated successfully!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green.shade50,
           colorText: Colors.green.shade800,
-          duration: const Duration(seconds: 3),
         );
       } else {
         await _firestore.addBusData(busData);
-        debugPrint('✅ [AddBus] Bus saved successfully!');
         Get.snackbar(
           'Success',
           'Bus added successfully!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green.shade50,
           colorText: Colors.green.shade800,
-          duration: const Duration(seconds: 3),
         );
       }
 
       Get.offAllNamed(AppRoutes.vendorMain);
-    } catch (e, stack) {
-      debugPrint('❌ [AddBus] Error saving bus: $e');
-      debugPrint('❌ [AddBus] Stack: $stack');
+    } catch (e) {
       Get.snackbar(
         "Save Failed",
-        e.toString().length > 100 ? e.toString().substring(0, 100) : e.toString(),
+        e.toString(),
         snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 5),
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );
@@ -372,7 +424,9 @@ class AddBusController extends GetxController {
     driverNameController.dispose();
     driverMobileController.dispose();
     licenseController.dispose();
+    
     bpNameController.dispose();
+    dpNameController.dispose(); // NEW
     rsNameController.dispose();
     rsDurationController.dispose();
     super.onClose();

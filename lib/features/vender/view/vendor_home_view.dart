@@ -99,12 +99,12 @@ class VendorHomeView extends GetView<VendorHomeController> {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
+              Obx(() => Row(
                 children: [
                   Expanded(
                     child: _buildSummaryCard(
                       Icons.directions_bus,
-                      controller.activeBuses,
+                      controller.activeBuses.value,
                       'Buses Active',
                     ),
                   ),
@@ -112,7 +112,7 @@ class VendorHomeView extends GetView<VendorHomeController> {
                   Expanded(
                     child: _buildSummaryCard(
                       Icons.confirmation_num,
-                      controller.ticketsSold,
+                      controller.ticketsSold.value,
                       'Tickets Sold',
                     ),
                   ),
@@ -120,12 +120,12 @@ class VendorHomeView extends GetView<VendorHomeController> {
                   Expanded(
                     child: _buildSummaryCard(
                       Icons.payments,
-                      controller.earnings,
+                      controller.earnings.value,
                       'Earnings',
                     ),
                   ),
                 ],
-              ),
+              )),
               const SizedBox(height: 24),
 
               // 3. Main Options

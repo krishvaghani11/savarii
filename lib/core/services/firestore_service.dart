@@ -153,4 +153,21 @@ class FirestoreService extends GetxService {
   Future<void> updateBusData(String busId, Map<String, dynamic> busData) async {
     await _db.collection('buses').doc(busId).update(busData);
   }
+
+  // --- Tickets Methods ---
+  Future<void> addTicket(Map<String, dynamic> ticketData) async {
+    await _db.collection('tickets').add(ticketData);
+  }
+
+  Stream<List<Map<String, dynamic>>> getVendorTicketsStream(String vendorId) {
+    return _db
+        .collection('tickets')
+        .where('vendorId', isEqualTo: vendorId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {'id': doc.id, ...doc.data()})
+              .toList(),
+        );
+  }
 }

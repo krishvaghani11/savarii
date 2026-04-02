@@ -133,12 +133,12 @@ class VendorDrawer extends GetView<VendorHomeController> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Row(
+                    Obx(() => Row(
                       children: [
                         Expanded(
                           child: _buildStatCard(
                             'Active Buses',
-                            controller.activeBuses,
+                            controller.activeBuses.value,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -149,7 +149,7 @@ class VendorDrawer extends GetView<VendorHomeController> {
                           ),
                         ),
                       ],
-                    ),
+                    )),
                   ],
                 ),
               ),

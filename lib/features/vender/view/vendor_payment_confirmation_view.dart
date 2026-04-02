@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:savarii/core/constants/app_assets.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_payment_confirmation_controller.dart';
@@ -121,20 +120,15 @@ class VendorPaymentConfirmationView
               topLeft: Radius.circular(24),
               topRight: Radius.circular(24),
             ),
-            child: Image.asset(
-              AppAssets.busImagePlaceholder, // Use your actual bus asset here!
-              height: 140,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 140,
-                color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-                child: const Icon(
-                  Icons.directions_bus,
-                  size: 50,
-                  color: AppColors.secondaryGreyBlue,
-                ),
-              ),
-            ),
+            child: controller.busImageUrl.isNotEmpty
+                ? Image.network(
+                    controller.busImageUrl,
+                    height: 140,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => _buildFallbackBusIcon(),
+                  )
+                : _buildFallbackBusIcon(),
           ),
 
           // Ticket Details Section
@@ -262,6 +256,21 @@ class VendorPaymentConfirmationView
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFallbackBusIcon() {
+    return Container(
+      height: 140,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+      ),
+      child: const Icon(
+        Icons.directions_bus,
+        size: 50,
+        color: AppColors.primaryDark,
       ),
     );
   }

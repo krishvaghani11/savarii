@@ -10,7 +10,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: AppColors.lightBackground, // Light grey background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -35,14 +35,62 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // 1. SELECT BUS & JOURNEY
+                      // 1. SELECT JOURNEY DETAILS
                       _buildSectionCard(
-                        title: 'SELECT BUS & JOURNEY',
+                        title: 'SELECT JOURNEY DETAILS',
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('Route / Bus Service'),
-                            _buildDropdown(),
+                            _buildLabel('Select Bus / Route'),
+                            _buildBusSelectionDropdown(),
+                            const SizedBox(height: 16),
+                            Obx(
+                              () => Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _buildLabel('Boarding Point'),
+                                        _buildPointDropdown(
+                                          hint: 'Select Boarding',
+                                          items:
+                                              controller.currentBoardingPoints,
+                                          selectedValue: controller
+                                              .selectedBoardingPoint
+                                              .value,
+                                          onChanged:
+                                              controller.selectBoardingPoint,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _buildLabel('Dropping Point'),
+                                        _buildPointDropdown(
+                                          hint: 'Select Dropping',
+                                          items:
+                                              controller.currentDroppingPoints,
+                                          selectedValue: controller
+                                              .selectedDroppingPoint
+                                              .value,
+                                          onChanged:
+                                              controller.selectDroppingPoint,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildTimeDetails(),
                             const SizedBox(height: 16),
                             _buildLabel('Journey Date'),
                             _buildDatePicker(context),
@@ -54,13 +102,35 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                       // 2. SELECT SEATS
                       _buildSectionCard(
                         title: 'SELECT SEATS',
+                        trailing: Obx(
+                          () => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryAccent.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${controller.passengerCount.value} PASSENGERS SELECTED',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.primaryAccent,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                         child: Column(
                           children: [
                             _buildDeckToggle(),
                             const SizedBox(height: 24),
                             _buildSeatLegend(),
-                            const SizedBox(height: 32),
-                            _buildSeatMap(),
+                            const SizedBox(height: 24),
+                            _buildPassengerCountControl(),
+                            const SizedBox(height: 24),
+                            _buildSeatMapContainer(),
                           ],
                         ),
                       ),
@@ -79,11 +149,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                             ),
                             const SizedBox(height: 16),
                             _buildLabel('Mobile Number'),
-                            _buildTextField(
-                              '+91 00000 00000',
-                              controller.phoneController,
-                              isPhone: true,
-                            ),
+                            _buildMobileField(),
                             const SizedBox(height: 16),
                             _buildLabel('Gender'),
                             _buildGenderSelection(),
@@ -107,16 +173,20 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
 
   // --- Sub-Widgets ---
 
-  Widget _buildSectionCard({required String title, required Widget child}) {
+  Widget _buildSectionCard({
+    required String title,
+    Widget? trailing,
+    required Widget child,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondaryGreyBlue.withValues(alpha: 0.1)),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.05),
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -125,13 +195,19 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.secondaryGreyBlue,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.8),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
           ),
           const SizedBox(height: 16),
           child,
@@ -153,34 +229,263 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
     );
   }
 
-  Widget _buildDropdown() {
+  Widget _buildTextField(String hint, TextEditingController textController) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.secondaryGreyBlue.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
       ),
-      child: Obx(
-        () => DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: controller.selectedRoute.value,
-            isExpanded: true,
-            icon: const Icon(
-              Icons.keyboard_arrow_down,
+      child: TextFormField(
+        controller: textController,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPointDropdown({
+    required String hint,
+    required List<Map<String, dynamic>> items,
+    required Map<String, dynamic>? selectedValue,
+    required Function(Map<String, dynamic>?) onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Map<String, dynamic>>(
+          isExpanded: true,
+          hint: Text(
+            hint,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+            ),
+          ),
+          value: items.contains(selectedValue) ? selectedValue : null,
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            color: AppColors.primaryDark,
+          ),
+          items: items.map((point) {
+            final String name = point['pointName'] ?? 'Unknown';
+            final String time = point['time'] ?? '';
+            return DropdownMenuItem<Map<String, dynamic>>(
+              value: point,
+              child: Text(
+                time.isEmpty ? name : '$name ($time)',
+                style: AppTextStyles.bodyMedium,
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBusSelectionDropdown() {
+    return Obx(() {
+      if (controller.availableBuses.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+            ),
+          ),
+          child: Text(
+            'No buses available',
+            style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.secondaryGreyBlue,
             ),
-            items: controller.availableRoutes.map((String value) {
+          ),
+        );
+      }
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+          ),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            isExpanded: true,
+            hint: Text(
+              'Select Route',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+              ),
+            ),
+            value: controller.selectedBusId.value,
+            icon: const Icon(
+              Icons.keyboard_arrow_down,
+              color: AppColors.primaryDark,
+            ),
+            items: controller.availableBuses.map((bus) {
+              final route = bus['route'] ?? {};
+              String busName = bus['busName'] ?? 'Unknown Bus';
+              String from = route['from'] ?? 'Unknown';
+              String to = route['to'] ?? 'Unknown';
+              String busId = bus['id'] ?? '';
               return DropdownMenuItem<String>(
-                value: value,
+                value: busId,
                 child: Text(
-                  value,
+                  '$busName ($from - $to)',
                   style: AppTextStyles.bodyMedium,
                   overflow: TextOverflow.ellipsis,
                 ),
               );
             }).toList(),
-            onChanged: (newValue) => controller.selectedRoute.value = newValue!,
+            onChanged: (val) {
+              if (val != null) {
+                controller.selectBus(val);
+              }
+            },
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildTimeDetails() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.primaryAccent.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primaryAccent.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Departure',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.secondaryGreyBlue,
+                  ),
+                ),
+                Obx(
+                  () => Text(
+                    controller.departureTime.value,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              const Icon(
+                Icons.arrow_forward_outlined,
+                color: AppColors.primaryAccent,
+                size: 18,
+              ),
+              Obx(
+                () => Text(
+                  controller.journeyDuration.value,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.primaryAccent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Arrival',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.secondaryGreyBlue,
+                  ),
+                ),
+                Obx(
+                  () => Text(
+                    controller.arrivalTime.value,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
+      ),
+      child: TextFormField(
+        controller: controller.phoneController,
+        keyboardType: TextInputType.phone,
+        style: AppTextStyles.bodyMedium,
+        decoration: InputDecoration(
+          hintText: '00000 00000',
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '+91',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.secondaryGreyBlue,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
           ),
         ),
       ),
@@ -196,7 +501,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.3),
+            color: AppColors.secondaryGreyBlue.withOpacity(0.2),
           ),
         ),
         child: Row(
@@ -209,7 +514,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
               ),
             ),
             const Icon(
-              Icons.calendar_today,
+              Icons.calendar_today_outlined,
               color: AppColors.primaryDark,
               size: 18,
             ),
@@ -223,7 +528,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.secondaryGreyBlue.withValues(alpha: 0.05),
+        color: AppColors.secondaryGreyBlue.withOpacity(0.05),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Obx(
@@ -249,7 +554,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 4,
                   ),
                 ]
@@ -276,13 +581,13 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildLegendItem(
-          color: AppColors.secondaryGreyBlue.withValues(alpha: 0.2),
+          color: AppColors.secondaryGreyBlue.withOpacity(0.2),
           label: 'Booked',
         ),
         const SizedBox(width: 16),
         _buildLegendItem(
           color: AppColors.white,
-          borderColor: AppColors.secondaryGreyBlue.withValues(alpha: 0.3),
+          borderColor: AppColors.secondaryGreyBlue.withOpacity(0.3),
           label: 'Available',
         ),
         const SizedBox(width: 16),
@@ -312,37 +617,115 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
           label,
           style: AppTextStyles.caption.copyWith(
             color: AppColors.secondaryGreyBlue,
-            fontSize: 10,
+            fontSize: 11,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSeatMap() {
-    return Column(
+  Widget _buildPassengerCountControl() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildSeatRow('L1', 'L2', 'R1'),
-        const SizedBox(height: 16),
-        _buildSeatRow('L3', 'L4', 'R3'),
-        const SizedBox(height: 16),
-        _buildSeatRow('L5', 'L6', 'R5'),
-        const SizedBox(height: 16),
-        _buildSeatRow('L7', 'L8', 'R7'),
+        Text(
+          'Select Number of\nPassengers',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.primaryDark,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Row(
+          children: [
+            GestureDetector(
+              onTap: controller.decrementPassenger,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.remove,
+                  color: AppColors.primaryDark,
+                  size: 18,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Obx(
+              () => Text(
+                '${controller.passengerCount.value}',
+                style: AppTextStyles.h3.copyWith(fontSize: 18),
+              ),
+            ),
+            const SizedBox(width: 16),
+            GestureDetector(
+              onTap: controller.incrementPassenger,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryAccent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.add, color: AppColors.white, size: 18),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildSeatRow(String left1, String left2, String right1) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildSeat(left1),
-        const SizedBox(width: 16),
-        _buildSeat(left2),
-        const SizedBox(width: 48), // The Aisle
-        _buildSeat(right1),
-      ],
+  Widget _buildSeatMapContainer() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryGreyBlue.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          const Icon(
+            Icons.tune,
+            color: AppColors.secondaryGreyBlue,
+            size: 24,
+          ), // Steering wheel placeholder
+          const SizedBox(height: 16),
+          // Dynamically building the 1+2 layout rows
+          Obx(
+            () => Column(
+              children: List.generate(5, (index) {
+                int rowNum = index + 1;
+                // If upper deck is selected, prefix with 'U'. Otherwise empty.
+                String prefix = controller.selectedDeck.value == 'UPPER DECK'
+                    ? 'U'
+                    : '';
+
+                String left = '${prefix}L$rowNum';
+                String right1 = '${prefix}R${(index * 2) + 1}';
+                String right2 = '${prefix}R${(index * 2) + 2}';
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildSeat(left),
+                      const Spacer(), // Aisle
+                      _buildSeat(right1),
+                      const SizedBox(width: 16),
+                      _buildSeat(right2),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -352,15 +735,15 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
       bool isSelected = controller.selectedSeats.contains(seatId);
 
       Color bgColor = AppColors.white;
-      Color borderColor = AppColors.secondaryGreyBlue.withValues(alpha: 0.3);
+      Color borderColor = AppColors.secondaryGreyBlue.withOpacity(0.2);
       Color textColor = AppColors.primaryDark;
 
       if (isBooked) {
-        bgColor = AppColors.secondaryGreyBlue.withValues(alpha: 0.15);
+        bgColor = AppColors.secondaryGreyBlue.withOpacity(0.15);
         borderColor = Colors.transparent;
-        textColor = AppColors.secondaryGreyBlue.withValues(alpha: 0.6);
+        textColor = AppColors.secondaryGreyBlue.withOpacity(0.5);
       } else if (isSelected) {
-        bgColor = AppColors.primaryAccent.withValues(alpha: 0.1);
+        bgColor = AppColors.primaryAccent.withOpacity(0.05);
         borderColor = AppColors.primaryAccent;
         textColor = AppColors.primaryAccent;
       }
@@ -371,14 +754,14 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
           clipBehavior: Clip.none,
           children: [
             Container(
-              width: 50,
-              height: 65,
+              width: 55,
+              height: 75,
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: borderColor,
-                  width: isSelected ? 2 : 1,
+                  width: isSelected ? 1.5 : 1,
                 ),
               ),
               child: Center(
@@ -391,7 +774,6 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                 ),
               ),
             ),
-            // The little checkmark badge for selected seats
             if (isSelected)
               Positioned(
                 right: -4,
@@ -413,37 +795,6 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
         ),
       );
     });
-  }
-
-  Widget _buildTextField(
-    String hint,
-    TextEditingController textController, {
-    bool isPhone = false,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.secondaryGreyBlue.withValues(alpha: 0.3)),
-      ),
-      child: TextFormField(
-        controller: textController,
-        keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
-        validator: (value) => value!.isEmpty ? 'Required' : null,
-        style: AppTextStyles.bodyMedium,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.6),
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _buildGenderSelection() {
@@ -468,13 +819,13 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryAccent.withValues(alpha: 0.1)
+              ? AppColors.primaryAccent.withOpacity(0.08)
               : AppColors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected
                 ? AppColors.primaryAccent
-                : AppColors.secondaryGreyBlue.withValues(alpha: 0.3),
+                : AppColors.secondaryGreyBlue.withOpacity(0.2),
           ),
         ),
         child: Center(
@@ -497,13 +848,9 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       decoration: BoxDecoration(
         color: AppColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        border: Border(
+          top: BorderSide(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+        ),
       ),
       child: Row(
         children: [
@@ -517,11 +864,12 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                   'Total Amount',
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.secondaryGreyBlue,
+                    fontSize: 11,
                   ),
                 ),
                 Obx(
                   () => Text(
-                    '₹${(controller.selectedSeats.length * controller.pricePerSeat).toStringAsFixed(2)}',
+                    '₹${(controller.selectedSeats.length * controller.pricePerSeat.value).toStringAsFixed(2)}',
                     style: AppTextStyles.h2.copyWith(fontSize: 20),
                   ),
                 ),
@@ -530,7 +878,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                   () => Text(
                     controller.selectedSeats.isEmpty
                         ? 'No seats selected'
-                        : '${controller.selectedSeats.length} Seat(s) Selected (${controller.selectedSeats.join(', ')})',
+                        : '${controller.selectedSeats.length} SEATS SELECTED (${controller.selectedSeats.join(', ')})',
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.primaryAccent,
                       fontSize: 9,
@@ -548,7 +896,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
             onPressed: controller.confirmBooking,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryAccent,
-              minimumSize: const Size(0, 0), // Fixes infinite width crash in Row
+              minimumSize: const Size(0, 0),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),

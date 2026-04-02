@@ -31,10 +31,10 @@ class VendorHomeController extends GetxController {
   }
 
   // Stats
-  final String activeBuses = "12";
-  final String ticketsSold = "84";
-  final String earnings = "₹14k";
-  final String todaysTrips = "48"; // New stat for the drawer
+  final RxString activeBuses = "0".obs;
+  final RxString ticketsSold = "0".obs;
+  final RxString earnings = "₹0".obs;
+  final String todaysTrips = "0"; // Used in drawer, optional to make dynamic later
 
   @override
   void onInit() {
@@ -51,7 +51,36 @@ class VendorHomeController extends GetxController {
         }
       });
       _loadProfileImage(uid);
+      _loadDashboardStats(uid);
     }
+  }
+
+  void _loadDashboardStats(String uid) {
+    // Listen to buses stream
+    _firestore.getVendorBusesStream(uid).listen((buses) {
+      final activeCount = buses.where((b) => b['isActive'] == true).length;
+      activeBuses.value = activeCount.toString();
+    });
+
+    // Listen to tickets stream
+    _firestore.getVendorTicketsStream(uid).listen((ticketDocs) {
+      ticketsSold.value = ticketDocs.length.toString();
+      
+      double totalEarnings = 0;
+      for (var doc in ticketDocs) {
+        final amount = doc['totalPaid'];
+        if (amount != null) {
+          totalEarnings += (amount is num) ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0.0;
+        }
+      }
+      
+      // format earnings (e.g. 14k or exact if < 1000)
+      if (totalEarnings >= 1000) {
+        earnings.value = "₹${(totalEarnings / 1000).toStringAsFixed(1)}k";
+      } else {
+        earnings.value = "₹${totalEarnings.toStringAsFixed(0)}";
+      }
+    });
   }
 
   Future<void> _loadProfileImage(String uid) async {

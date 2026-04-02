@@ -139,7 +139,7 @@ class VendorMyBusesController extends GetxController {
 
   @override
   void onClose() {
-    searchController.dispose();
+    // searchController.dispose(); // Commented to prevent hot-reload and animation transition crashes
     super.onClose();
   }
 }

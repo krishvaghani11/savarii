@@ -38,25 +38,25 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard(
+                    child: Obx(() => _buildStatCard(
                       title: 'TOTAL TICKETS',
-                      value: '40',
+                      value: '${controller.totalTickets}',
                       bgColor: const Color(0xFFFFEBEB),
                       // Light Pink
                       borderColor: const Color(0xFFFFD6D6),
                       textColor: AppColors.primaryAccent,
-                    ),
+                    )),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard(
+                    child: Obx(() => _buildStatCard(
                       title: 'CONFIRMED',
-                      value: '40',
+                      value: '${controller.confirmedTickets}',
                       bgColor: const Color(0xFFEBFFF4),
                       // Light Green
                       borderColor: const Color(0xFFD6FFE8),
                       textColor: const Color(0xFF00A65A), // Green
-                    ),
+                    )),
                   ),
                 ],
               ),
@@ -70,9 +70,16 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
               const SizedBox(height: 16),
 
               // 4. Ticket List
-              ...controller.tickets.map(
-                (ticket) => _buildTicketListItem(context, ticket),
-              ),
+              Obx(() => controller.tickets.isEmpty
+                  ? const Center(child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text("No tickets found for your fleet yet."),
+                    ))
+                  : Column(
+                      children: controller.tickets.map(
+                        (ticket) => _buildTicketListItem(context, ticket),
+                      ).toList(),
+                    )),
             ],
           ),
         ),
@@ -175,7 +182,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  ticket.name,
+                  ticket.passengerName,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -203,13 +210,13 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
             const SizedBox(height: 4),
             // Row 2: Phone, Ticket ID, Seat
             Text(
-              ticket.phone,
+              ticket.passengerPhone,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.secondaryGreyBlue,
               ),
             ),
             Text(
-              '${ticket.ticketId} • Seat ${ticket.seat}',
+              '${ticket.bookingId} • ${ticket.busAndSeat}',
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.secondaryGreyBlue,
               ),
@@ -248,15 +255,15 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  ticket.phone,
+                  '₹${ticket.totalPaid.toStringAsFixed(2)}',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.secondaryGreyBlue,
+                    color: AppColors.primaryDark,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                // As per your mockup, phone is repeated here
                 const SizedBox(width: 8),
                 Text(
-                  ticket.boardingPoint,
+                  ticket.origin,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.secondaryGreyBlue,
                   ),
@@ -311,7 +318,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        ticket.name,
+                        ticket.passengerName,
                         style: AppTextStyles.h2.copyWith(fontSize: 22),
                       ),
                       Text(
@@ -358,33 +365,10 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          ticket.phone,
+                          ticket.passengerPhone,
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'EMAIL',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.secondaryGreyBlue,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          ticket.email,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -416,7 +400,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            ticket.ticketId,
+                            ticket.bookingId,
                             style: AppTextStyles.bodyLarge.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -431,7 +415,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(ticket.date, style: AppTextStyles.bodyMedium),
+                          Text(ticket.journeyDate, style: AppTextStyles.bodyMedium),
                         ],
                       ),
                     ),
@@ -440,7 +424,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'SEAT',
+                            'BUS / SEAT',
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                               fontWeight: FontWeight.bold,
@@ -449,7 +433,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            ticket.seat,
+                            ticket.busAndSeat,
                             style: AppTextStyles.bodyLarge.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -549,7 +533,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                           ),
                         ),
                         Text(
-                          ticket.boardingPoint,
+                          ticket.origin,
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -568,7 +552,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         Get.back();
-                        controller.downloadTicket(ticket.ticketId);
+                        controller.downloadTicket(ticket.bookingId);
                       },
                       icon: const Icon(
                         Icons.download,
@@ -597,7 +581,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Get.back();
-                        controller.shareTicket(ticket.ticketId);
+                        controller.shareTicket(ticket.bookingId);
                       },
                       icon: const Icon(
                         Icons.share,

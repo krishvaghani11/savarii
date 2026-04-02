@@ -163,7 +163,51 @@ class AddBusView extends GetView<AddBusController> {
                               () => Column(
                                 children: List.generate(
                                   controller.savedBoardingPoints.length,
-                                  (index) => _buildSavedBoardingPoint(index),
+                                  (index) => _buildSavedPoint(
+                                      controller.savedBoardingPoints[index],
+                                      () => controller.removeBoardingPoint(index),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // --- DYNAMIC DROPPING POINTS ---
+                            _buildSubHeaderWithAddButton(
+                              'DROPPING POINTS',
+                              controller.addDroppingPoint,
+                            ),
+
+                            // Input Row
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: _buildSimpleTextField(
+                                    controller.dpNameController,
+                                    'Point Name',
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: _buildSimpleTimePicker(
+                                    controller.dpTime,
+                                    () => controller.pickDpTime(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // Saved List of Dropping Points
+                            Obx(
+                              () => Column(
+                                children: List.generate(
+                                  controller.savedDroppingPoints.length,
+                                  (index) => _buildSavedPoint(
+                                      controller.savedDroppingPoints[index],
+                                      () => controller.removeDroppingPoint(index),
+                                  ),
                                 ),
                               ),
                             ),
@@ -228,7 +272,7 @@ class AddBusView extends GetView<AddBusController> {
                             const SizedBox(height: 16),
                             _buildInputField(
                               'Driver Mobile Number',
-                              'e.g. +91 98765 43210',
+                              'e.g. +1 234 567 890',
                               controller.driverMobileController,
                               keyboardType: TextInputType.phone,
                               validator: controller.validateRequired,
@@ -236,7 +280,7 @@ class AddBusView extends GetView<AddBusController> {
                             const SizedBox(height: 16),
                             _buildInputField(
                               'License Number',
-                              'e.g. GJ01-20220012345',
+                              'e.g. ABC123456789',
                               controller.licenseController,
                               validator: controller.validateRequired,
                             ),
@@ -326,7 +370,6 @@ class AddBusView extends GetView<AddBusController> {
     );
   }
 
-  // Red Add Button built directly into the sub-header matching the screenshot
   Widget _buildSubHeaderWithAddButton(String title, VoidCallback onAdd) {
     return Padding(
       padding: const EdgeInsets.only(top: 24.0, bottom: 12.0),
@@ -369,7 +412,6 @@ class AddBusView extends GetView<AddBusController> {
     );
   }
 
-  // Simple Input row for Boarding Points
   Widget _buildSimpleTextField(TextEditingController ctrl, String hint) {
     return Container(
       decoration: BoxDecoration(
@@ -394,7 +436,6 @@ class AddBusView extends GetView<AddBusController> {
     );
   }
 
-  // Simple Time picker for Boarding Points
   Widget _buildSimpleTimePicker(RxString timeVal, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -428,9 +469,8 @@ class AddBusView extends GetView<AddBusController> {
     );
   }
 
-  // Row showing Saved Boarding Point
-  Widget _buildSavedBoardingPoint(int index) {
-    final bp = controller.savedBoardingPoints[index];
+  // Generic Row for showing Saved Boarding/Dropping Point
+  Widget _buildSavedPoint(Map<String, String> point, VoidCallback onRemove) {
     return Padding(
       padding: const EdgeInsets.only(top: 12.0),
       child: Row(
@@ -444,7 +484,7 @@ class AddBusView extends GetView<AddBusController> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                bp['pointName']!,
+                point['pointName']!,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.primaryDark,
                 ),
@@ -470,7 +510,7 @@ class AddBusView extends GetView<AddBusController> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        bp['time']!,
+                        point['time']!,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.primaryDark,
                         ),
@@ -487,7 +527,7 @@ class AddBusView extends GetView<AddBusController> {
                   right: -8,
                   top: -8,
                   child: GestureDetector(
-                    onTap: () => controller.removeBoardingPoint(index),
+                    onTap: onRemove,
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
@@ -513,7 +553,6 @@ class AddBusView extends GetView<AddBusController> {
     );
   }
 
-  // Row showing Saved Rest Stop
   Widget _buildSavedRestStop(int index) {
     final rs = controller.savedRestStops[index];
     return Padding(
@@ -640,13 +679,11 @@ class AddBusView extends GetView<AddBusController> {
               border: InputBorder.none,
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: Colors.red, width: 1),
+                borderSide: const BorderSide(color: Colors.red, width: 1),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: Colors.red, width: 1.5),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,

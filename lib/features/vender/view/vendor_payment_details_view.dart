@@ -48,10 +48,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
                     _buildFareBreakdownCard(),
                     const SizedBox(height: 24),
 
-                    // 4. SELECT PAYMENT METHOD
-                    _buildSectionTitle('SELECT PAYMENT METHOD'),
-                    _buildPaymentMethods(),
-                    const SizedBox(height: 24),
+                   
                   ],
                 ),
               ),
@@ -98,68 +95,80 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    controller.origin,
-                    style: AppTextStyles.h3.copyWith(
-                      color: AppColors.primaryAccent,
-                      fontSize: 16,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        controller.origin,
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.primaryAccent,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Icon(
-                      Icons.arrow_right_alt,
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Icon(
+                        Icons.arrow_right_alt,
+                        color: AppColors.secondaryGreyBlue,
+                        size: 16,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        controller.destination,
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.primaryAccent,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
                       color: AppColors.secondaryGreyBlue,
-                      size: 20,
+                      size: 14,
                     ),
-                  ),
-                  Text(
-                    controller.destination,
-                    style: AppTextStyles.h3.copyWith(
-                      color: AppColors.primaryAccent,
-                      fontSize: 16,
+                    const SizedBox(width: 4),
+                    Text(
+                      controller.date,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.primaryDark,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_today,
-                    color: AppColors.secondaryGreyBlue,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    controller.date,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.primaryDark,
+                    const SizedBox(width: 12),
+                    const Icon(
+                      Icons.event_seat,
+                      color: AppColors.secondaryGreyBlue,
+                      size: 14,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Icon(
-                    Icons.event_seat,
-                    color: AppColors.secondaryGreyBlue,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    controller.seat,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.primaryDark,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        controller.seat,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.primaryDark,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 16),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -295,117 +304,6 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
     );
   }
 
-  Widget _buildPaymentMethods() {
-    return Obx(
-      () => Column(
-        children: [
-          _buildPaymentOption(
-            id: 'UPI',
-            title: 'UPI',
-            subtitle: 'PhonePe, Google Pay, BHIM',
-            icon: Icons.account_balance_wallet_outlined,
-          ),
-          const SizedBox(height: 12),
-          _buildPaymentOption(id: 'Cash', title: 'Cash', icon: Icons.money),
-          const SizedBox(height: 12),
-          _buildPaymentOption(
-            id: 'Cards',
-            title: 'Cards (Credit/Debit)',
-            icon: Icons.credit_card,
-          ),
-          const SizedBox(height: 12),
-          _buildPaymentOption(
-            id: 'Other',
-            title: 'Other',
-            icon: Icons.more_horiz,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentOption({
-    required String id,
-    required String title,
-    String? subtitle,
-    required IconData icon,
-  }) {
-    bool isSelected = controller.selectedPaymentMethod.value == id;
-
-    return GestureDetector(
-      onTap: () => controller.selectPaymentMethod(id),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primaryAccent
-                : AppColors.secondaryGreyBlue.withOpacity(0.1),
-            width: isSelected ? 1.5 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.secondaryGreyBlue.withOpacity(0.02),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: AppColors.primaryDark, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.secondaryGreyBlue,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            // Custom Radio Button
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.primaryAccent
-                      : AppColors.secondaryGreyBlue.withOpacity(0.3),
-                  width: isSelected ? 5 : 1.5,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildStickyPayButton() {
     return Container(

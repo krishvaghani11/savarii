@@ -1,64 +1,81 @@
+import 'dart:async';
 import 'package:get/get.dart';
+import 'package:savarii/core/services/auth_services.dart';
+import 'package:savarii/core/services/firestore_service.dart';
 
 // A simple model to hold the ticket data
 class VendorTicketModel {
-  final String name;
-  final String phone;
-  final String email;
-  final String ticketId;
-  final String seat;
+  final String passengerName;
+  final String passengerPhone;
+  final String bookingId;
+  final String busAndSeat;
   final String route;
-  final String boardingPoint;
-  final String date;
+  final String origin;
+  final String journeyDate;
+  final double totalPaid;
 
   VendorTicketModel({
-    required this.name,
-    required this.phone,
-    required this.email,
-    required this.ticketId,
-    required this.seat,
+    required this.passengerName,
+    required this.passengerPhone,
+    required this.bookingId,
+    required this.busAndSeat,
     required this.route,
-    required this.boardingPoint,
-    required this.date,
+    required this.origin,
+    required this.journeyDate,
+    required this.totalPaid,
   });
+
+  factory VendorTicketModel.fromMap(Map<String, dynamic> map) {
+    return VendorTicketModel(
+      passengerName: map['passengerName'] ?? 'Unknown Passenger',
+      passengerPhone: map['passengerPhone'] ?? 'N/A',
+      bookingId: map['bookingId'] ?? 'PNR-XXXXX',
+      busAndSeat: map['busAndSeat'] ?? 'Unknown Bus | N/A',
+      route: map['route'] ?? 'Unknown Route',
+      origin: map['origin'] ?? 'Unknown Origin',
+      journeyDate: map['journeyDate'] ?? 'Unknown Date',
+      totalPaid: (map['totalPaid'] is num) ? (map['totalPaid'] as num).toDouble() : double.tryParse(map['totalPaid'].toString()) ?? 0.0,
+    );
+  }
 }
 
 class VendorViewTicketsController extends GetxController {
-  final RxString currentDate = 'Today, 24 Oct 2023'.obs;
+  final AuthService _authService = Get.find<AuthService>();
+  final FirestoreService _firestoreService = Get.find<FirestoreService>();
 
-  // Dummy Data from your mockup
-  final List<VendorTicketModel> tickets = [
-    VendorTicketModel(
-      name: 'Ramesh Kumar',
-      phone: '+91 98765 43210',
-      email: 'ramesh.kumar@example.com',
-      ticketId: 'TKT-9921',
-      seat: '12A',
-      route: 'Delhi to Manali',
-      boardingPoint: 'ISBT Kashmiri Gate',
-      date: '23 Oct 2023', // Booking date
-    ),
-    VendorTicketModel(
-      name: 'Vikram Mehta',
-      phone: '+91 98765 43211',
-      email: 'vikram.m@example.com',
-      ticketId: 'TKT-9928',
-      seat: '18B',
-      route: 'Delhi to Chandigarh',
-      boardingPoint: 'ISBT Kashmiri Gate',
-      date: '23 Oct 2023',
-    ),
-    VendorTicketModel(
-      name: 'Suresh Raina',
-      phone: '+91 98765 43212',
-      email: 'suresh.r@example.com',
-      ticketId: 'TKT-9930',
-      seat: '01A',
-      route: 'Delhi to Dehradun',
-      boardingPoint: 'Anand Vihar',
-      date: '24 Oct 2023',
-    ),
-  ];
+  final RxString currentDate = 'All Tickets'.obs;
+
+  // Realtime Live Tickets Array
+  final RxList<VendorTicketModel> tickets = <VendorTicketModel>[].obs;
+  StreamSubscription? _ticketsSubscription;
+
+  int get totalTickets => tickets.length;
+  int get confirmedTickets => tickets.length;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadTickets();
+  }
+
+  void _loadTickets() {
+    final user = _authService.currentUser;
+    if (user != null) {
+      _ticketsSubscription = _firestoreService.getVendorTicketsStream(user.uid).listen((ticketDocs) {
+        // Sort descending locally so newest PNRs appear at the top.
+        // Doing this locally bypasses needing complex Firebase index configurations.
+        ticketDocs.sort((a, b) => (b['createdAt'] ?? '').compareTo(a['createdAt'] ?? ''));
+        
+        tickets.value = ticketDocs.map((doc) => VendorTicketModel.fromMap(doc)).toList();
+      });
+    }
+  }
+
+  @override
+  void onClose() {
+    _ticketsSubscription?.cancel();
+    super.onClose();
+  }
 
   void previousDate() => print("Load previous date...");
 
