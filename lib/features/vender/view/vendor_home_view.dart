@@ -1,7 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import 'package:savarii/features/vender/home/widgets/vendor_drawer.dart';
 
 import '../controllers/vendor_home_controller.dart';
@@ -87,7 +90,7 @@ class VendorHomeView extends GetView<VendorHomeController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Today's Summary",
+                    'home.todays_summary'.tr(),
                     style: AppTextStyles.h3.copyWith(fontSize: 16),
                   ),
                   Text(
@@ -102,27 +105,27 @@ class VendorHomeView extends GetView<VendorHomeController> {
               Obx(() => Row(
                 children: [
                   Expanded(
-                    child: _buildSummaryCard(
-                      Icons.directions_bus,
-                      controller.activeBuses.value,
-                      'Buses Active',
-                    ),
+                      child: _buildSummaryCard(
+                        Icons.directions_bus,
+                        LocaleUtils.formatCount(context, int.tryParse(controller.activeBuses.value) ?? 0),
+                        'home.buses_active'.tr(),
+                      ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildSummaryCard(
-                      Icons.confirmation_num,
-                      controller.ticketsSold.value,
-                      'Tickets Sold',
-                    ),
+                      child: _buildSummaryCard(
+                        Icons.confirmation_num,
+                        LocaleUtils.formatCount(context, int.tryParse(controller.ticketsSold.value) ?? 0),
+                        'home.tickets_sold'.tr(),
+                      ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildSummaryCard(
-                      Icons.payments,
-                      controller.earnings.value,
-                      'Earnings',
-                    ),
+                      child: _buildSummaryCard(
+                        Icons.payments,
+                        LocaleUtils.formatCurrency(context, controller.totalEarnings.value),
+                        'home.earnings'.tr(),
+                      ),
                   ),
                 ],
               )),
@@ -130,35 +133,35 @@ class VendorHomeView extends GetView<VendorHomeController> {
 
               // 3. Main Options
               Text(
-                "Main Options",
+                'home.main_options'.tr(),
                 style: AppTextStyles.h3.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 16),
               _buildOptionCard(
                 Icons.add_road,
-                'Add Bus & Route',
-                'Register new vehicles and schedules',
+                'home.add_bus_route'.tr(),
+                'home.add_bus_subtitle'.tr(),
                 controller.addBusAndRoute,
               ),
               const SizedBox(height: 12),
               _buildOptionCard(
                 Icons.local_activity,
-                'View Bus Tickets',
-                'Manage bookings and passenger lists',
+                'home.view_tickets'.tr(),
+                'home.view_tickets_subtitle'.tr(),
                 controller.viewBusTickets,
               ),
               const SizedBox(height: 12),
               _buildOptionCard(
                 Icons.event_seat,
-                'Book Ticket',
-                'Manual booking for counter walk-ins',
+                'home.book_ticket'.tr(),
+                'home.book_ticket_subtitle'.tr(),
                 controller.bookTicket,
               ),
               const SizedBox(height: 12),
               _buildOptionCard(
                 Icons.map,
-                'Bus Tracking',
-                'Track your fleet in real-time',
+                'home.bus_tracking'.tr(),
+                'home.bus_tracking_subtitle'.tr(),
                 controller.busTracking,
               ),
               const SizedBox(height: 24),
@@ -225,7 +228,7 @@ class VendorHomeView extends GetView<VendorHomeController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome back,',
+                'home.welcome_back'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: Colors.white.withOpacity(0.9),
                 ),
@@ -336,66 +339,129 @@ class VendorHomeView extends GetView<VendorHomeController> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Weekly Performance',
+                'Daily Tickets',
                 style: AppTextStyles.h3.copyWith(fontSize: 16),
               ),
-              Text(
-                'Details',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primaryAccent,
-                  fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: controller.viewBusTickets,
+                child: Text(
+                  'home.details'.tr(),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.primaryAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _buildChartBar('Mon', 40),
-              _buildChartBar('Tue', 60),
-              _buildChartBar('Wed', 45),
-              _buildChartBar('Thu', 85),
-              _buildChartBar('Fri', 100, isHighlight: true),
-              _buildChartBar('Sat', 65),
-              _buildChartBar('Sun', 55),
-            ],
+          SizedBox(
+            height: 180,
+            child: Obx(() {
+              final totals = controller.weeklyTicketCounts;
+              
+              // Find max count to scale Y-axis properly
+              final maxTickets = totals.isEmpty ? 0 : totals.reduce((a, b) => a > b ? a : b);
+              final yMax = (maxTickets > 5 ? maxTickets.toDouble() + 2 : 5.0);
+
+              return BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceEvenly,
+                  maxY: yMax,
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (_) => AppColors.primaryAccent,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        return BarTooltipItem(
+                          '${rod.toY.toInt()} Tickets\n',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        );
+                      },
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (double value, TitleMeta meta) {
+                          final idx = value.toInt();
+                          if (idx < 0 || idx > 6) return const SizedBox.shrink();
+                          // Calculate date for this bar
+                          final daysAgo = 6 - idx;
+                          final date = DateTime.now().subtract(Duration(days: daysAgo));
+                          final dayStr = "${date.day} ${_getMonthShort(date.month)}";
+                          
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              dayStr,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.secondaryGreyBlue,
+                                fontSize: 10,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          if (value == 0 || value % 1 != 0) return const SizedBox.shrink();
+                          return Text(
+                            value.toInt().toString(),
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.secondaryGreyBlue,
+                              fontSize: 10,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: yMax / 5 > 0 ? yMax / 5 : 1,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: List.generate(7, (i) {
+                    final isToday = i == 6;
+                    return BarChartGroupData(
+                      x: i,
+                      barRods: [
+                        BarChartRodData(
+                          toY: totals.length > i ? totals[i].toDouble() : 0.0,
+                          color: isToday
+                              ? AppColors.primaryAccent
+                              : AppColors.primaryAccent.withOpacity(0.4),
+                          width: 16,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              );
+            }),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChartBar(
-    String day,
-    double heightPercentage, {
-    bool isHighlight = false,
-  }) {
-    // Arbitrary max height for the chart area
-    const double maxBarHeight = 100.0;
-
-    return Column(
-      children: [
-        Container(
-          width: 30,
-          height: (heightPercentage / 100) * maxBarHeight,
-          decoration: BoxDecoration(
-            color: isHighlight
-                ? AppColors.primaryAccent
-                : AppColors.primaryAccent.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(6),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          day,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.secondaryGreyBlue,
-            fontSize: 10,
-          ),
-        ),
-      ],
-    );
+  String _getMonthShort(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_settings_controller.dart';
 
@@ -16,7 +17,7 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Settings', style: AppTextStyles.h3),
+        title: Text('settings.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -29,26 +30,26 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 1. NOTIFICATION SETTINGS
-              _buildSectionTitle('NOTIFICATION SETTINGS'),
+              _buildSectionTitle('settings.notifications_section'.tr()),
               Obx(
                 () => _buildCardGroup([
                   _buildToggleTile(
                     Icons.notifications_none,
-                    'Push Notifications',
+                    'settings.push_notifications'.tr(),
                     controller.pushNotifications.value,
                     controller.togglePushNotifications,
                   ),
                   _buildDivider(),
                   _buildToggleTile(
                     Icons.chat_bubble_outline,
-                    'SMS Alerts',
+                    'settings.sms_alerts'.tr(),
                     controller.smsAlerts.value,
                     controller.toggleSmsAlerts,
                   ),
                   _buildDivider(),
                   _buildToggleTile(
                     Icons.alternate_email,
-                    'Email Updates',
+                    'settings.email_updates'.tr(),
                     controller.emailUpdates.value,
                     controller.toggleEmailUpdates,
                   ),
@@ -57,12 +58,12 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
               const SizedBox(height: 24),
 
               // 3. APPLICATION
-              _buildSectionTitle('APPLICATION'),
+              _buildSectionTitle('settings.application_section'.tr()),
               Obx(
                 () => _buildCardGroup([
                   _buildActionTile(
                     Icons.language,
-                    'App Language',
+                    'settings.app_language'.tr(),
                     trailingWidget: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -85,7 +86,7 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
                   _buildDivider(),
                   _buildToggleTile(
                     Icons.dark_mode_outlined,
-                    'Dark Mode',
+                    'settings.dark_mode'.tr(),
                     controller.darkMode.value,
                     controller.toggleDarkMode,
                   ),
@@ -94,30 +95,30 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
               const SizedBox(height: 24),
 
               // 4. SUPPORT & LEGAL
-              _buildSectionTitle('SUPPORT & LEGAL'),
+              _buildSectionTitle('settings.support_section'.tr()),
               _buildCardGroup([
                 _buildActionTile(
                   Icons.help_outline,
-                  'Help Center',
+                  'settings.help_center'.tr(),
                   trailingIcon: Icons.open_in_new,
                   onTap: controller.openHelpCenter,
                 ),
                 _buildDivider(),
                 _buildActionTile(
                   Icons.shield_outlined,
-                  'Privacy Policy',
+                  'settings.privacy_policy'.tr(),
                   onTap: controller.openPrivacyPolicy,
                 ),
                 _buildDivider(),
                 _buildActionTile(
                   Icons.gavel_outlined,
-                  'Terms & Conditions',
+                  'settings.terms'.tr(),
                   onTap: controller.openTerms,
                 ),
                 _buildDivider(),
                 _buildActionTile(
                   Icons.info_outline,
-                  'App Version',
+                  'settings.app_version'.tr(),
                   trailingWidget: Text(
                     'v1.0.4',
                     style: AppTextStyles.caption.copyWith(
@@ -158,7 +159,7 @@ class VendorSettingsView extends GetView<VendorSettingsController> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Deactivate Account',
+                        'settings.deactivate'.tr(),
                         style: AppTextStyles.bodyLarge.copyWith(
                           color: AppColors.primaryAccent,
                           fontWeight: FontWeight.bold,

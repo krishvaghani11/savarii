@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_language_controller.dart';
@@ -31,9 +32,7 @@ class VendorLanguageView extends GetView<VendorLanguageController> {
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.secondaryGreyBlue.withOpacity(
-                              0.05,
-                            ),
+                            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -48,12 +47,12 @@ class VendorLanguageView extends GetView<VendorLanguageController> {
 
                     // 2. Header
                     Text(
-                      'Select Language',
+                      'language.title'.tr(),
                       style: AppTextStyles.h1.copyWith(fontSize: 28),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Choose your preferred language for the Savarii Vendor app.',
+                      'language.subtitle'.tr(),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.secondaryGreyBlue,
                         height: 1.4,
@@ -66,21 +65,27 @@ class VendorLanguageView extends GetView<VendorLanguageController> {
                       () => Column(
                         children: [
                           _buildLanguageCard(
+                            context: context,
+                            langName: 'English',
                             code: 'EN',
-                            title: 'English',
-                            subtitle: 'Default app language',
+                            title: 'language.english'.tr(),
+                            subtitle: 'language.english_sub'.tr(),
                           ),
                           const SizedBox(height: 16),
                           _buildLanguageCard(
+                            context: context,
+                            langName: 'Gujarati',
                             code: 'ગુ',
-                            title: 'Gujarati',
-                            subtitle: 'ગુજરાતી',
+                            title: 'language.gujarati'.tr(),
+                            subtitle: 'language.gujarati_sub'.tr(),
                           ),
                           const SizedBox(height: 16),
                           _buildLanguageCard(
+                            context: context,
+                            langName: 'Hindi',
                             code: 'हि',
-                            title: 'Hindi',
-                            subtitle: 'हिन्दी',
+                            title: 'language.hindi'.tr(),
+                            subtitle: 'language.hindi_sub'.tr(),
                           ),
                         ],
                       ),
@@ -98,17 +103,17 @@ class VendorLanguageView extends GetView<VendorLanguageController> {
     );
   }
 
-  // --- Sub-Widgets ---
-
   Widget _buildLanguageCard({
+    required BuildContext context,
+    required String langName,
     required String code,
     required String title,
     required String subtitle,
   }) {
-    bool isSelected = controller.selectedLanguage.value == title;
+    bool isSelected = controller.selectedLanguage.value == langName;
 
     return GestureDetector(
-      onTap: () => controller.selectLanguage(title),
+      onTap: () => controller.selectLanguage(langName),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -188,9 +193,7 @@ class VendorLanguageView extends GetView<VendorLanguageController> {
                   color: isSelected
                       ? AppColors.primaryAccent
                       : AppColors.secondaryGreyBlue.withOpacity(0.3),
-                  width: isSelected
-                      ? 6
-                      : 1.5, // The thick red border creates the "filled" look
+                  width: isSelected ? 6 : 1.5,
                 ),
               ),
             ),
@@ -206,7 +209,9 @@ class VendorLanguageView extends GetView<VendorLanguageController> {
       decoration: BoxDecoration(
         color: AppColors.white,
         border: Border(
-          top: BorderSide(color: AppColors.secondaryGreyBlue.withOpacity(0.05)),
+          top: BorderSide(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+          ),
         ),
       ),
       child: ElevatedButton(
@@ -220,7 +225,7 @@ class VendorLanguageView extends GetView<VendorLanguageController> {
           elevation: 0,
         ),
         child: Text(
-          'Save Language',
+          'language.save'.tr(),
           style: AppTextStyles.buttonText.copyWith(fontSize: 16),
         ),
       ),

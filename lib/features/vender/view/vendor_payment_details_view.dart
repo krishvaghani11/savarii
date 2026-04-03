@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_payment_details_controller.dart';
 
 class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
@@ -15,7 +17,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Payment Details', style: AppTextStyles.h3),
+        title: Text('payment_details.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -34,18 +36,18 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // 1. BOOKING SUMMARY
-                    _buildSectionTitle('BOOKING SUMMARY'),
+                    _buildSectionTitle('payment_details.booking_summary'.tr()),
                     _buildBookingSummaryCard(),
                     const SizedBox(height: 24),
 
                     // 2. PASSENGER INFO
-                    _buildSectionTitle('PASSENGER INFO'),
-                    _buildPassengerCard(),
+                    _buildSectionTitle('payment_details.passenger_info'.tr()),
+                    _buildPassengerCard(context),
                     const SizedBox(height: 24),
 
                     // 3. FARE BREAKDOWN
-                    _buildSectionTitle('FARE BREAKDOWN'),
-                    _buildFareBreakdownCard(),
+                    _buildSectionTitle('payment_details.fare_breakdown'.tr()),
+                    _buildFareBreakdownCard(context),
                     const SizedBox(height: 24),
 
                    
@@ -55,7 +57,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
             ),
 
             // 5. Sticky Bottom Pay Button
-            _buildStickyPayButton(),
+            _buildStickyPayButton(context),
           ],
         ),
       ),
@@ -186,7 +188,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
     );
   }
 
-  Widget _buildPassengerCard() {
+  Widget _buildPassengerCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -226,7 +228,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
               ),
               const SizedBox(height: 4),
               Text(
-                controller.passengerPhone,
+                LocaleUtils.formatNumber(context, controller.passengerPhone),
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.secondaryGreyBlue,
                 ),
@@ -238,7 +240,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
     );
   }
 
-  Widget _buildFareBreakdownCard() {
+  Widget _buildFareBreakdownCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -254,11 +256,11 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
       ),
       child: Column(
         children: [
-          _buildFareRow('Base Fare', controller.baseFare),
+          _buildFareRow(context, 'payment_details.base_fare'.tr(), controller.baseFare),
           const SizedBox(height: 12),
-          _buildFareRow('GST (5%)', controller.gst),
+          _buildFareRow(context, 'payment_details.gst'.tr(), controller.gst),
           const SizedBox(height: 12),
-          _buildFareRow('Platform Fee', controller.platformFee),
+          _buildFareRow(context, 'payment_details.platform_fee'.tr(), controller.platformFee),
           const SizedBox(height: 16),
           Divider(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
           const SizedBox(height: 16),
@@ -266,11 +268,11 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total Amount',
+                'payment_details.total_amount'.tr(),
                 style: AppTextStyles.h3.copyWith(fontSize: 16),
               ),
               Text(
-                '₹${controller.totalAmount.toStringAsFixed(2)}',
+                LocaleUtils.formatCurrency(context, controller.totalAmount),
                 style: AppTextStyles.h3.copyWith(
                   color: AppColors.primaryAccent,
                   fontSize: 18,
@@ -283,7 +285,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
     );
   }
 
-  Widget _buildFareRow(String label, double amount) {
+  Widget _buildFareRow(BuildContext context, String label, double amount) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -294,7 +296,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
           ),
         ),
         Text(
-          '₹${amount.toStringAsFixed(2)}',
+          LocaleUtils.formatCurrency(context, amount),
           style: AppTextStyles.bodyMedium.copyWith(
             fontWeight: FontWeight.w600,
             color: AppColors.primaryDark,
@@ -305,7 +307,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
   }
 
 
-  Widget _buildStickyPayButton() {
+  Widget _buildStickyPayButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       decoration: BoxDecoration(color: AppColors.lightBackground),
@@ -323,7 +325,7 @@ class VendorPaymentDetailsView extends GetView<VendorPaymentDetailsController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Proceed to Pay ₹${controller.totalAmount.toStringAsFixed(2)}',
+              'payment_details.proceed_to_pay'.tr(namedArgs: {'amount': LocaleUtils.formatNumber(context, controller.totalAmount.toStringAsFixed(2))}),
               style: AppTextStyles.buttonText.copyWith(fontSize: 16),
             ),
             const SizedBox(width: 8),

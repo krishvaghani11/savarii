@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_help_center_controller.dart';
@@ -16,7 +17,7 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Help Center', style: AppTextStyles.h3),
+        title: Text('help.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -30,12 +31,12 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
             children: [
               // 1. Header & Search
               Text(
-                'How can we help?',
+                'help.help_how'.tr(),
                 style: AppTextStyles.h1.copyWith(fontSize: 24),
               ),
               const SizedBox(height: 8),
               Text(
-                'Search for topics or browse categories below',
+                'help.help_subtitle'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.secondaryGreyBlue,
                 ),
@@ -46,7 +47,7 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
 
               // 2. FAQ Categories
               Text(
-                'FAQ Categories',
+                'help.faq_categories'.tr(),
                 style: AppTextStyles.h3.copyWith(fontSize: 18),
               ),
               const SizedBox(height: 16),
@@ -55,15 +56,15 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
 
               // 3. Popular Articles
               Text(
-                'Popular Articles',
+                'help.popular_articles'.tr(),
                 style: AppTextStyles.h3.copyWith(fontSize: 18),
               ),
               const SizedBox(height: 16),
-              _buildArticleTile('How to refund a ticket?'),
+              _buildArticleTile('help.article_refund'.tr()),
               const SizedBox(height: 12),
-              _buildArticleTile('Update my vehicle information'),
+              _buildArticleTile('help.article_vehicle'.tr()),
               const SizedBox(height: 12),
-              _buildArticleTile('Why is my payment delayed?'),
+              _buildArticleTile('help.article_payment'.tr()),
               const SizedBox(height: 32),
 
               // 4. Contact Support Footer Card
@@ -87,7 +88,7 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
       child: TextField(
         controller: controller.searchController,
         decoration: InputDecoration(
-          hintText: 'Search help topics...',
+          hintText: 'help.search_hint'.tr(),
           hintStyle: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.secondaryGreyBlue.withOpacity(0.6),
           ),
@@ -112,11 +113,11 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
         Expanded(
           child: Column(
             children: [
-              _buildCategoryCard(Icons.person, 'Account & Login'),
+              _buildCategoryCard(Icons.person, 'help.account_login'.tr()),
               const SizedBox(height: 16),
               _buildCategoryCard(
                 Icons.account_balance_wallet,
-                'Payment &\nEarnings',
+                'help.payment_earnings'.tr(),
               ),
             ],
           ),
@@ -125,9 +126,9 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
         Expanded(
           child: Column(
             children: [
-              _buildCategoryCard(Icons.confirmation_num, 'Ticket\nManagement'),
+              _buildCategoryCard(Icons.confirmation_num, 'help.ticket_management'.tr()),
               const SizedBox(height: 16),
-              _buildCategoryCard(Icons.directions_bus, 'Bus Tracking'),
+              _buildCategoryCard(Icons.directions_bus, 'help.bus_tracking'.tr()),
             ],
           ),
         ),
@@ -246,7 +247,7 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Still need help?',
+            'help.still_need_help'.tr(),
             style: AppTextStyles.h2.copyWith(
               color: AppColors.white,
               fontSize: 20,
@@ -254,7 +255,7 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Our support team is available 24/7 to assist you with any issues.',
+            'help.support_desc'.tr(),
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
               color: Colors.white70,
@@ -265,7 +266,7 @@ class VendorHelpCenterView extends GetView<VendorHelpCenterController> {
           ElevatedButton.icon(
             onPressed: controller.contactSupport,
             icon: const Icon(Icons.chat, color: AppColors.white, size: 18),
-            label: Text('Contact Support', style: AppTextStyles.buttonText),
+            label: Text('help.contact_support'.tr(), style: AppTextStyles.buttonText),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryAccent,
               minimumSize: const Size(double.infinity, 50),

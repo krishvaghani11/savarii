@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_login_controller.dart';
@@ -15,7 +16,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Vendor Login', style: AppTextStyles.h3),
+        title: Text('auth.vendor_login'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -39,12 +40,12 @@ class VendorLoginView extends GetView<VendorLoginController> {
                       child: Column(
                         children: [
                           Text(
-                            'Welcome Back',
+                            'auth.welcome_back'.tr(),
                             style: AppTextStyles.h1.copyWith(fontSize: 28),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Access your Savarii vendor dashboard',
+                            'auth.login_subtitle'.tr(),
                             style: AppTextStyles.bodyMedium.copyWith(
                               color: AppColors.secondaryGreyBlue,
                             ),
@@ -56,7 +57,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
 
                     // Email Address Label
                     Text(
-                      'Email Address',
+                      'auth.email_address'.tr(),
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
@@ -70,7 +71,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
 
                     // Password Label
                     Text(
-                      'Password',
+                      'auth.password'.tr(),
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
@@ -88,7 +89,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
                       child: GestureDetector(
                         onTap: controller.forgotPassword,
                         child: Text(
-                          'Forgot Password?',
+                          'auth.forgot_password'.tr(),
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.primaryAccent,
                             fontWeight: FontWeight.bold,
@@ -120,7 +121,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      'Login',
+                                      'auth.login'.tr(),
                                       style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                                     ),
                                     const SizedBox(width: 8),
@@ -144,7 +145,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Don't have an account? ",
+                    'auth.no_account'.tr(),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.secondaryGreyBlue,
                     ),
@@ -152,7 +153,7 @@ class VendorLoginView extends GetView<VendorLoginController> {
                   GestureDetector(
                     onTap: controller.goToRegister,
                     child: Text(
-                      'Register',
+                      'auth.register'.tr(),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.primaryAccent,
                         fontWeight: FontWeight.bold,

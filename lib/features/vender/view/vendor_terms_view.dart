@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_terms_controller.dart';
 
 class VendorTermsView extends GetView<VendorTermsController> {
@@ -15,7 +17,7 @@ class VendorTermsView extends GetView<VendorTermsController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Terms & Conditions', style: AppTextStyles.h3),
+        title: Text('terms.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -35,56 +37,56 @@ class VendorTermsView extends GetView<VendorTermsController> {
                   children: [
                     // Introduction Card
                     _buildTermCard(
-                      title: 'Introduction',
-                      content:
-                          'Welcome to the Savarii Vendor app. These terms and conditions outline the rules and regulations for the use of Savarii\'s platform. By using this service, you agree to comply with all guidelines listed below.',
+                      context: context,
+                      title: 'terms.intro_title'.tr(),
+                      content: 'terms.intro_desc'.tr(),
                     ),
                     const SizedBox(height: 16),
 
                     // Term 1
                     _buildTermCard(
+                      context: context,
                       number: '1',
-                      title: 'Acceptance of Terms',
+                      title: 'terms.term1_title'.tr(),
                       // Replace this placeholder string with your actual asset path, e.g., 'assets/images/signing_document.png'
                       imageAsset: 'assets/images/tern.png',
-                      content:
-                          'By accessing this app, we assume you accept these terms and conditions. Do not continue to use Savarii if you do not agree to all of the terms.',
+                      content: 'terms.term1_desc'.tr(),
                     ),
                     const SizedBox(height: 16),
 
                     // Term 2
                     _buildTermCard(
+                      context: context,
                       number: '2',
-                      title: 'Vendor Obligations',
-                      content:
-                          'Vendors must provide accurate business documentation, maintain product quality standards, and fulfill orders within the specified timeframe. Failure to maintain service levels may result in account suspension.',
+                      title: 'terms.term2_title'.tr(),
+                      content: 'terms.term2_desc'.tr(),
                     ),
                     const SizedBox(height: 16),
 
                     // Term 3
                     _buildTermCard(
+                      context: context,
                       number: '3',
-                      title: 'Service Fees & Payments',
-                      content:
-                          'Savarii charges a standard commission on every successful transaction. Payments are processed on a weekly basis after deducting applicable service fees and taxes as mandated by local regulations.',
+                      title: 'terms.term3_title'.tr(),
+                      content: 'terms.term3_desc'.tr(),
                     ),
                     const SizedBox(height: 16),
 
                     // Term 4
                     _buildTermCard(
+                      context: context,
                       number: '4',
-                      title: 'Termination of Service',
-                      content:
-                          'Either party may terminate this agreement with a 30-day written notice. Savarii reserves the right to terminate accounts immediately for fraudulent activities or severe policy violations.',
+                      title: 'terms.term4_title'.tr(),
+                      content: 'terms.term4_desc'.tr(),
                     ),
                     const SizedBox(height: 16),
 
                     // Term 5
                     _buildTermCard(
+                      context: context,
                       number: '5',
-                      title: 'Limitation of Liability',
-                      content:
-                          'Savarii shall not be liable for any indirect, incidental, or consequential damages resulting from the use of the service or the inability to access the vendor dashboard.',
+                      title: 'terms.term5_title'.tr(),
+                      content: 'terms.term5_desc'.tr(),
                     ),
                     const SizedBox(height: 32),
                   ],
@@ -103,6 +105,7 @@ class VendorTermsView extends GetView<VendorTermsController> {
   // --- Sub-Widgets ---
 
   Widget _buildTermCard({
+    required BuildContext context,
     String? number,
     required String title,
     String? imageAsset,
@@ -138,7 +141,7 @@ class VendorTermsView extends GetView<VendorTermsController> {
                   ),
                   child: Center(
                     child: Text(
-                      number,
+                      LocaleUtils.formatNumber(context, number),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.primaryAccent,
                         fontWeight: FontWeight.bold,
@@ -219,7 +222,7 @@ class VendorTermsView extends GetView<VendorTermsController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'I Accept',
+                  'terms.i_accept'.tr(),
                   style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                 ),
                 const SizedBox(width: 8),
@@ -233,7 +236,7 @@ class VendorTermsView extends GetView<VendorTermsController> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Last updated: October 2023',
+            'terms.last_updated'.tr(),
             style: AppTextStyles.caption.copyWith(
               color: AppColors.secondaryGreyBlue,
               fontSize: 11,

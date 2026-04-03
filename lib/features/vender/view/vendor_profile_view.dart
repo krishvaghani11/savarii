@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_profile_controller.dart';
 
 class VendorProfileView extends GetView<VendorProfileController> {
@@ -15,7 +17,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Vendor Profile', style: AppTextStyles.h3),
+        title: Text('profile.title'.tr(), style: AppTextStyles.h3),
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert, color: AppColors.primaryDark),
@@ -37,7 +39,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
               ),
 
               // 2. Stats Row (Trips, Rating, Vehicles)
-              _buildStatsRow(),
+              _buildStatsRow(context),
               Divider(
                 color: AppColors.secondaryGreyBlue.withOpacity(0.1),
                 height: 1,
@@ -56,7 +58,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
                     Obx(
                       () => _buildInfoCard(
                         icon: Icons.email,
-                        label: 'EMAIL ADDRESS',
+                        label: 'profile.email_address'.tr(),
                         value: controller.vendorEmail,
                         trailing: const Icon(
                           Icons.verified,
@@ -69,7 +71,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
                     Obx(() {
                       return _buildInfoCard(
                         icon: Icons.directions_bus,
-                        label: 'TRAVELS NAME',
+                        label: 'profile.travels_name'.tr(),
                         value: controller.vendorBusinessName,
                         trailing: const Icon(
                           Icons.chevron_right,
@@ -88,7 +90,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
               // 4. Menu List Options
               _buildMenuItem(
                 Icons.edit_document,
-                'Edit Profile Information',
+                'profile.edit_profile_info'.tr(),
                 onTap: controller.editProfileInfo,
               ),
               Divider(
@@ -99,7 +101,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
 
               _buildMenuItem(
                 Icons.add_business,
-                'Add a Travels',
+                'profile.add_travels'.tr(),
                 onTap: controller.addTravels,
               ),
               Divider(
@@ -110,7 +112,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
 
               _buildMenuItem(
                 Icons.business,
-                'Travels Detail',
+                'profile.travels_detail'.tr(),
                 onTap: controller.goToTravelsDetail,
               ),
               Divider(
@@ -121,7 +123,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
 
               _buildMenuItem(
                 Icons.settings,
-                'Settings',
+                'profile.settings'.tr(),
                 onTap: controller.goToSettings,
               ),
               Divider(
@@ -142,7 +144,7 @@ class VendorProfileView extends GetView<VendorProfileController> {
                   color: AppColors.primaryAccent,
                 ),
                 title: Text(
-                  'Logout',
+                  'profile.logout'.tr(),
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.primaryAccent,
                     fontWeight: FontWeight.bold,
@@ -241,24 +243,24 @@ class VendorProfileView extends GetView<VendorProfileController> {
     );
   }
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: IntrinsicHeight(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildStatItem('TRIPS', controller.trips),
+            _buildStatItem('profile.trips'.tr(), LocaleUtils.formatCount(context, int.tryParse(controller.trips) ?? 0)),
             VerticalDivider(
               color: AppColors.secondaryGreyBlue.withOpacity(0.2),
               thickness: 1,
             ),
-            _buildStatItem('RATING', '${controller.rating} ★'),
+            _buildStatItem('profile.rating'.tr(), '${LocaleUtils.formatNumber(context, controller.rating)} ★'),
             VerticalDivider(
               color: AppColors.secondaryGreyBlue.withOpacity(0.2),
               thickness: 1,
             ),
-            _buildStatItem('VEHICLES', controller.vehicles),
+            _buildStatItem('profile.vehicles'.tr(), LocaleUtils.formatCount(context, int.tryParse(controller.vehicles) ?? 0)),
           ],
         ),
       ),

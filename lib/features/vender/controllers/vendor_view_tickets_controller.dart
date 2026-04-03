@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:savarii/core/services/auth_services.dart';
 import 'package:savarii/core/services/firestore_service.dart';
+import 'package:savarii/core/services/ticket_pdf_service.dart';
 
 // A simple model to hold the ticket data
 class VendorTicketModel {
@@ -13,6 +14,12 @@ class VendorTicketModel {
   final String origin;
   final String journeyDate;
   final double totalPaid;
+  // Pricing breakdown (for PDF)
+  final double ticketPrice;
+  final double gst;
+  final double platformFee;
+  final String paymentMethod;
+  final String ticketUrl;
 
   VendorTicketModel({
     required this.passengerName,
@@ -23,9 +30,17 @@ class VendorTicketModel {
     required this.origin,
     required this.journeyDate,
     required this.totalPaid,
+    this.ticketPrice = 0.0,
+    this.gst = 0.0,
+    this.platformFee = 10.0,
+    this.paymentMethod = 'UPI',
+    this.ticketUrl = '',
   });
 
   factory VendorTicketModel.fromMap(Map<String, dynamic> map) {
+    double _p(dynamic v, double fb) =>
+        (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? fb;
+
     return VendorTicketModel(
       passengerName: map['passengerName'] ?? 'Unknown Passenger',
       passengerPhone: map['passengerPhone'] ?? 'N/A',
@@ -34,7 +49,12 @@ class VendorTicketModel {
       route: map['route'] ?? 'Unknown Route',
       origin: map['origin'] ?? 'Unknown Origin',
       journeyDate: map['journeyDate'] ?? 'Unknown Date',
-      totalPaid: (map['totalPaid'] is num) ? (map['totalPaid'] as num).toDouble() : double.tryParse(map['totalPaid'].toString()) ?? 0.0,
+      totalPaid: _p(map['totalPaid'], 0.0),
+      ticketPrice: _p(map['ticketPrice'], 0.0),
+      gst: _p(map['gst'], 0.0),
+      platformFee: _p(map['platformFee'], 10.0),
+      paymentMethod: map['paymentMethod'] ?? 'UPI',
+      ticketUrl: map['ticketUrl'] ?? '',
     );
   }
 }
@@ -83,13 +103,22 @@ class VendorViewTicketsController extends GetxController {
 
   void openFilters() => print("Opening filters...");
 
-  void downloadTicket(String ticketId) {
-    print("Downloading ticket $ticketId...");
-    Get.snackbar(
-      'Downloading',
-      'Ticket $ticketId is downloading...',
-      snackPosition: SnackPosition.BOTTOM,
+  /// Downloads a ticket PDF for the given [ticket] to the device.
+  Future<void> downloadTicket(VendorTicketModel ticket) async {
+    final data = TicketDownloadData(
+      bookingId: ticket.bookingId,
+      passengerName: ticket.passengerName,
+      passengerPhone: ticket.passengerPhone,
+      journeyDate: ticket.journeyDate,
+      route: ticket.route,
+      busAndSeat: ticket.busAndSeat,
+      paymentMethod: ticket.paymentMethod,
+      ticketPrice: ticket.ticketPrice,
+      gst: ticket.gst,
+      platformFee: ticket.platformFee,
+      totalPaid: ticket.totalPaid,
     );
+    await TicketPdfService().downloadTicket(data);
   }
 
   void shareTicket(String ticketId) {

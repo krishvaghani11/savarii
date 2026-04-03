@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_view_tickets_controller.dart';
 
 class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
@@ -15,7 +17,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Bus Tickets', style: AppTextStyles.h3),
+        title: Text('tickets.title'.tr(), style: AppTextStyles.h3),
 
         actions: [
           IconButton(
@@ -39,8 +41,8 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                 children: [
                   Expanded(
                     child: Obx(() => _buildStatCard(
-                      title: 'TOTAL TICKETS',
-                      value: '${controller.totalTickets}',
+                      title: 'tickets.total'.tr(),
+                      value: LocaleUtils.formatCount(context, controller.totalTickets),
                       bgColor: const Color(0xFFFFEBEB),
                       // Light Pink
                       borderColor: const Color(0xFFFFD6D6),
@@ -50,8 +52,8 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Obx(() => _buildStatCard(
-                      title: 'CONFIRMED',
-                      value: '${controller.confirmedTickets}',
+                      title: 'tickets.confirmed_count'.tr(),
+                      value: LocaleUtils.formatCount(context, controller.confirmedTickets),
                       bgColor: const Color(0xFFEBFFF4),
                       // Light Green
                       borderColor: const Color(0xFFD6FFE8),
@@ -64,16 +66,16 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
 
               // 3. List Header
               Text(
-                'Recent Bookings',
+                'tickets.recent'.tr(),
                 style: AppTextStyles.h3.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 16),
 
               // 4. Ticket List
               Obx(() => controller.tickets.isEmpty
-                  ? const Center(child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Text("No tickets found for your fleet yet."),
+                  ? Center(child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text("tickets.no_tickets".tr()),
                     ))
                   : Column(
                       children: controller.tickets.map(
@@ -197,7 +199,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'SUCCESS',
+                    'tickets.success_status'.tr(),
                     style: AppTextStyles.caption.copyWith(
                       color: const Color(0xFF00A65A),
                       fontWeight: FontWeight.bold,
@@ -210,7 +212,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
             const SizedBox(height: 4),
             // Row 2: Phone, Ticket ID, Seat
             Text(
-              ticket.passengerPhone,
+              LocaleUtils.formatNumber(context, ticket.passengerPhone),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.secondaryGreyBlue,
               ),
@@ -255,7 +257,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '₹${ticket.totalPaid.toStringAsFixed(2)}',
+                  LocaleUtils.formatCurrency(context, ticket.totalPaid),
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.primaryDark,
                     fontWeight: FontWeight.bold,
@@ -322,7 +324,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         style: AppTextStyles.h2.copyWith(fontSize: 22),
                       ),
                       Text(
-                        'Ticket Details',
+                        'tickets.ticket_details'.tr(),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.secondaryGreyBlue,
                         ),
@@ -356,7 +358,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'MOBILE NUMBER',
+                          'tickets.mobile'.tr(),
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.secondaryGreyBlue,
                             fontWeight: FontWeight.bold,
@@ -365,7 +367,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          ticket.passengerPhone,
+                          LocaleUtils.formatNumber(context, ticket.passengerPhone),
                           style: AppTextStyles.bodyLarge.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -391,7 +393,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'TICKET ID',
+                            'tickets.ticket_id'.tr(),
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                               fontWeight: FontWeight.bold,
@@ -407,7 +409,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'BOOKING DATE',
+                            'tickets.booking_date'.tr(),
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                               fontWeight: FontWeight.bold,
@@ -415,7 +417,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(ticket.journeyDate, style: AppTextStyles.bodyMedium),
+                          Text(LocaleUtils.formatDate(context, ticket.journeyDate), style: AppTextStyles.bodyMedium),
                         ],
                       ),
                     ),
@@ -424,7 +426,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'BUS / SEAT',
+                            'tickets.bus_seat'.tr(),
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                               fontWeight: FontWeight.bold,
@@ -440,7 +442,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'STATUS',
+                            'tickets.status'.tr(),
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                               fontWeight: FontWeight.bold,
@@ -457,7 +459,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Success',
+                                'tickets.success_label'.tr(),
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: const Color(0xFF00A65A),
                                   fontWeight: FontWeight.bold,
@@ -510,7 +512,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'ROUTE',
+                          'tickets.route'.tr(),
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.secondaryGreyBlue,
                             fontWeight: FontWeight.bold,
@@ -525,7 +527,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'BOARDING POINT',
+                          'tickets.boarding_point'.tr(),
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.secondaryGreyBlue,
                             fontWeight: FontWeight.bold,
@@ -552,7 +554,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         Get.back();
-                        controller.downloadTicket(ticket.bookingId);
+                        controller.downloadTicket(ticket);
                       },
                       icon: const Icon(
                         Icons.download,
@@ -560,7 +562,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         size: 18,
                       ),
                       label: Text(
-                        'Ticket',
+                        'tickets.download'.tr(),
                         style: AppTextStyles.buttonText.copyWith(
                           color: AppColors.primaryDark,
                         ),
@@ -588,7 +590,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         color: AppColors.white,
                         size: 18,
                       ),
-                      label: Text('Share', style: AppTextStyles.buttonText),
+                      label: Text('tickets.share'.tr(), style: AppTextStyles.buttonText),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryAccent,
                         padding: const EdgeInsets.symmetric(vertical: 16),

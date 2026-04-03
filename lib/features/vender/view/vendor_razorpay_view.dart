@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_razorpay_controller.dart';
 
 class VendorRazorpayView extends GetView<VendorRazorpayController> {
@@ -15,7 +17,7 @@ class VendorRazorpayView extends GetView<VendorRazorpayController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Secure Payment', style: AppTextStyles.h3),
+        title: Text('razorpay.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -23,13 +25,13 @@ class VendorRazorpayView extends GetView<VendorRazorpayController> {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(color: AppColors.primaryAccent),
+                const CircularProgressIndicator(color: AppColors.primaryAccent),
                 SizedBox(height: 24),
-                Text('Confirming your booking...'),
+                Text('razorpay.confirming'.tr()),
               ],
             ),
           );
@@ -72,12 +74,12 @@ class VendorRazorpayView extends GetView<VendorRazorpayController> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Complete Your Payment',
+                        'razorpay.complete_payment'.tr(),
                         style: AppTextStyles.h3.copyWith(fontSize: 18),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Razorpay Secure Gateway',
+                        'razorpay.secure_gateway'.tr(),
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.secondaryGreyBlue,
                         ),
@@ -89,19 +91,19 @@ class VendorRazorpayView extends GetView<VendorRazorpayController> {
                       // Route Info
                       _buildInfoRow(
                         Icons.route,
-                        'Route',
+                        'razorpay.route'.tr(),
                         '${controller.origin} → ${controller.destination}',
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         Icons.person,
-                        'Passenger',
+                        'razorpay.passenger'.tr(),
                         controller.passengerName,
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         Icons.event_seat,
-                        'Seat(s)',
+                        'razorpay.seats'.tr(),
                         controller.seat,
                       ),
                       const SizedBox(height: 20),
@@ -113,11 +115,11 @@ class VendorRazorpayView extends GetView<VendorRazorpayController> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Total Payable',
+                            'razorpay.total_payable'.tr(),
                             style: AppTextStyles.h3.copyWith(fontSize: 16),
                           ),
                           Text(
-                            '₹${controller.totalAmount.toStringAsFixed(2)}',
+                            LocaleUtils.formatCurrency(context, controller.totalAmount),
                             style: AppTextStyles.h2.copyWith(
                               color: AppColors.primaryAccent,
                               fontSize: 22,
@@ -136,7 +138,7 @@ class VendorRazorpayView extends GetView<VendorRazorpayController> {
                   onPressed: controller.openRazorpayCheckout,
                   icon: const Icon(Icons.payment, color: AppColors.white, size: 20),
                   label: Text(
-                    'Pay Now ₹${controller.totalAmount.toStringAsFixed(2)}',
+                    '${"razorpay.pay_now".tr()} ${LocaleUtils.formatCurrency(context, controller.totalAmount)}',
                     style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -161,7 +163,7 @@ class VendorRazorpayView extends GetView<VendorRazorpayController> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '256-bit SSL encrypted | Powered by Razorpay',
+                      'razorpay.ssl_encrypted'.tr(),
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.secondaryGreyBlue,
                         fontSize: 11,

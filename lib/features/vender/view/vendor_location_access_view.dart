@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_location_access_controller.dart';
@@ -52,7 +53,7 @@ class VendorLocationAccessView extends GetView<VendorLocationAccessController> {
 
                     // 2. Titles
                     Text(
-                      'Location access\nis required',
+                      'location.access_required'.tr(),
                       style: AppTextStyles.h1.copyWith(
                         fontSize: 32,
                         height: 1.2,
@@ -60,7 +61,7 @@ class VendorLocationAccessView extends GetView<VendorLocationAccessController> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Savarii collects location data to provide a seamless and real-time experience. We use this to:',
+                      'location.access_desc'.tr(),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.secondaryGreyBlue,
                         height: 1.5,
@@ -72,25 +73,22 @@ class VendorLocationAccessView extends GetView<VendorLocationAccessController> {
                     _buildFeatureItem(
                       icon: Icons.bus_alert,
                       iconColor: const Color(0xFF00A65A), // Green
-                      title: 'Nearby Trips Instantly',
-                      description:
-                          'Quickly book trips available right where you are.',
+                      title: 'location.nearby_trips'.tr(),
+                      description: 'location.nearby_desc'.tr(),
                     ),
                     const SizedBox(height: 24),
                     _buildFeatureItem(
                       icon: Icons.monetization_on,
                       iconColor: const Color(0xFFF39C12), // Orange/Gold
-                      title: 'Exact Fares Calculation',
-                      description:
-                          'Ensure accurate pricing based on precise distance.',
+                      title: 'location.exact_fares'.tr(),
+                      description: 'location.exact_desc'.tr(),
                     ),
                     const SizedBox(height: 24),
                     _buildFeatureItem(
                       icon: Icons.share_location,
                       iconColor: AppColors.primaryAccent, // Red
-                      title: 'Track Driver in Real-time',
-                      description:
-                          'Know exactly where your driver is and when they\'ll arrive.',
+                      title: 'location.track_driver'.tr(),
+                      description: 'location.track_desc'.tr(),
                     ),
                     const SizedBox(height: 40),
 
@@ -145,7 +143,7 @@ class VendorLocationAccessView extends GetView<VendorLocationAccessController> {
                       elevation: 0,
                     ),
                     child: Text(
-                      'ENABLE LOCATION SERVICES',
+                      'location.enable_location'.tr().toUpperCase(),
                       style: AppTextStyles.buttonText.copyWith(fontSize: 14),
                     ),
                   ),
@@ -159,7 +157,7 @@ class VendorLocationAccessView extends GetView<VendorLocationAccessController> {
                       ),
                     ),
                     child: Text(
-                      'Skip for now',
+                      'location.skip'.tr(),
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: AppColors.primaryAccent,
                         fontWeight: FontWeight.bold,

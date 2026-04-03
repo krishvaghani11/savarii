@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
@@ -157,6 +158,18 @@ class FirestoreService extends GetxService {
   // --- Tickets Methods ---
   Future<void> addTicket(Map<String, dynamic> ticketData) async {
     await _db.collection('tickets').add(ticketData);
+  }
+
+  Future<String> uploadTicketPdf(String bookingId, Uint8List pdfBytes) async {
+    try {
+      final ref = _storage.ref().child('tickets').child('$bookingId.pdf');
+      await ref.putData(pdfBytes, SettableMetadata(contentType: 'application/pdf'));
+      final downloadUrl = await ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading ticket PDF for $bookingId: $e');
+      rethrow;
+    }
   }
 
   Stream<List<Map<String, dynamic>>> getVendorTicketsStream(String vendorId) {

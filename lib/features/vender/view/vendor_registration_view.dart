@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 
@@ -28,12 +29,12 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                         child: Column(
                           children: [
                             Text(
-                              'Vendor Registration',
+                              'auth.vendor_registration'.tr(),
                               style: AppTextStyles.h1.copyWith(fontSize: 28),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Create your Savarii vendor account',
+                              'auth.register_subtitle'.tr(),
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.secondaryGreyBlue,
                               ),
@@ -44,21 +45,21 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                       const SizedBox(height: 48),
 
                       // Full Name Field
-                      _buildLabel('FULL NAME'),
+                      _buildLabel('auth.full_name'.tr()),
                       _buildTextField(
-                        hint: 'Enter your full name',
+                        hint: 'auth.full_name_hint'.tr(),
                         icon: Icons.badge_outlined,
                         controller: controller.fullNameController,
                       ),
                       const SizedBox(height: 20),
 
                       // Mobile Number Field
-                      _buildLabel('MOBILE NUMBER'),
+                      _buildLabel('auth.mobile_number'.tr()),
                       _buildMobileField(),
                       const SizedBox(height: 20),
 
                       // Email Address Field
-                      _buildLabel('EMAIL ADDRESS'),
+                      _buildLabel('auth.email_address_label'.tr()),
                       _buildTextField(
                         hint: 'vendor@example.com',
                         icon: Icons.email_outlined,
@@ -68,7 +69,7 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                       const SizedBox(height: 20),
 
                       // Password Field
-                      _buildLabel('PASSWORD'),
+                      _buildLabel('auth.password_label'.tr()),
                       Obx(() => _buildPasswordField(
                             hint: '........',
                             controller: controller.passwordController,
@@ -78,7 +79,7 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                       const SizedBox(height: 20),
 
                       // Confirm Password Field
-                      _buildLabel('CONFIRM PASSWORD'),
+                      _buildLabel('auth.confirm_password'.tr()),
                       Obx(() => _buildPasswordField(
                             hint: '........',
                             controller: controller.confirmPasswordController,
@@ -109,7 +110,7 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        'Register',
+                                        'auth.register'.tr(),
                                         style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                                       ),
                                       const SizedBox(width: 8),
@@ -134,7 +135,7 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Already have an account? ",
+                    'auth.have_account'.tr(),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.secondaryGreyBlue,
                     ),
@@ -142,7 +143,7 @@ class VendorRegistrationView extends GetView<VendorRegistrationController> {
                   GestureDetector(
                     onTap: controller.goToLogin,
                     child: Text(
-                      'Login',
+                      'auth.login'.tr(),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.primaryAccent,
                         fontWeight: FontWeight.bold,

@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 
@@ -16,7 +17,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Add a Travels', style: AppTextStyles.h3),
+        title: Text('travels.add_title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -36,19 +37,19 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                       // 1. BUSINESS INFORMATION
                       _buildSectionCard(
                         icon: Icons.domain,
-                        title: 'Business Information',
+                        title: 'travels.business_info'.tr(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('Travels Name'),
-                            _buildTextField('Enter agency name', controller.travelsNameController),
+                            _buildLabel('travels.agency_name'.tr()),
+                            _buildTextField('travels.agency_name_hint'.tr(), controller.travelsNameController),
                             const SizedBox(height: 16),
                             
-                            _buildLabel('GST Number'),
+                            _buildLabel('travels.gst'.tr()),
                             _buildTextField('22AAAAA0000A1Z5', controller.gstController),
                             const SizedBox(height: 16),
                             
-                            _buildLabel('Business Type'),
+                            _buildLabel('travels.business_type'.tr()),
                             _buildDropdown(
                               items: controller.businessTypes,
                               selectedValue: controller.selectedBusinessType,
@@ -56,7 +57,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                             ),
                             const SizedBox(height: 16),
                             
-                            _buildLabel('Travels Established Date'),
+                            _buildLabel('travels.established_date'.tr()),
                             _buildDatePickerField(context),
                           ],
                         ),
@@ -66,19 +67,19 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                       // 2. PRIMARY CONTACT
                       _buildSectionCard(
                         icon: Icons.contact_mail,
-                        title: 'Primary Contact',
+                        title: 'travels.primary_contact'.tr(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('Primary Contact Person'),
-                            _buildTextField('Full name of contact person', controller.contactPersonController),
+                            _buildLabel('travels.contact_person'.tr()),
+                            _buildTextField('travels.contact_person_hint'.tr(), controller.contactPersonController),
                             const SizedBox(height: 16),
                             
-                            _buildLabel('Primary Mobile Number'),
+                            _buildLabel('travels.primary_mobile'.tr()),
                             _buildMobileField(),
                             const SizedBox(height: 16),
                             
-                            _buildLabel('Support Email'),
+                            _buildLabel('travels.support_email'.tr()),
                             _buildTextField(
                               'support@travels.com', 
                               controller.emailController, 
@@ -92,11 +93,11 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                       // 3. PRIMARY ROUTES (Dynamic List)
                       _buildSectionCard(
                         icon: Icons.route_outlined,
-                        title: 'Primary Routes',
+                        title: 'travels.primary_routes'.tr(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('Add Route'),
+                            _buildLabel('travels.add_route'.tr()),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -137,11 +138,11 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                       // 4. OFFICE ADDRESS
                       _buildSectionCard(
                         icon: Icons.location_on,
-                        title: 'Office Address',
+                        title: 'travels.office_address'.tr(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('Address Line'),
+                            _buildLabel('travels.address_line'.tr()),
                             _buildTextField(
                               'Plot No, Building, Street name...', 
                               controller.addressController, 
@@ -149,11 +150,11 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                             ),
                             const SizedBox(height: 16),
                             
-                            _buildLabel('City'),
-                            _buildTextField('Enter city', controller.cityController),
+                            _buildLabel('travels.city'.tr()),
+                            _buildTextField('travels.city_hint'.tr(), controller.cityController),
                             const SizedBox(height: 16),
                             
-                            _buildLabel('State'),
+                            _buildLabel('travels.state'.tr()),
                             _buildDropdown(
                               items: controller.states,
                               selectedValue: controller.selectedState,
@@ -167,7 +168,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                       // 5. TRAVELS IMAGES
                       _buildSectionCard(
                         icon: Icons.image,
-                        title: 'Travels Images',
+                        title: 'travels.images_title'.tr(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -195,7 +196,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                                           Icon(Icons.add_photo_alternate, color: AppColors.secondaryGreyBlue.withOpacity(0.8), size: 28),
                                           const SizedBox(height: 8),
                                           Text(
-                                            'Add Image', 
+                                            'travels.add_image'.tr(), 
                                             style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue.withOpacity(0.8))
                                           ),
                                         ],
@@ -241,7 +242,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Upload high-quality images of your office or buses\n(Max 5MB per image).',
+                              'travels.upload_hint'.tr(),
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.secondaryGreyBlue,
                                 fontSize: 11,
@@ -522,7 +523,7 @@ class VendorAddTravelsView extends GetView<VendorAddTravelsController> {
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Register Travels', style: AppTextStyles.buttonText.copyWith(fontSize: 16)),
+                Text('travels.register_travels'.tr(), style: AppTextStyles.buttonText.copyWith(fontSize: 16)),
                 const SizedBox(width: 8),
                 const Icon(Icons.person_add_alt_1, color: AppColors.white, size: 20), // Matches mockup icon
               ],

@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/add_bus_controller.dart';
@@ -15,7 +16,7 @@ class AddBusView extends GetView<AddBusController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Add Bus & Route', style: AppTextStyles.h3),
+        title: Text('add_bus.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -36,26 +37,26 @@ class AddBusView extends GetView<AddBusController> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // 1. BUS DETAILS
-                      _buildSectionHeader(Icons.directions_bus, 'BUS DETAILS'),
+                      _buildSectionHeader(Icons.directions_bus, 'add_bus.bus_details_section'.tr()),
                       _buildCardContainer(
                         child: Column(
                           children: [
                             _buildInputField(
-                              'Bus Name',
+                              'add_bus.bus_name'.tr(),
                               'e.g. Scania Touring',
                               controller.busNameController,
                               validator: controller.validateRequired,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
-                              'Bus Number',
+                              'add_bus.bus_number'.tr(),
                               'e.g. MH 12 AB 1234',
                               controller.busNumberController,
                               validator: controller.validateRequired,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
-                              'Total Seats',
+                              'add_bus.total_seats'.tr(),
                               'e.g. 45',
                               controller.totalSeatsController,
                               keyboardType: TextInputType.number,
@@ -68,7 +69,7 @@ class AddBusView extends GetView<AddBusController> {
                       const SizedBox(height: 24),
 
                       // 2. BUS TYPE
-                      _buildSectionHeader(Icons.category, 'BUS TYPE'),
+                      _buildSectionHeader(Icons.category, 'add_bus.bus_type_section'.tr()),
                       _buildCardContainer(
                         child: Obx(
                           () => Wrap(
@@ -83,7 +84,7 @@ class AddBusView extends GetView<AddBusController> {
                       const SizedBox(height: 24),
 
                       // 3. ROUTE & SCHEDULE
-                      _buildSectionHeader(Icons.alt_route, 'ROUTE & SCHEDULE'),
+                      _buildSectionHeader(Icons.alt_route, 'add_bus.route_schedule_section'.tr()),
                       _buildCardContainer(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -92,7 +93,7 @@ class AddBusView extends GetView<AddBusController> {
                               children: [
                                 Expanded(
                                   child: _buildInputField(
-                                    'From',
+                                    'add_bus.from'.tr(),
                                     'Origin',
                                     controller.fromController,
                                     validator: controller.validateRequired,
@@ -101,7 +102,7 @@ class AddBusView extends GetView<AddBusController> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: _buildInputField(
-                                    'To',
+                                    'add_bus.to'.tr(),
                                     'Destination',
                                     controller.toController,
                                     validator: controller.validateRequired,
@@ -114,7 +115,7 @@ class AddBusView extends GetView<AddBusController> {
                               children: [
                                 Expanded(
                                   child: _buildTimePickerField(
-                                    'Departure',
+                                    'add_bus.departure'.tr(),
                                     true,
                                     context,
                                   ),
@@ -122,7 +123,7 @@ class AddBusView extends GetView<AddBusController> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: _buildTimePickerField(
-                                    'Arrival',
+                                    'add_bus.arrival'.tr(),
                                     false,
                                     context,
                                   ),
@@ -132,7 +133,7 @@ class AddBusView extends GetView<AddBusController> {
 
                             // --- DYNAMIC BOARDING POINTS ---
                             _buildSubHeaderWithAddButton(
-                              'BOARDING POINTS',
+                              'add_bus.boarding_points_section'.tr(),
                               controller.addBoardingPoint,
                             ),
 
@@ -144,7 +145,7 @@ class AddBusView extends GetView<AddBusController> {
                                   flex: 3,
                                   child: _buildSimpleTextField(
                                     controller.bpNameController,
-                                    'Point Name',
+                                    'add_bus.point_name'.tr(),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -173,7 +174,7 @@ class AddBusView extends GetView<AddBusController> {
 
                             // --- DYNAMIC DROPPING POINTS ---
                             _buildSubHeaderWithAddButton(
-                              'DROPPING POINTS',
+                              'add_bus.dropping_points_section'.tr(),
                               controller.addDroppingPoint,
                             ),
 
@@ -185,7 +186,7 @@ class AddBusView extends GetView<AddBusController> {
                                   flex: 3,
                                   child: _buildSimpleTextField(
                                     controller.dpNameController,
-                                    'Point Name',
+                                    'add_bus.point_name'.tr(),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -214,19 +215,19 @@ class AddBusView extends GetView<AddBusController> {
 
                             // --- DYNAMIC REST STOPS ---
                             _buildSubHeaderWithAddButton(
-                              'REST STOPS',
+                              'add_bus.rest_stops_section'.tr(),
                               controller.addRestStop,
                             ),
 
                             // Inputs Column
                             _buildInputField(
-                              'REST STOP NAME/ADDRESS',
+                              'add_bus.rest_stop_name'.tr(),
                               'e.g. Highway Plaza, NH48',
                               controller.rsNameController,
                             ),
                             const SizedBox(height: 12),
                             _buildInputField(
-                              'DURATION/ESTIMATED TIME',
+                              'add_bus.rest_stop_duration'.tr(),
                               'e.g. 20 mins',
                               controller.rsDurationController,
                             ),
@@ -243,7 +244,7 @@ class AddBusView extends GetView<AddBusController> {
 
                             const SizedBox(height: 24),
                             _buildInputField(
-                              'Ticket Price',
+                              'add_bus.ticket_price'.tr(),
                               '0',
                               controller.priceController,
                               keyboardType: TextInputType.number,
@@ -258,20 +259,20 @@ class AddBusView extends GetView<AddBusController> {
                       // 4. DRIVER DETAILS
                       _buildSectionHeader(
                         Icons.account_circle,
-                        'DRIVER DETAILS',
+                        'add_bus.driver_details_section'.tr(),
                       ),
                       _buildCardContainer(
                         child: Column(
                           children: [
                             _buildInputField(
-                              'Driver Name',
+                              'add_bus.driver_name'.tr(),
                               'e.g. John Doe',
                               controller.driverNameController,
                               validator: controller.validateRequired,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
-                              'Driver Mobile Number',
+                              'add_bus.driver_mobile'.tr(),
                               'e.g. +1 234 567 890',
                               controller.driverMobileController,
                               keyboardType: TextInputType.phone,
@@ -279,7 +280,7 @@ class AddBusView extends GetView<AddBusController> {
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(
-                              'License Number',
+                              'add_bus.license_number'.tr(),
                               'e.g. ABC123456789',
                               controller.licenseController,
                               validator: controller.validateRequired,
@@ -311,7 +312,7 @@ class AddBusView extends GetView<AddBusController> {
                 onPressed: controller.saveBusAndRoute,
                 icon: const Icon(Icons.save, color: AppColors.white, size: 20),
                 label: Text(
-                  'Save Bus & Route',
+                  'add_bus.save_bus'.tr(),
                   style: AppTextStyles.buttonText,
                 ),
                 style: ElevatedButton.styleFrom(

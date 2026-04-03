@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_edit_profile_controller.dart';
@@ -15,7 +16,7 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Edit Profile', style: AppTextStyles.h3),
+        title: Text('profile.edit_profile'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -40,25 +41,25 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
                       const SizedBox(height: 32),
 
                       // 2. Form Fields
-                      _buildLabel('Full Name'),
+                      _buildLabel('profile.full_name'.tr()),
                       _buildTextField(
                         controller.fullNameController,
-                        hint: 'Enter your name',
+                        hint: 'profile.full_name_hint'.tr(),
                       ),
                       const SizedBox(height: 20),
 
-                      _buildLabel('Mobile Number'),
+                      _buildLabel('profile.mobile_number'.tr()),
                       _buildTextField(
                         controller.mobileController,
-                        hint: 'Enter mobile number',
+                        hint: 'profile.mobile_hint'.tr(),
                         isPhone: true,
                       ),
                       const SizedBox(height: 20),
 
-                      _buildLabel('Email Address'),
+                      _buildLabel('profile.email_address'.tr()),
                       _buildTextField(
                         controller.emailController,
-                        hint: 'Enter email address',
+                        hint: 'profile.email_hint'.tr(),
                         keyboardType: TextInputType.emailAddress,
                       ),
                       const SizedBox(height: 20),
@@ -155,7 +156,7 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Change Photo',
+              'profile.change_photo'.tr(),
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.primaryDark,
@@ -194,7 +195,7 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
       child: TextFormField(
         controller: textController,
         keyboardType: isPhone ? TextInputType.phone : keyboardType,
-        validator: (value) => value!.isEmpty ? 'This field is required' : null,
+        validator: (value) => value!.isEmpty ? 'common.error'.tr() : null,
         style: AppTextStyles.bodyLarge,
         decoration: InputDecoration(
           hintText: hint,
@@ -260,7 +261,7 @@ class VendorEditProfileView extends GetView<VendorEditProfileController> {
                 ),
               )
             : Text(
-                'Save Changes',
+                'profile.save_changes'.tr(),
                 style: AppTextStyles.buttonText.copyWith(fontSize: 16),
               ),
       )),

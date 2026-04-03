@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/constants/app_assets.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_fleet_tracking_controller.dart';
 
 class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
@@ -25,11 +27,11 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Live Fleet Tracking',
+              'tracking.title'.tr(),
               style: AppTextStyles.h3.copyWith(fontSize: 18),
             ),
             Text(
-              '8 Buses Active • 2 Delayed',
+              'tracking.buses_active'.tr(),
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.secondaryGreyBlue,
               ),
@@ -98,7 +100,7 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
               child: TextField(
                 controller: controller.searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search bus ID, driver or route...',
+                  hintText: 'tracking.search_hint'.tr(),
                   hintStyle: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.secondaryGreyBlue,
                   ),
@@ -210,21 +212,21 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
                               children: [
                                 Expanded(
                                   child: _buildFilterChip(
-                                    'All Active (8)',
+                                    'tracking.all_active'.tr(),
                                     'All Active',
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: _buildFilterChip(
-                                    'Delayed (2)',
+                                    'tracking.delayed'.tr(),
                                     'Delayed',
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: _buildFilterChip(
-                                    'In Transit (6)',
+                                    'tracking.in_transit'.tr(),
                                     'In Transit',
                                   ),
                                 ),
@@ -242,7 +244,7 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         itemCount: controller.fleet.length,
                         itemBuilder: (context, index) =>
-                            _buildBusCard(controller.fleet[index]),
+                            _buildBusCard(context, controller.fleet[index]),
                       ),
                     ),
                   ],
@@ -306,7 +308,7 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
     );
   }
 
-  Widget _buildBusCard(FleetBusModel bus) {
+  Widget _buildBusCard(BuildContext context, FleetBusModel bus) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -377,7 +379,7 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Next Stop: ${bus.nextStop}',
+                  '${"tracking.next_stop".tr()}: ${bus.nextStop}',
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.secondaryGreyBlue,
                   ),
@@ -395,11 +397,11 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Text(
-                    bus.speed,
+                    LocaleUtils.formatNumber(context, bus.speed),
                     style: AppTextStyles.h2.copyWith(fontSize: 20),
                   ),
                   Text(
-                    ' km/h',
+                    'tracking.speed_unit'.tr(),
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.secondaryGreyBlue,
                       fontSize: 10,

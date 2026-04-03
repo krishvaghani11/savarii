@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../core/services/auth_services.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/services/ticket_pdf_service.dart';
 
 class VendorRazorpayController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -131,6 +132,24 @@ class VendorRazorpayController extends GetxController {
     };
 
     try {
+      // 0. Generate and Upload PDF Ticket
+      final pdfData = TicketDownloadData(
+        bookingId: pnr,
+        passengerName: passengerName,
+        passengerPhone: passengerPhone,
+        journeyDate: date,
+        route: '$origin to $destination',
+        busAndSeat: '$busName | $seat',
+        paymentMethod: 'Razorpay',
+        ticketPrice: baseFare,
+        gst: gst,
+        platformFee: platformFee,
+        totalPaid: totalAmount,
+      );
+      final pdfBytes = await TicketPdfService().generatePdfBytes(pdfData);
+      final ticketUrl = await _firestoreService.uploadTicketPdf(pnr, pdfBytes);
+      ticketPayload['ticketUrl'] = ticketUrl;
+
       // 1. Save ticket to Firestore
       await _firestoreService.addTicket(ticketPayload);
 

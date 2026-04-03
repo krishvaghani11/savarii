@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_payment_confirmation_controller.dart';
 
 class VendorPaymentConfirmationView
@@ -22,7 +24,7 @@ class VendorPaymentConfirmationView
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          title: Text('Payment Confirmation', style: AppTextStyles.h3),
+          title: Text('payment.confirmation_title'.tr(), style: AppTextStyles.h3),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
             onPressed: controller.backToHome,
@@ -42,16 +44,16 @@ class VendorPaymentConfirmationView
                 const SizedBox(height: 32),
 
                 // 2. The Ticket Card
-                _buildTicketCard(),
+                _buildTicketCard(context),
                 const SizedBox(height: 32),
 
                 // 3. Payment Summary
                 Text(
-                  'Payment Summary',
+                  'payment.payment_summary'.tr(),
                   style: AppTextStyles.h3.copyWith(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
-                _buildPaymentSummaryCard(),
+                _buildPaymentSummaryCard(context),
                 const SizedBox(height: 40),
 
                 // 4. Action Buttons
@@ -84,12 +86,12 @@ class VendorPaymentConfirmationView
         ),
         const SizedBox(height: 20),
         Text(
-          'Payment Successful!',
+          'payment.success'.tr(),
           style: AppTextStyles.h1.copyWith(fontSize: 24),
         ),
         const SizedBox(height: 8),
         Text(
-          'Your booking has been confirmed',
+          'payment.confirmed_desc'.tr(),
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.secondaryGreyBlue,
           ),
@@ -98,7 +100,7 @@ class VendorPaymentConfirmationView
     );
   }
 
-  Widget _buildTicketCard() {
+  Widget _buildTicketCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -145,7 +147,7 @@ class VendorPaymentConfirmationView
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'BOOKING ID',
+                          'payment.booking_id'.tr(),
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.secondaryGreyBlue,
                             fontWeight: FontWeight.bold,
@@ -169,7 +171,7 @@ class VendorPaymentConfirmationView
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        'CONFIRMED',
+                        'payment.confirmed'.tr(),
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.primaryAccent,
                           fontWeight: FontWeight.bold,
@@ -191,14 +193,14 @@ class VendorPaymentConfirmationView
                   children: [
                     Expanded(
                       child: _buildDetailItem(
-                        'Passenger',
+                        'payment.passenger'.tr(),
                         controller.passengerName,
                       ),
                     ),
                     Expanded(
                       child: _buildDetailItem(
-                        'Journey Date',
-                        controller.journeyDate,
+                        'payment.journey_date'.tr(),
+                        LocaleUtils.formatDate(context, controller.journeyDate),
                       ),
                     ),
                   ],
@@ -207,11 +209,11 @@ class VendorPaymentConfirmationView
                 Row(
                   children: [
                     Expanded(
-                      child: _buildDetailItem('Route', controller.route),
+                      child: _buildDetailItem('payment.route'.tr(), controller.route),
                     ),
                     Expanded(
                       child: _buildDetailItem(
-                        'Bus & Seat',
+                        'payment.bus_seat'.tr(),
                         controller.busAndSeat,
                       ),
                     ),
@@ -225,7 +227,7 @@ class VendorPaymentConfirmationView
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Payment Method',
+                            'payment.payment_method'.tr(),
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                             ),
@@ -294,7 +296,7 @@ class VendorPaymentConfirmationView
     );
   }
 
-  Widget _buildPaymentSummaryCard() {
+  Widget _buildPaymentSummaryCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -310,11 +312,11 @@ class VendorPaymentConfirmationView
       ),
       child: Column(
         children: [
-          _buildSummaryRow('Ticket Price', controller.ticketPrice),
+          _buildSummaryRow(context, 'payment.ticket_price'.tr(), controller.ticketPrice),
           const SizedBox(height: 12),
-          _buildSummaryRow('GST (5%)', controller.gst),
+          _buildSummaryRow(context, 'payment.gst'.tr(), controller.gst),
           const SizedBox(height: 12),
-          _buildSummaryRow('Platform Fee', controller.platformFee),
+          _buildSummaryRow(context, 'payment.platform_fee'.tr(), controller.platformFee),
           const SizedBox(height: 16),
           Divider(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
           const SizedBox(height: 16),
@@ -322,11 +324,11 @@ class VendorPaymentConfirmationView
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total Paid',
+                'payment.total_paid'.tr(),
                 style: AppTextStyles.h3.copyWith(fontSize: 16),
               ),
               Text(
-                '₹${controller.totalPaid.toStringAsFixed(2)}',
+                LocaleUtils.formatCurrency(context, controller.totalPaid),
                 style: AppTextStyles.h3.copyWith(
                   fontSize: 18,
                   color: AppColors.primaryAccent,
@@ -339,7 +341,7 @@ class VendorPaymentConfirmationView
     );
   }
 
-  Widget _buildSummaryRow(String label, double amount) {
+  Widget _buildSummaryRow(BuildContext context, String label, double amount) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -350,7 +352,7 @@ class VendorPaymentConfirmationView
           ),
         ),
         Text(
-          '₹${amount.toStringAsFixed(2)}',
+          LocaleUtils.formatCurrency(context, amount),
           style: AppTextStyles.bodyMedium.copyWith(
             fontWeight: FontWeight.w600,
             color: AppColors.primaryDark,
@@ -370,7 +372,7 @@ class VendorPaymentConfirmationView
             color: AppColors.white,
             size: 18,
           ),
-          label: Text('Download Ticket', style: AppTextStyles.buttonText),
+          label: Text('payment.download_ticket'.tr(), style: AppTextStyles.buttonText),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryAccent,
             minimumSize: const Size(double.infinity, 54),
@@ -394,7 +396,7 @@ class VendorPaymentConfirmationView
             elevation: 0,
           ),
           child: Text(
-            'Back to Home',
+            'payment.back_to_home'.tr(),
             style: AppTextStyles.buttonText.copyWith(
               color: AppColors.primaryDark,
             ),

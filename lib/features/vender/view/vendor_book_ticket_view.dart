@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_book_ticket_controller.dart';
 
 class VendorBookTicketView extends GetView<VendorBookTicketController> {
@@ -15,7 +17,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Book Ticket', style: AppTextStyles.h3),
+        title: Text('booking.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -37,11 +39,11 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                     children: [
                       // 1. SELECT JOURNEY DETAILS
                       _buildSectionCard(
-                        title: 'SELECT JOURNEY DETAILS',
+                        title: 'booking.select_journey'.tr(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('Select Bus / Route'),
+                            _buildLabel('booking.select_bus'.tr()),
                             _buildBusSelectionDropdown(),
                             const SizedBox(height: 16),
                             Obx(
@@ -52,9 +54,9 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _buildLabel('Boarding Point'),
+                                        _buildLabel('booking.boarding_point'.tr()),
                                         _buildPointDropdown(
-                                          hint: 'Select Boarding',
+                                          hint: 'booking.select_boarding'.tr(),
                                           items:
                                               controller.currentBoardingPoints,
                                           selectedValue: controller
@@ -72,9 +74,9 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _buildLabel('Dropping Point'),
+                                        _buildLabel('booking.dropping_point'.tr()),
                                         _buildPointDropdown(
-                                          hint: 'Select Dropping',
+                                          hint: 'booking.select_dropping'.tr(),
                                           items:
                                               controller.currentDroppingPoints,
                                           selectedValue: controller
@@ -92,7 +94,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                             const SizedBox(height: 16),
                             _buildTimeDetails(),
                             const SizedBox(height: 16),
-                            _buildLabel('Journey Date'),
+                            _buildLabel('booking.journey_date'.tr()),
                             _buildDatePicker(context),
                           ],
                         ),
@@ -101,7 +103,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
 
                       // 2. SELECT SEATS
                       _buildSectionCard(
-                        title: 'SELECT SEATS',
+                        title: 'booking.select_seats'.tr(),
                         trailing: Obx(
                           () => Container(
                             padding: const EdgeInsets.symmetric(
@@ -113,7 +115,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              '${controller.passengerCount.value} PASSENGERS SELECTED',
+                              '${LocaleUtils.formatCount(context, controller.passengerCount.value)} ${"booking.passengers_selected".tr()}',
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.primaryAccent,
                                 fontSize: 9,
@@ -138,20 +140,20 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
 
                       // 3. PASSENGER DETAILS
                       _buildSectionCard(
-                        title: 'PASSENGER DETAILS',
+                        title: 'booking.passenger_details'.tr(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('Full Name'),
+                            _buildLabel('booking.passenger_name'.tr()),
                             _buildTextField(
-                              'Enter passenger name',
+                              'booking.passenger_name_hint'.tr(),
                               controller.nameController,
                             ),
                             const SizedBox(height: 16),
-                            _buildLabel('Mobile Number'),
+                            _buildLabel('booking.passenger_phone'.tr()),
                             _buildMobileField(),
                             const SizedBox(height: 16),
-                            _buildLabel('Gender'),
+                            _buildLabel('booking.gender'.tr()),
                             _buildGenderSelection(),
                           ],
                         ),
@@ -164,7 +166,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
             ),
 
             // 4. Sticky Bottom Checkout Bar
-            _buildCheckoutBar(),
+            _buildCheckoutBar(context),
           ],
         ),
       ),
@@ -313,7 +315,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
             ),
           ),
           child: Text(
-            'No buses available',
+            'booking.no_buses'.tr(),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.secondaryGreyBlue,
             ),
@@ -334,7 +336,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
           child: DropdownButton<String>(
             isExpanded: true,
             hint: Text(
-              'Select Route',
+              'booking.select_route'.tr(),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.secondaryGreyBlue.withOpacity(0.6),
               ),
@@ -386,7 +388,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Departure',
+                  'booking.departure'.tr(),
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.secondaryGreyBlue,
                   ),
@@ -426,7 +428,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'Arrival',
+                  'booking.arrival'.tr(),
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.secondaryGreyBlue,
                   ),
@@ -582,16 +584,16 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
       children: [
         _buildLegendItem(
           color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-          label: 'Booked',
+          label: 'booking.booked_seats'.tr(),
         ),
         const SizedBox(width: 16),
         _buildLegendItem(
           color: AppColors.white,
           borderColor: AppColors.secondaryGreyBlue.withOpacity(0.3),
-          label: 'Available',
+          label: 'booking.available_seats'.tr(),
         ),
         const SizedBox(width: 16),
-        _buildLegendItem(color: AppColors.primaryAccent, label: 'Selected'),
+        _buildLegendItem(color: AppColors.primaryAccent, label: 'booking.selected'.tr()),
       ],
     );
   }
@@ -629,7 +631,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Select Number of\nPassengers',
+          'booking.select_passengers_num'.tr(),
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.primaryDark,
             fontWeight: FontWeight.bold,
@@ -801,11 +803,11 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
     return Obx(
       () => Row(
         children: [
-          Expanded(child: _buildGenderButton('Male')),
+          Expanded(child: _buildGenderButton('booking.male'.tr())),
           const SizedBox(width: 12),
-          Expanded(child: _buildGenderButton('Female')),
+          Expanded(child: _buildGenderButton('booking.female'.tr())),
           const SizedBox(width: 12),
-          Expanded(child: _buildGenderButton('Other')),
+          Expanded(child: _buildGenderButton('booking.other'.tr())),
         ],
       ),
     );
@@ -843,7 +845,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
     );
   }
 
-  Widget _buildCheckoutBar() {
+  Widget _buildCheckoutBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       decoration: BoxDecoration(
@@ -861,7 +863,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Total Amount',
+                  'booking.total_amount'.tr(),
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.secondaryGreyBlue,
                     fontSize: 11,
@@ -869,7 +871,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                 ),
                 Obx(
                   () => Text(
-                    '₹${(controller.selectedSeats.length * controller.pricePerSeat.value).toStringAsFixed(2)}',
+                    LocaleUtils.formatCurrency(context, (controller.selectedSeats.length * controller.pricePerSeat.value).toDouble()),
                     style: AppTextStyles.h2.copyWith(fontSize: 20),
                   ),
                 ),
@@ -877,8 +879,8 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                 Obx(
                   () => Text(
                     controller.selectedSeats.isEmpty
-                        ? 'No seats selected'
-                        : '${controller.selectedSeats.length} SEATS SELECTED (${controller.selectedSeats.join(', ')})',
+                        ? 'booking.no_seats'.tr()
+                        : '${LocaleUtils.formatCount(context, controller.selectedSeats.length)} ${"booking.seats_selected".tr()} (${controller.selectedSeats.join(', ')})',
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.primaryAccent,
                       fontSize: 9,
@@ -904,7 +906,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
               elevation: 0,
             ),
             child: Text(
-              'Confirm Booking',
+              'booking.confirm_booking'.tr(),
               style: AppTextStyles.buttonText.copyWith(fontSize: 14),
             ),
           ),

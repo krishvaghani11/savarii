@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_contact_developer_controller.dart';
@@ -16,7 +17,7 @@ class VendorContactDeveloperView
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Contact Developer', style: AppTextStyles.h3),
+        title: Text('contact.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -30,12 +31,12 @@ class VendorContactDeveloperView
             children: [
               // 1. Header Section
               Text(
-                'How can we help?',
+                'contact.help_title'.tr(),
                 style: AppTextStyles.h1.copyWith(fontSize: 24),
               ),
               const SizedBox(height: 8),
               Text(
-                'Our development team is here to assist Savarii Vendors with technical issues, feature requests, or app feedback.',
+                'contact.help_subtitle'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.secondaryGreyBlue,
                   height: 1.4,
@@ -45,9 +46,9 @@ class VendorContactDeveloperView
 
               // 2. Support Options Cards
               _buildSupportOptionCard(
-                title: 'Email Support',
+                title: 'contact.email_support'.tr(),
                 subtitle: controller.supportEmail,
-                buttonText: 'Send Email',
+                buttonText: 'contact.send_email'.tr(),
                 buttonColor: AppColors.primaryAccent,
                 iconData: Icons.email,
                 iconColor: AppColors.primaryAccent,
@@ -56,9 +57,9 @@ class VendorContactDeveloperView
               ),
               const SizedBox(height: 16),
               _buildSupportOptionCard(
-                title: 'WhatsApp Chat',
-                subtitle: 'Chat with us live',
-                buttonText: 'Start Chat',
+                title: 'contact.whatsapp_chat'.tr(),
+                subtitle: 'contact.chat_live'.tr(),
+                buttonText: 'contact.start_chat'.tr(),
                 buttonColor: const Color(0xFF2A2D3E),
                 // Dark slate color from the mockup
                 iconData: Icons.chat,
@@ -70,7 +71,7 @@ class VendorContactDeveloperView
 
               // 3. Direct Message Form
               Text(
-                'Send us a message',
+                'contact.send_us_message'.tr(),
                 style: AppTextStyles.h3.copyWith(fontSize: 18),
               ),
               const SizedBox(height: 16),
@@ -88,16 +89,16 @@ class VendorContactDeveloperView
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildLabel('Subject'),
+                      _buildLabel('contact.subject'.tr()),
                       _buildTextField(
                         controller: controller.subjectController,
-                        hint: 'Technical issue, billing, feedback...',
+                        hint: 'contact.subject_hint'.tr(),
                       ),
                       const SizedBox(height: 16),
-                      _buildLabel('Message'),
+                      _buildLabel('contact.message'.tr()),
                       _buildTextField(
                         controller: controller.messageController,
-                        hint: 'Describe your issue or request in detail...',
+                        hint: 'contact.message_hint'.tr(),
                         maxLines: 4,
                       ),
                       const SizedBox(height: 24),
@@ -109,7 +110,7 @@ class VendorContactDeveloperView
                           size: 18,
                         ),
                         label: Text(
-                          'Send Message',
+                          'contact.send_message'.tr(),
                           style: AppTextStyles.buttonText,
                         ),
                         style: ElevatedButton.styleFrom(
@@ -130,7 +131,7 @@ class VendorContactDeveloperView
               // 4. Footer Text
               Center(
                 child: Text(
-                  'Typical response time: 2-4 business hours\nAvailable Mon-Fri, 9AM - 6PM',
+                  'contact.footer_text'.tr(),
                   textAlign: TextAlign.center,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.secondaryGreyBlue.withOpacity(0.6),
@@ -260,7 +261,7 @@ class VendorContactDeveloperView
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
-        validator: (value) => value!.isEmpty ? 'This field is required' : null,
+        validator: (value) => value!.isEmpty ? 'common.error'.tr() : null,
         style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
           hintText: hint,

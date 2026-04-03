@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/features/vender/view/vendor_home_view.dart';
 import 'package:savarii/features/vender/view/vendor_my_buses_view.dart';
@@ -45,22 +46,22 @@ class VendorMainView extends GetView<VendorMainController> {
             unselectedItemColor: AppColors.secondaryGreyBlue,
             selectedFontSize: 10,
             unselectedFontSize: 10,
-            items: const [
+            items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home_filled),
-                label: 'Home',
+                icon: const Icon(Icons.home_filled),
+                label: 'main.home'.tr(),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.confirmation_num),
-                label: 'Tickets',
+                icon: const Icon(Icons.confirmation_num),
+                label: 'main.tickets'.tr(),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.directions_bus),
-                label: 'My Buses',
+                icon: const Icon(Icons.directions_bus),
+                label: 'main.my_buses'.tr(),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: 'Profile',
+                icon: const Icon(Icons.person),
+                label: 'main.profile'.tr(),
               ),
             ],
           ),

@@ -1,6 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_my_buses_controller.dart';
@@ -22,7 +23,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'My Buses',
+                    'my_buses.title'.tr(),
                     style: AppTextStyles.h1.copyWith(fontSize: 28),
                   ),
                   ElevatedButton.icon(
@@ -33,7 +34,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                       size: 16,
                     ),
                     label: Text(
-                      'Add Bus',
+                      'my_buses.add_bus'.tr(),
                       style: AppTextStyles.buttonText.copyWith(fontSize: 12),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -67,7 +68,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                       child: TextField(
                         controller: controller.searchController,
                         decoration: InputDecoration(
-                          hintText: 'Search by name or number',
+                          hintText: 'my_buses.search_hint'.tr(),
                           hintStyle: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.secondaryGreyBlue.withValues(alpha: 0.6),
                           ),
@@ -112,7 +113,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                 if (buses.isEmpty) {
                   return Center(
                     child: Text(
-                      "No buses found.",
+                      'my_buses.no_buses'.tr(),
                       style: AppTextStyles.bodyMedium,
                     ),
                   );
@@ -139,9 +140,9 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
         () => Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildTabItem(title: 'All Buses', index: 0),
-            _buildTabItem(title: 'Active', index: 1),
-            _buildTabItem(title: 'Inactive', index: 2),
+            _buildTabItem(title: 'my_buses.all_buses'.tr(), index: 0),
+            _buildTabItem(title: 'my_buses.active'.tr(), index: 1),
+            _buildTabItem(title: 'my_buses.inactive'.tr(), index: 2),
           ],
         ),
       ),
@@ -244,17 +245,17 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
             children: [
               Expanded(
                 child: _buildStatColumn(
-                  'ROUTE',
+                  'my_buses.route'.tr(),
                   '${bus.origin} → ${bus.destination}',
                 ),
               ),
-              Expanded(child: _buildStatColumn('TOTAL SEATS', bus.totalSeats)),
+              Expanded(child: _buildStatColumn('my_buses.total_seats'.tr(), bus.totalSeats)),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _buildStatColumn('TYPE', bus.type)),
+              Expanded(child: _buildStatColumn('my_buses.type'.tr(), bus.type)),
               Expanded(
                 child: Obx(() => _buildStatusColumn(bus.isActive.value)),
               ),
@@ -268,7 +269,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
               Expanded(
                 child: _buildActionButton(
                   icon: Icons.edit,
-                  label: 'Edit Details',
+                  label: 'my_buses.edit_details'.tr(),
                   onTap: () => controller.editBusDetails(bus.id),
                 ),
               ),
@@ -277,7 +278,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                 child: Obx(
                   () => _buildActionButton(
                     icon: bus.isActive.value ? Icons.map : Icons.history,
-                    label: bus.isActive.value ? 'Live Route' : 'History',
+                    label: bus.isActive.value ? 'my_buses.live_route'.tr() : 'my_buses.history'.tr(),
                     onTap: () => bus.isActive.value
                         ? controller.viewLiveRoute(bus.id)
                         : controller.viewHistory(bus.id),
@@ -321,7 +322,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'STATUS',
+          'my_buses.status'.tr(),
           style: AppTextStyles.caption.copyWith(
             color: AppColors.secondaryGreyBlue,
             fontSize: 10,
@@ -341,7 +342,7 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
             ),
             const SizedBox(width: 4),
             Text(
-              isActive ? 'Active' : 'Inactive',
+              isActive ? 'my_buses.status_active'.tr() : 'my_buses.status_inactive'.tr(),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: isActive
                     ? const Color(0xFF00A65A)

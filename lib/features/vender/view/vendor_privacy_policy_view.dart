@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import '../controllers/vendor_privacy_policy_controller.dart';
@@ -15,7 +16,7 @@ class VendorPrivacyPolicyView extends GetView<VendorPrivacyPolicyController> {
         backgroundColor: AppColors.white,
         elevation: 0,
         centerTitle: true,
-        title: Text('Privacy Policy', style: AppTextStyles.h3),
+        title: Text('privacy.title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -55,7 +56,7 @@ class VendorPrivacyPolicyView extends GetView<VendorPrivacyPolicyController> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Your Privacy Matters',
+                      'privacy.privacy_matters'.tr(),
                       style: AppTextStyles.h2.copyWith(fontSize: 22),
                     ),
                   ],
@@ -69,7 +70,7 @@ class VendorPrivacyPolicyView extends GetView<VendorPrivacyPolicyController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Last Updated: ${controller.lastUpdated}',
+                      '${"privacy.last_updated".tr()} ${controller.lastUpdated}',
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.secondaryGreyBlue,
                         fontWeight: FontWeight.bold,
@@ -78,62 +79,52 @@ class VendorPrivacyPolicyView extends GetView<VendorPrivacyPolicyController> {
                     const SizedBox(height: 24),
 
                     // SECTION 1
-                    _buildSectionTitle('1. Introduction'),
-                    _buildBodyText(
-                      'This Privacy Policy describes how Savarii Vendor ("we," "us," or "our") collects, uses, and shares your personal information when you use our mobile application (the "App").',
-                    ),
-                    _buildBodyText(
-                      'By using the App, you agree to the collection and use of information in accordance with this policy. If you do not agree with the terms of this Privacy Policy, please do not access or use the App.',
-                    ),
+                    _buildSectionTitle('privacy.intro_title'.tr()),
+                    _buildBodyText('privacy.intro_desc1'.tr()),
+                    _buildBodyText('privacy.intro_desc2'.tr()),
                     const SizedBox(height: 24),
 
                     // SECTION 2
-                    _buildSectionTitle('2. Information We Collect'),
-                    _buildBodyText(
-                      'We collect information that you provide directly to us when you use the App. This information may include:',
+                    _buildSectionTitle('privacy.info_collect_title'.tr()),
+                    _buildBodyText('privacy.info_collect_desc1'.tr()),
+                    _buildBulletItem(
+                      'privacy.bullet1_title'.tr(),
+                      'privacy.bullet1_desc'.tr(),
                     ),
                     _buildBulletItem(
-                      'Personal Identification Information:',
-                      'Name, email address, phone number, and other contact details.',
+                      'privacy.bullet2_title'.tr(),
+                      'privacy.bullet2_desc'.tr(),
                     ),
                     _buildBulletItem(
-                      'Agency Information:',
-                      'Travels Name, Registration Number, GST Details, and Business Type.',
-                    ),
-                    _buildBulletItem(
-                      'Payment Information:',
-                      'Bank account details or UPI IDs for processing your earnings.',
+                      'privacy.bullet3_title'.tr(),
+                      'privacy.bullet3_desc'.tr(),
                     ),
                     const SizedBox(height: 16),
-                    _buildBodyText(
-                      'We also collect certain information automatically when you use the App, including:',
+                    _buildBodyText('privacy.info_collect_desc2'.tr()),
+                    _buildBulletItem(
+                      'privacy.bullet4_title'.tr(),
+                      'privacy.bullet4_desc'.tr(),
                     ),
                     _buildBulletItem(
-                      'Usage Data:',
-                      'Information about how you use the App, such as the features you access and actions you take.',
-                    ),
-                    _buildBulletItem(
-                      'Location Data:',
-                      'Real-time GPS tracking of your fleet to provide live updates to passengers.',
+                      'privacy.bullet5_title'.tr(),
+                      'privacy.bullet5_desc'.tr(),
                     ),
                     const SizedBox(height: 24),
 
                     // SECTION 3
-                    _buildSectionTitle('3. How We Use Your Information'),
-                    _buildBodyText(
-                      'We may use the information we collect for various purposes, including to:',
+                    _buildSectionTitle('privacy.how_use_title'.tr()),
+                    _buildBodyText('privacy.how_use_desc'.tr()),
+                    _buildBulletItem(
+                      'privacy.bullet6_title'.tr(),
+                      'privacy.bullet6_desc'.tr(),
                     ),
                     _buildBulletItem(
-                      'Provide and Maintain the App:',
-                      'To deliver the services you request, manage bookings, and keep the App running smoothly.',
+                      'privacy.bullet7_title'.tr(),
+                      'privacy.bullet7_desc'.tr(),
                     ),
                     _buildBulletItem(
-                      'Improve the App:',
-                      'To understand how vendors interact with the App and to enhance its features.',
-                    ),
-                    _buildBulletItem(
-                      'Communicate with You:',
-                      'To send you notifications, earnings reports, updates, and support messages.',
+                      'privacy.bullet8_title'.tr(),
+                      'privacy.bullet8_desc'.tr(),
                     ),
                     const SizedBox(height: 40),
                   ],

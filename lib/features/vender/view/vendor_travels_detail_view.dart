@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/constants/app_assets.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/utils/locale_utils.dart';
 import '../controllers/vendor_travels_detail_controller.dart';
 
 class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
@@ -16,7 +18,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: Text('Travels Detail', style: AppTextStyles.h3),
+        title: Text('travels.detail_title'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: () => Get.back(),
@@ -35,21 +37,21 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // 1. Header Card (Image, Badges, Stats)
-                    _buildHeaderCard(),
+                    _buildHeaderCard(context),
                     const SizedBox(height: 24),
 
                     // 2. BUSINESS INFORMATION
-                    _buildSectionTitle('BUSINESS INFORMATION'),
+                    _buildSectionTitle('travels.business_info'.tr()),
                     _buildBusinessInfoCard(),
                     const SizedBox(height: 24),
 
                     // 3. OPERATIONAL COVERAGE
-                    _buildSectionTitle('OPERATIONAL COVERAGE'),
+                    _buildSectionTitle('travels.operational_coverage'.tr()),
                     _buildCoverageCard(),
                     const SizedBox(height: 24),
 
                     // 4. CONTACT INFORMATION
-                    _buildSectionTitle('CONTACT INFORMATION'),
+                    _buildSectionTitle('travels.contact_info'.tr()),
                     _buildContactInfoCard(),
                     const SizedBox(height: 32),
                   ],
@@ -81,7 +83,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
     );
   }
 
-  Widget _buildHeaderCard() {
+  Widget _buildHeaderCard(BuildContext context) {
     return Obx(
       () => Container(
         padding: const EdgeInsets.all(20),
@@ -145,13 +147,13 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
                       Row(
                         children: [
                           _buildBadge(
-                            'VERIFIED',
+                            'travels.verified'.tr(),
                             AppColors.primaryAccent.withOpacity(0.1),
                             AppColors.primaryAccent,
                           ),
                           const SizedBox(width: 8),
                           _buildBadge(
-                            'SAVARII PARTNER',
+                            'travels.savarii_partner'.tr(),
                             AppColors.secondaryGreyBlue.withOpacity(0.1),
                             AppColors.primaryDark,
                           ),
@@ -175,7 +177,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            controller.establishedDate.value,
+                            LocaleUtils.formatDate(context, controller.establishedDate.value),
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                               fontStyle: FontStyle.italic,
@@ -198,15 +200,16 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatCol(controller.fleetSize.value, 'FLEET SIZE'),
+                _buildStatCol(context, controller.fleetSize.value, 'travels.fleet_size'.tr()),
                 Container(
                   width: 1,
                   height: 30,
                   color: AppColors.secondaryGreyBlue.withOpacity(0.1),
                 ),
                 _buildStatCol(
+                  context,
                   controller.rating.value,
-                  'RATING',
+                  'travels.rating'.tr(),
                   isRating: true,
                 ),
                 Container(
@@ -214,7 +217,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
                   height: 30,
                   color: AppColors.secondaryGreyBlue.withOpacity(0.1),
                 ),
-                _buildStatCol(controller.routes.value, 'ROUTES'),
+                _buildStatCol(context, controller.routes.value, 'travels.routes'.tr()),
               ],
             ),
           ],
@@ -242,13 +245,13 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
     );
   }
 
-  Widget _buildStatCol(String value, String label, {bool isRating = false}) {
+  Widget _buildStatCol(BuildContext context, String value, String label, {bool isRating = false}) {
     return Column(
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(value, style: AppTextStyles.h2.copyWith(fontSize: 18)),
+            Text(LocaleUtils.formatNumber(context, value), style: AppTextStyles.h2.copyWith(fontSize: 18)),
             if (isRating) ...[
               const SizedBox(width: 2),
               const Icon(Icons.star, color: AppColors.primaryAccent, size: 16),
@@ -287,17 +290,17 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
           children: [
             _buildInfoTile(
               Icons.receipt_long_outlined,
-              'GST NUMBER',
+              'travels.gst_number'.tr(),
               controller.gstNumber.value,
             ),
             _buildInfoTile(
               Icons.domain_outlined,
-              'BUSINESS TYPE',
+              'travels.business_type'.tr(),
               controller.businessType.value,
             ),
             _buildInfoTile(
               Icons.person_outline,
-              'OWNER NAME',
+              'travels.owner_name'.tr(),
               controller.ownerName.value,
               isLast: true,
             ),
@@ -326,7 +329,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'PRIMARY ROUTES COVERED',
+              'travels.primary_routes'.tr(),
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.secondaryGreyBlue,
                 fontSize: 10,
@@ -383,7 +386,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Live Operations Active',
+                          'travels.live_ops'.tr(),
                           style: AppTextStyles.caption.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 10,
@@ -421,7 +424,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
           children: [
             _buildInfoTile(
               Icons.phone_in_talk_outlined,
-              'PRIMARY MOBILE',
+              'travels.primary_mobile'.tr(),
               controller.primaryMobile.value,
               trailingIcon: Icons.copy,
               onTrailingTap: () => controller.copyToClipboard(
@@ -431,14 +434,14 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
             ),
             _buildInfoTile(
               Icons.email_outlined,
-              'SUPPORT EMAIL',
+              'travels.support_email'.tr(),
               controller.supportEmail.value,
               trailingIcon: Icons.send,
               onTrailingTap: controller.sendEmail,
             ),
             _buildInfoTile(
               Icons.location_on_outlined,
-              'OFFICE ADDRESS',
+              'travels.office_address'.tr(),
               controller.officeAddress.value,
               isLast: true,
             ),
@@ -530,7 +533,7 @@ class VendorTravelsDetailView extends GetView<VendorTravelsDetailController> {
         onPressed: controller.editTravelsDetail,
         icon: const Icon(Icons.edit, color: AppColors.white, size: 18),
         label: Text(
-          'Edit Travels Detail',
+          'travels.edit_travels_detail'.tr(),
           style: AppTextStyles.buttonText.copyWith(fontSize: 16),
         ),
         style: ElevatedButton.styleFrom(

@@ -33,8 +33,18 @@ class VendorHomeController extends GetxController {
   // Stats
   final RxString activeBuses = "0".obs;
   final RxString ticketsSold = "0".obs;
-  final RxString earnings = "₹0".obs;
+  final RxDouble totalEarnings = 0.0.obs;
+  final RxList<int> weeklyTicketCounts = List.filled(7, 0).obs;
   final String todaysTrips = "0"; // Used in drawer, optional to make dynamic later
+
+  /// Formatted earnings string for display (e.g. ₹14.2k or ₹850)
+  String get earningsDisplay {
+    final val = totalEarnings.value;
+    if (val >= 1000) {
+      return "₹${(val / 1000).toStringAsFixed(1)}k";
+    }
+    return "₹${val.toStringAsFixed(0)}";
+  }
 
   @override
   void onInit() {
@@ -65,21 +75,37 @@ class VendorHomeController extends GetxController {
     // Listen to tickets stream
     _firestore.getVendorTicketsStream(uid).listen((ticketDocs) {
       ticketsSold.value = ticketDocs.length.toString();
-      
-      double totalEarnings = 0;
+
+      double earned = 0;
+      List<int> counts = List.filled(7, 0);
+      final now = DateTime.now();
+      final todayMidnight = DateTime(now.year, now.month, now.day);
+
       for (var doc in ticketDocs) {
         final amount = doc['totalPaid'];
         if (amount != null) {
-          totalEarnings += (amount is num) ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0.0;
+          earned += (amount is num) ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0.0;
+        }
+
+        // Daily ticket counts logic
+        if (doc['createdAt'] != null) {
+          try {
+            final createdAt = DateTime.parse(doc['createdAt']);
+            final ticketMidnight = DateTime(createdAt.year, createdAt.month, createdAt.day);
+            final differenceInDays = todayMidnight.difference(ticketMidnight).inDays;
+            
+            if (differenceInDays >= 0 && differenceInDays < 7) {
+              // index 6 is today, 5 is yesterday... 0 is 6 days ago.
+              counts[6 - differenceInDays] += 1;
+            }
+          } catch (e) {
+            // ignore if unparseable
+          }
         }
       }
-      
-      // format earnings (e.g. 14k or exact if < 1000)
-      if (totalEarnings >= 1000) {
-        earnings.value = "₹${(totalEarnings / 1000).toStringAsFixed(1)}k";
-      } else {
-        earnings.value = "₹${totalEarnings.toStringAsFixed(0)}";
-      }
+
+      totalEarnings.value = earned;
+      weeklyTicketCounts.value = counts;
     });
   }
 

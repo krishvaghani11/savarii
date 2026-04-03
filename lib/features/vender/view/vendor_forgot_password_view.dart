@@ -1,5 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 
@@ -16,7 +17,7 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
         backgroundColor: AppColors.white,
         elevation: 0,
         centerTitle: true,
-        title: Text('Reset Password', style: AppTextStyles.h3),
+        title: Text('auth.reset_password'.tr(), style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
           onPressed: controller.goBackToLogin,
@@ -61,14 +62,13 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
                 // 2. Titles
                 Center(
                   child: Text(
-                    'Forgot Password?',
+                    'auth.forgot_password'.tr(),
                     style: AppTextStyles.h1.copyWith(fontSize: 22),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  // Updated text to match the email link flow
-                  'Enter your registered email address to receive password reset instructions.',
+                  'auth.forgot_instruction'.tr(),
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.secondaryGreyBlue,
@@ -79,7 +79,7 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
 
                 // 3. Email Input
                 Text(
-                  'Email Address',
+                  'auth.email'.tr(),
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
@@ -139,8 +139,7 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  // Button text updated
-                                  'Sent Link to Email',
+                                  'auth.send_link'.tr(),
                                   style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                                 ),
                                 const SizedBox(width: 8),
@@ -167,7 +166,7 @@ class VendorForgotPasswordView extends GetView<VendorForgotPasswordController> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Back to Login',
+                        'auth.back_to_login'.tr(),
                         style: AppTextStyles.bodyLarge.copyWith(
                           color: AppColors.secondaryGreyBlue.withOpacity(0.9),
                           fontWeight: FontWeight.bold,

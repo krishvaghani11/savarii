@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/ticket_pdf_service.dart';
 
 class VendorPaymentConfirmationController extends GetxController {
   late final String bookingId;
   late final String passengerName;
+  late final String passengerPhone;
   late final String journeyDate;
   late final String busImageUrl;
   late final String route;
@@ -23,6 +24,7 @@ class VendorPaymentConfirmationController extends GetxController {
 
     bookingId = args['bookingId'] ?? "PNR-10005";
     passengerName = args['passengerName'] ?? "Unknown Passenger";
+    passengerPhone = args['passengerPhone'] ?? '';
     journeyDate = args['journeyDate'] ?? "Unknown Date";
     busImageUrl = args['busImage'] ?? '';
     route = args['route'] ?? "Unknown Route";
@@ -42,15 +44,21 @@ class VendorPaymentConfirmationController extends GetxController {
     totalPaid = (to is int) ? to.toDouble() : (to is double ? to : double.tryParse(to.toString()) ?? (ticketPrice + gst + platformFee));
   }
 
-  void downloadTicket() {
-    print("Downloading ticket $bookingId...");
-    Get.snackbar(
-      'Downloading',
-      'Ticket is being saved to your device.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.blue.shade50,
-      colorText: Colors.blue.shade800,
+  Future<void> downloadTicket() async {
+    final data = TicketDownloadData(
+      bookingId: bookingId,
+      passengerName: passengerName,
+      passengerPhone: passengerPhone,
+      journeyDate: journeyDate,
+      route: route,
+      busAndSeat: busAndSeat,
+      paymentMethod: paymentMethod,
+      ticketPrice: ticketPrice,
+      gst: gst,
+      platformFee: platformFee,
+      totalPaid: totalPaid,
     );
+    await TicketPdfService().downloadTicket(data);
   }
 
   void backToHome() {
