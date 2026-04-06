@@ -155,7 +155,7 @@ class VendorRazorpayController extends GetxController {
 
       // 2. Block the booked seats on the bus document
       if (busId.isNotEmpty && seatList.isNotEmpty) {
-        await _firestoreService.addBookedSeatsToBus(busId, seatList);
+        await _firestoreService.addBookedSeatsToBus(busId, date, seatList);
       }
 
       debugPrint('Ticket $pnr saved. Seats blocked: $seatList');

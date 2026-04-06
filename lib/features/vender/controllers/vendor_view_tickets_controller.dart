@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/services/auth_services.dart';
 import 'package:savarii/core/services/firestore_service.dart';
@@ -63,14 +64,16 @@ class VendorViewTicketsController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
   final FirestoreService _firestoreService = Get.find<FirestoreService>();
 
-  final RxString currentDate = 'All Tickets'.obs;
+  // Selected Date Management
+  final Rx<DateTime> selectedDate = DateTime.now().obs;
 
   // Realtime Live Tickets Array
+  final RxList<VendorTicketModel> allTickets = <VendorTicketModel>[].obs;
   final RxList<VendorTicketModel> tickets = <VendorTicketModel>[].obs;
   StreamSubscription? _ticketsSubscription;
 
-  int get totalTickets => tickets.length;
-  int get confirmedTickets => tickets.length;
+  int get totalTickets => allTickets.length;
+  int get confirmedTickets => allTickets.length;
 
   @override
   void onInit() {
@@ -83,12 +86,23 @@ class VendorViewTicketsController extends GetxController {
     if (user != null) {
       _ticketsSubscription = _firestoreService.getVendorTicketsStream(user.uid).listen((ticketDocs) {
         // Sort descending locally so newest PNRs appear at the top.
-        // Doing this locally bypasses needing complex Firebase index configurations.
         ticketDocs.sort((a, b) => (b['createdAt'] ?? '').compareTo(a['createdAt'] ?? ''));
         
-        tickets.value = ticketDocs.map((doc) => VendorTicketModel.fromMap(doc)).toList();
+        allTickets.clear();
+        allTickets.addAll(ticketDocs.map((doc) => VendorTicketModel.fromMap(doc)));
+        
+        _filterTickets();
       });
     }
+  }
+
+  void _filterTickets() {
+    final selectedStr = "${selectedDate.value.day.toString().padLeft(2, '0')}/${selectedDate.value.month.toString().padLeft(2, '0')}/${selectedDate.value.year}";
+    
+    // Filter the cached full list into the reactive tickets list
+    tickets.value = allTickets.where((ticket) {
+      return ticket.journeyDate == selectedStr;
+    }).toList();
   }
 
   @override
@@ -97,9 +111,43 @@ class VendorViewTicketsController extends GetxController {
     super.onClose();
   }
 
-  void previousDate() => print("Load previous date...");
+  /// Get Monday to Sunday of the week containing the current selectedDate
+  List<DateTime> get currentWeekDays {
+    final date = selectedDate.value;
+    // DateTime.weekday returns 1 for Monday to 7 for Sunday
+    final int daysSinceMonday = date.weekday - 1;
+    final monday = date.subtract(Duration(days: daysSinceMonday));
+    return List.generate(7, (index) => monday.add(Duration(days: index)));
+  }
 
-  void nextDate() => print("Load next date...");
+  void selectDate(DateTime date) {
+    selectedDate.value = date;
+    _filterTickets();
+  }
+
+  Future<void> pickDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate.value,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFE82E59), // header bg, selected day bg
+              onPrimary: Colors.white, // text
+              onSurface: Colors.black, // unselected items
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != selectedDate.value) {
+      selectDate(picked);
+    }
+  }
 
   void openFilters() => print("Opening filters...");
 

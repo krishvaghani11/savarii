@@ -70,9 +70,8 @@ class VendorBookTicketController extends GetxController {
     final bus = availableBuses.firstWhere((b) => b['id'] == busId, orElse: () => {});
     if (bus.isEmpty) return;
 
-    // Load already booked seats from the bus document
-    final List<dynamic> rawBooked = bus['bookedSeats'] ?? [];
-    bookedSeats.assignAll(rawBooked.map((s) => s.toString()).toList());
+    // Load booked seats for the selected journey date from the date-keyed map
+    _loadBookedSeatsForDate(bus);
 
     final Map<String, dynamic> route = bus['route'] ?? {};
     
@@ -111,6 +110,32 @@ class VendorBookTicketController extends GetxController {
     // Clear seat selection if bus changes
     selectedSeats.clear();
     passengerCount.value = 0;
+  }
+
+  /// Reads booked seats for the current journeyDate from the date-keyed Firestore map.
+  /// If the journeyDate is in the past, all seats are naturally unlocked (returns empty).
+  void _loadBookedSeatsForDate(Map<String, dynamic> bus) {
+    // Format date from dd/MM/yyyy -> dd-MM-yyyy (Firestore map key format)
+    final formattedDate = journeyDate.value.replaceAll('/', '-');
+
+    // Parse journeyDate to check if it's in the past
+    try {
+      final parts = journeyDate.value.split('/');
+      if (parts.length == 3) {
+        final jDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+        final today = DateTime.now();
+        final todayMidnight = DateTime(today.year, today.month, today.day);
+        if (jDate.isBefore(todayMidnight)) {
+          // Journey is over — all seats unlocked
+          bookedSeats.clear();
+          return;
+        }
+      }
+    } catch (_) {}
+
+    final bookedSeatsByDate = bus['bookedSeatsByDate'] as Map<String, dynamic>? ?? {};
+    final rawBooked = bookedSeatsByDate[formattedDate] as List<dynamic>? ?? [];
+    bookedSeats.assignAll(rawBooked.map((s) => s.toString()).toList());
   }
 
   void selectBoardingPoint(Map<String, dynamic>? point) {
@@ -220,6 +245,15 @@ class VendorBookTicketController extends GetxController {
 
     if (picked != null) {
       journeyDate.value = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+
+      // Refresh booked seats for the newly selected date
+      if (selectedBusId.value != null) {
+        final bus = availableBuses.firstWhere((b) => b['id'] == selectedBusId.value, orElse: () => {});
+        if (bus.isNotEmpty) _loadBookedSeatsForDate(bus);
+      }
+      // Clear previously selected seats since the date changed
+      selectedSeats.clear();
+      passengerCount.value = 0;
     }
   }
 

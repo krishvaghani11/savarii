@@ -31,9 +31,9 @@ class VendorProfileController extends GetxController {
     return 'Not Set';
   }
 
-  final String trips = "1,248";
-  final String rating = "4.8";
-  final String vehicles = "12";
+  final RxString trips = "0".obs;
+  final RxString rating = "5.0".obs;
+  final RxString vehicles = "0".obs;
 
   @override
   void onInit() {
@@ -54,6 +54,9 @@ class VendorProfileController extends GetxController {
           activeTravelsName.value = data['travelsName'];
         }
       });
+      _firestore.getVendorBusesStream(uid).listen((buses) {
+        vehicles.value = buses.length.toString();
+      });
       _loadProfileImage(uid);
     }
   }
@@ -66,7 +69,10 @@ class VendorProfileController extends GetxController {
   }
 
   // Actions
-  void editProfileImage() {}
+  void editProfileImage() {
+    print("Navigating to Edit Profile from image icon...");
+    Get.toNamed(AppRoutes.vendorEditProfile);
+  }
 
   void openMenu() => print("Opening top right menu...");
 

@@ -247,31 +247,42 @@ class VendorProfileView extends GetView<VendorProfileController> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: IntrinsicHeight(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildStatItem('profile.trips'.tr(), LocaleUtils.formatCount(context, int.tryParse(controller.trips) ?? 0)),
-            VerticalDivider(
-              color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-              thickness: 1,
-            ),
-            _buildStatItem('profile.rating'.tr(), '${LocaleUtils.formatNumber(context, controller.rating)} ★'),
-            VerticalDivider(
-              color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-              thickness: 1,
-            ),
-            _buildStatItem('profile.vehicles'.tr(), LocaleUtils.formatCount(context, int.tryParse(controller.vehicles) ?? 0)),
-          ],
+        child: Obx(
+          () => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatItem(
+                'profile.trips',
+                LocaleUtils.formatCount(context, int.tryParse(controller.trips.value) ?? 0),
+              ),
+              VerticalDivider(
+                color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                thickness: 1,
+              ),
+              _buildStatItem(
+                'profile.rating',
+                '${LocaleUtils.formatNumber(context, double.tryParse(controller.rating.value) ?? 0)} ★',
+              ),
+              VerticalDivider(
+                color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                thickness: 1,
+              ),
+              _buildStatItem(
+                'profile.vehicles',
+                LocaleUtils.formatCount(context, int.tryParse(controller.vehicles.value) ?? 0),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(String labelKey, String value) {
     return Column(
       children: [
         Text(
-          label,
+          labelKey.tr(),
           style: AppTextStyles.caption.copyWith(
             color: AppColors.secondaryGreyBlue,
             fontWeight: FontWeight.bold,

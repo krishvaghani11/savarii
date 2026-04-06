@@ -32,10 +32,6 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. Date Selector Strip
-              _buildDateSelector(),
-              const SizedBox(height: 24),
-
               // 2. Stats Cards
               Row(
                 children: [
@@ -64,6 +60,10 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
               ),
               const SizedBox(height: 24),
 
+              // NEW: 1. Date Selector Layout
+              _buildDateSelector(context),
+              const SizedBox(height: 16),
+
               // 3. List Header
               Text(
                 'tickets.recent'.tr(),
@@ -91,41 +91,97 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
 
   // --- Sub-Widgets ---
 
-  Widget _buildDateSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: controller.previousDate,
-            child: const Icon(
-              Icons.chevron_left,
-              color: AppColors.secondaryGreyBlue,
+  Widget _buildDateSelector(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Select Date',
+              style: AppTextStyles.h2.copyWith(fontSize: 18),
             ),
-          ),
-          Obx(
-            () => Text(
-              controller.currentDate.value,
-              style: AppTextStyles.bodyLarge.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            IconButton(
+              icon: const Icon(Icons.calendar_month, color: AppColors.primaryAccent),
+              onPressed: () => controller.pickDate(context),
             ),
-          ),
-          GestureDetector(
-            onTap: controller.nextDate,
-            child: const Icon(
-              Icons.chevron_right,
-              color: AppColors.secondaryGreyBlue,
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 80,
+          child: Obx(() {
+            final days = controller.currentWeekDays;
+            final selected = controller.selectedDate.value;
+
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: days.length,
+              itemBuilder: (context, index) {
+                final date = days[index];
+                final isSelected =
+                    date.year == selected.year &&
+                    date.month == selected.month &&
+                    date.day == selected.day;
+
+                return GestureDetector(
+                  onTap: () => controller.selectDate(date),
+                  child: Container(
+                    width: 65,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primaryAccent : AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _getWeekDayLabel(date.weekday),
+                          style: AppTextStyles.caption.copyWith(
+                            color: isSelected ? AppColors.white.withOpacity(0.9) : AppColors.secondaryGreyBlue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          date.day.toString(),
+                          style: AppTextStyles.h2.copyWith(
+                            color: isSelected ? AppColors.white : AppColors.primaryDark,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }),
+        ),
+      ],
     );
+  }
+
+  String _getWeekDayLabel(int weekday) {
+    switch (weekday) {
+      case 1: return 'MON';
+      case 2: return 'TUE';
+      case 3: return 'WED';
+      case 4: return 'THU';
+      case 5: return 'FRI';
+      case 6: return 'SAT';
+      case 7: return 'SUN';
+      default: return '';
+    }
   }
 
   Widget _buildStatCard({

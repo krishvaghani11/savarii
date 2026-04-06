@@ -184,9 +184,10 @@ class FirestoreService extends GetxService {
         );
   }
 
-  Future<void> addBookedSeatsToBus(String busId, List<String> seats) async {
+  Future<void> addBookedSeatsToBus(String busId, String journeyDate, List<String> seats) async {
+    final formattedDate = journeyDate.replaceAll('/', '-');
     await _db.collection('buses').doc(busId).update({
-      'bookedSeats': FieldValue.arrayUnion(seats),
+      'bookedSeatsByDate.$formattedDate': FieldValue.arrayUnion(seats),
     });
   }
 }
