@@ -39,7 +39,7 @@ class VendorTicketModel {
   });
 
   factory VendorTicketModel.fromMap(Map<String, dynamic> map) {
-    double _p(dynamic v, double fb) =>
+    double p(dynamic v, double fb) =>
         (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? fb;
 
     return VendorTicketModel(
@@ -50,10 +50,10 @@ class VendorTicketModel {
       route: map['route'] ?? 'Unknown Route',
       origin: map['origin'] ?? 'Unknown Origin',
       journeyDate: map['journeyDate'] ?? 'Unknown Date',
-      totalPaid: _p(map['totalPaid'], 0.0),
-      ticketPrice: _p(map['ticketPrice'], 0.0),
-      gst: _p(map['gst'], 0.0),
-      platformFee: _p(map['platformFee'], 10.0),
+      totalPaid: p(map['totalPaid'], 0.0),
+      ticketPrice: p(map['ticketPrice'], 0.0),
+      gst: p(map['gst'], 0.0),
+      platformFee: p(map['platformFee'], 10.0),
       paymentMethod: map['paymentMethod'] ?? 'UPI',
       ticketUrl: map['ticketUrl'] ?? '',
     );

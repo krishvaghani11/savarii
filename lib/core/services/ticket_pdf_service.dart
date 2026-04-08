@@ -42,7 +42,7 @@ class TicketDownloadData {
 
   /// Build from a raw Firestore document map.
   factory TicketDownloadData.fromMap(Map<String, dynamic> map) {
-    double _parse(dynamic v, double fallback) =>
+    double parse(dynamic v, double fallback) =>
         (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? fallback;
 
     return TicketDownloadData(
@@ -53,10 +53,10 @@ class TicketDownloadData {
       route: map['route'] ?? 'N/A',
       busAndSeat: map['busAndSeat'] ?? 'N/A',
       paymentMethod: map['paymentMethod'] ?? 'UPI',
-      ticketPrice: _parse(map['ticketPrice'], 0.0),
-      gst: _parse(map['gst'], 0.0),
-      platformFee: _parse(map['platformFee'], 10.0),
-      totalPaid: _parse(map['totalPaid'], 0.0),
+      ticketPrice: parse(map['ticketPrice'], 0.0),
+      gst: parse(map['gst'], 0.0),
+      platformFee: parse(map['platformFee'], 10.0),
+      totalPaid: parse(map['totalPaid'], 0.0),
     );
   }
 }

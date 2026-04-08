@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:savarii/models/user_model.dart';
 import 'package:savarii/models/vendor_model.dart';
+import 'package:savarii/models/location_model.dart';
+import 'package:savarii/models/bus_model.dart';
 
 class FirestoreService extends GetxService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -189,5 +191,48 @@ class FirestoreService extends GetxService {
     await _db.collection('buses').doc(busId).update({
       'bookedSeatsByDate.$formattedDate': FieldValue.arrayUnion(seats),
     });
+  }
+
+  // --- Location Selection Methods ---
+  Future<List<LocationModel>> getLocations() async {
+    try {
+      final snapshot = await _db.collection('locations').get();
+      return snapshot.docs
+          .map((doc) => LocationModel.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      print('Error fetching locations: $e');
+      return [];
+    }
+  }
+
+  // --- Bus Search Methods ---
+  Future<List<BusModel>> searchBuses(String fromId) async {
+    try {
+      final snapshot = await _db.collection('buses')
+          .where('route', arrayContains: fromId)
+          .get();
+      return snapshot.docs
+          .map((doc) => BusModel.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      print('Error searching buses: $e');
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getSeatList(String busId) async {
+    try {
+      final snapshot = await _db.collection('seats')
+          .doc(busId)
+          .collection('seatList')
+          .get();
+      return snapshot.docs
+          .map((doc) => {'id': doc.id, ...doc.data()})
+          .toList();
+    } catch (e) {
+      print('Error fetching seat list: $e');
+      return [];
+    }
   }
 }

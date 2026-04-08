@@ -76,18 +76,20 @@ class BookTicketView extends GetView<BookTicketController> {
               Column(
                 children: [
                   // From field
-                  _buildLocationInput(
-                    title: 'From (Starting point)',
-                    controller: controller.fromController,
-                    icon: Icons.location_on,
-                  ),
-                  const SizedBox(height: 50),
-                  // To field
-                  _buildLocationInput(
-                    title: 'To (Destination)',
-                    controller: controller.toController,
-                    icon: Icons.navigation,
-                  ),
+                    _buildLocationInput(
+                      title: 'From (Starting point)',
+                      textController: controller.fromController,
+                      icon: Icons.location_on,
+                      isFrom: true,
+                    ),
+                    const SizedBox(height: 16), // Reduced height to accommodate suggestions
+                    // To field
+                    _buildLocationInput(
+                      title: 'To (Destination)',
+                      textController: controller.toController,
+                      icon: Icons.navigation,
+                      isFrom: false,
+                    ),
                 ],
               ),
               // Swap locations icon - Centered vertically between the two input boxes
@@ -146,8 +148,9 @@ class BookTicketView extends GetView<BookTicketController> {
 
   Widget _buildLocationInput({
     required String title,
-    required TextEditingController controller,
+    required TextEditingController textController,
     required IconData icon,
+    required bool isFrom,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +168,7 @@ class BookTicketView extends GetView<BookTicketController> {
             borderRadius: BorderRadius.circular(16.0),
           ),
           child: TextField(
-            controller: controller,
+            controller: textController,
             style: AppTextStyles.bodyLarge,
             decoration: InputDecoration(
               hintText: 'City or Station',
@@ -178,6 +181,38 @@ class BookTicketView extends GetView<BookTicketController> {
             ),
           ),
         ),
+        // Autocomplete suggestions
+        Obx(() {
+          final list = isFrom ? controller.filteredFrom : controller.filteredTo;
+          if (list.isEmpty) return const SizedBox.shrink();
+          return Container(
+            margin: const EdgeInsets.only(top: 4),
+            constraints: const BoxConstraints(maxHeight: 200),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                )
+              ],
+            ),
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: list.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final loc = list[index];
+                return ListTile(
+                  title: Text(loc.name, style: AppTextStyles.bodyLarge),
+                  subtitle: Text(loc.city, style: AppTextStyles.caption),
+                  onTap: () => controller.selectLocation(loc, isFrom: isFrom),
+                );
+              },
+            ),
+          );
+        }),
       ],
     );
   }
@@ -355,43 +390,98 @@ class BookTicketView extends GetView<BookTicketController> {
             ),
           ),
 
-          // Body: text "no recent search"
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-            margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
-            decoration: BoxDecoration(
-              color: AppColors.lightBackground,
-              borderRadius: BorderRadius.circular(16.0),
-              border: Border.all(
-                color: AppColors.secondaryGreyBlue.withValues(alpha: 0.2),
-                style: BorderStyle.solid,
+          // Body: Recent searches list
+          Obx(() {
+            if (controller.recentSearches.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+                margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                decoration: BoxDecoration(
+                  color: AppColors.lightBackground,
+                  borderRadius: BorderRadius.circular(16.0),
+                  border: Border.all(
+                    color: AppColors.secondaryGreyBlue.withValues(alpha: 0.2),
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.history,
+                      size: 48,
+                      color: AppColors.secondaryGreyBlue.withValues(alpha: 0.3),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No recent search',
+                      style: AppTextStyles.h3.copyWith(
+                        color: AppColors.secondaryGreyBlue,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Your recent bus searches will appear here for quick access.',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.secondaryGreyBlue,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: controller.recentSearches.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final search = controller.recentSearches[index];
+                  return GestureDetector(
+                    onTap: () => controller.selectRecentSearch(search),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.lightBackground,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.history, color: AppColors.secondaryGreyBlue, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(search.fromName, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Icon(Icons.arrow_forward, size: 14, color: AppColors.primaryAccent),
+                                    ),
+                                    Text(search.toName, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                Text(
+                                  "${search.timestamp.day}/${search.timestamp.month}/${search.timestamp.year}",
+                                  style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, color: AppColors.secondaryGreyBlue),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.history,
-                  size: 48,
-                  color: AppColors.secondaryGreyBlue.withValues(alpha: 0.3),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'No recent search',
-                  style: AppTextStyles.h3.copyWith(
-                    color: AppColors.secondaryGreyBlue,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your recent bus searches will appear here for quick access.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.secondaryGreyBlue,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
