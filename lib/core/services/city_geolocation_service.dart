@@ -16,7 +16,7 @@ class CitySuggestion {
 }
 
 class CityGeolocationService {
-  static const String googleApiKey = 'AIzaSyAQ4z51oX34F0WzWez-ya-N2IfC6ZAs86w';
+  static const String googleApiKey = '';//YOUR API KEY HERE
 
   /// Fetch city suggestions from Google Places API
   /// Returns only city-level results, not detailed addresses
