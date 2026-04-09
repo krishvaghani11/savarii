@@ -69,45 +69,45 @@ class BookTicketView extends GetView<BookTicketController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Stack to position the sync button between the two location fields
-          Stack(
-            alignment: Alignment.center,
+          // --- From and To fields stacked vertically ---
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Column(
+              // From field
+              _buildLocationInput(
+                title: 'From (Starting point)',
+                textController: controller.fromController,
+                icon: Icons.location_on,
+                isFrom: true,
+              ),
+              // Spacing wrapped with a Stack to perfectly center the swap button
+              Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
                 children: [
-                  // From field
-                    _buildLocationInput(
-                      title: 'From (Starting point)',
-                      textController: controller.fromController,
-                      icon: Icons.location_on,
-                      isFrom: true,
-                    ),
-                    const SizedBox(height: 16), // Reduced height to accommodate suggestions
-                    // To field
-                    _buildLocationInput(
-                      title: 'To (Destination)',
-                      textController: controller.toController,
-                      icon: Icons.navigation,
-                      isFrom: false,
-                    ),
+                  const SizedBox(height: 16, width: double.infinity),
+                  Transform.translate(
+                    offset: const Offset(0, 13), // Optically centers between the two input boxes
+                    child: _buildSwapLocationsIcon(),
+                  ),
                 ],
               ),
-              // Swap locations icon - Centered vertically between the two input boxes
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0, top: 25.0),
-                child: _buildSwapLocationsIcon(),
+              // To field
+              _buildLocationInput(
+                title: 'To (Destination)',
+                textController: controller.toController,
+                icon: Icons.navigation,
+                isFrom: false,
               ),
             ],
           ),
           const SizedBox(height: 24),
-
           // Row: Date & Passengers
           Row(
             children: [
               // Date selection
               _buildDateSelection(context),
               const SizedBox(width: 16),
-
               // Passenger count
               _buildPassengerCount(),
             ],
@@ -139,7 +139,7 @@ class BookTicketView extends GetView<BookTicketController> {
       ),
       child: IconButton(
         onPressed: controller.swapLocations,
-        icon: const Icon(Icons.sync, color: AppColors.white, size: 20),
+        icon: const Icon(Icons.swap_vert, color: AppColors.white, size: 20),
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(),
       ),
@@ -152,68 +152,147 @@ class BookTicketView extends GetView<BookTicketController> {
     required IconData icon,
     required bool isFrom,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.secondaryGreyBlue,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.lightBackground,
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          child: TextField(
-            controller: textController,
-            style: AppTextStyles.bodyLarge,
-            decoration: InputDecoration(
-              hintText: 'City or Station',
-              hintStyle: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.secondaryGreyBlue.withValues(alpha: 0.5),
-              ),
-              prefixIcon: Icon(icon, color: AppColors.primaryAccent),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 18.0),
+    return Builder(
+      builder: (context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.secondaryGreyBlue,
             ),
           ),
-        ),
-        // Autocomplete suggestions
-        Obx(() {
-          final list = isFrom ? controller.filteredFrom : controller.filteredTo;
-          if (list.isEmpty) return const SizedBox.shrink();
-          return Container(
-            margin: const EdgeInsets.only(top: 4),
-            constraints: const BoxConstraints(maxHeight: 200),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                )
-              ],
-            ),
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: list.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final loc = list[index];
-                return ListTile(
-                  title: Text(loc.name, style: AppTextStyles.bodyLarge),
-                  subtitle: Text(loc.city, style: AppTextStyles.caption),
-                  onTap: () => controller.selectLocation(loc, isFrom: isFrom),
-                );
-              },
-            ),
-          );
-        }),
-      ],
+          const SizedBox(height: 12),
+          Obx(() {
+            final selected = isFrom
+                ? controller.selectedFrom.value
+                : controller.selectedTo.value;
+            if (selected != null) {
+              // Show pill with city name and clear button
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.lightBackground,
+                  borderRadius: BorderRadius.circular(16.0),
+                  border: Border.all(
+                    color: AppColors.primaryAccent.withOpacity(0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(icon, color: AppColors.primaryAccent),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        selected.city,
+                        style: AppTextStyles.bodyLarge,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: AppColors.secondaryGreyBlue,
+                      ),
+                      splashRadius: 18,
+                      onPressed: () {
+                        if (isFrom) {
+                          controller.selectedFrom.value = null;
+                          controller.fromController.clear();
+                        } else {
+                          controller.selectedTo.value = null;
+                          controller.toController.clear();
+                        }
+                        FocusScope.of(context).unfocus();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              // Show TextField and suggestions
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.lightBackground,
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: TextField(
+                      controller: textController,
+                      style: AppTextStyles.bodyLarge,
+                      decoration: InputDecoration(
+                        hintText: 'City or Station',
+                        hintStyle: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.secondaryGreyBlue.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                        prefixIcon: Icon(icon, color: AppColors.primaryAccent),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 18.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Obx(() {
+                    final list = isFrom
+                        ? controller.filteredFrom
+                        : controller.filteredTo;
+                    if (list.isEmpty) return const SizedBox.shrink();
+                    return Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: list.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final suggestion = list[index];
+                          return ListTile(
+                            title: Text(
+                              suggestion.city,
+                              style: AppTextStyles.bodyLarge,
+                            ),
+                            subtitle: Text(
+                              suggestion.fullName,
+                              style: AppTextStyles.caption,
+                            ),
+                            onTap: () {
+                              controller.selectLocation(
+                                suggestion,
+                                isFrom: isFrom,
+                              );
+                              FocusScope.of(context).unfocus();
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  }),
+                ],
+              );
+            }
+          }),
+        ],
+      ),
     );
   }
 
@@ -394,7 +473,10 @@ class BookTicketView extends GetView<BookTicketController> {
           Obx(() {
             if (controller.recentSearches.isEmpty) {
               return Container(
-                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 40,
+                  horizontal: 20,
+                ),
                 margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
                 decoration: BoxDecoration(
                   color: AppColors.lightBackground,
@@ -437,7 +519,8 @@ class BookTicketView extends GetView<BookTicketController> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: controller.recentSearches.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final search = controller.recentSearches[index];
                   return GestureDetector(
@@ -450,7 +533,11 @@ class BookTicketView extends GetView<BookTicketController> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.history, color: AppColors.secondaryGreyBlue, size: 20),
+                          const Icon(
+                            Icons.history,
+                            color: AppColors.secondaryGreyBlue,
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -458,22 +545,43 @@ class BookTicketView extends GetView<BookTicketController> {
                               children: [
                                 Row(
                                   children: [
-                                    Text(search.fromName, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Icon(Icons.arrow_forward, size: 14, color: AppColors.primaryAccent),
+                                    Text(
+                                      search.fromName,
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                    Text(search.toName, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Icon(
+                                        Icons.arrow_forward,
+                                        size: 14,
+                                        color: AppColors.primaryAccent,
+                                      ),
+                                    ),
+                                    Text(
+                                      search.toName,
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 Text(
                                   "${search.timestamp.day}/${search.timestamp.month}/${search.timestamp.year}",
-                                  style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.secondaryGreyBlue,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.chevron_right, color: AppColors.secondaryGreyBlue),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.secondaryGreyBlue,
+                          ),
                         ],
                       ),
                     ),

@@ -15,7 +15,9 @@ class SearchResultsView extends GetView<SearchResultsController> {
       appBar: _buildAppBar(),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.primaryAccent));
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryAccent),
+          );
         }
 
         if (controller.buses.isEmpty) {
@@ -23,11 +25,18 @@ class SearchResultsView extends GetView<SearchResultsController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.search_off, size: 64, color: AppColors.secondaryGreyBlue),
+                const Icon(
+                  Icons.search_off,
+                  size: 64,
+                  color: AppColors.secondaryGreyBlue,
+                ),
                 const SizedBox(height: 16),
                 Text('No buses found for this route', style: AppTextStyles.h3),
                 const SizedBox(height: 8),
-                Text('Try a different date or route', style: AppTextStyles.bodyMedium),
+                Text(
+                  'Try a different date or route',
+                  style: AppTextStyles.bodyMedium,
+                ),
               ],
             ),
           );
@@ -173,14 +182,18 @@ class SearchResultsView extends GetView<SearchResultsController> {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: AppColors.primaryAccent.withValues(alpha: 0.4),
+                            color: AppColors.primaryAccent.withValues(
+                              alpha: 0.4,
+                            ),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ]
                       : [
                           BoxShadow(
-                            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.05),
+                            color: AppColors.secondaryGreyBlue.withValues(
+                              alpha: 0.05,
+                            ),
                             blurRadius: 5,
                           ),
                         ],
@@ -432,13 +445,17 @@ class SearchResultsView extends GetView<SearchResultsController> {
                               width: 6,
                               height: 6,
                               decoration: BoxDecoration(
-                                color: AppColors.secondaryGreyBlue.withValues(alpha: 0.5),
+                                color: AppColors.secondaryGreyBlue.withValues(
+                                  alpha: 0.5,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                             ),
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                ),
                                 child: CustomPaint(
                                   size: const Size(double.infinity, 1),
                                   painter: DottedLinePainter(),
@@ -449,7 +466,9 @@ class SearchResultsView extends GetView<SearchResultsController> {
                               width: 6,
                               height: 6,
                               decoration: BoxDecoration(
-                                color: AppColors.secondaryGreyBlue.withValues(alpha: 0.5),
+                                color: AppColors.secondaryGreyBlue.withValues(
+                                  alpha: 0.5,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -507,9 +526,13 @@ class SearchResultsView extends GetView<SearchResultsController> {
                   ],
                 ),
                 ElevatedButton(
-                  onPressed: () => controller.bookBus(bus),
+                  onPressed: available > 0
+                      ? () => controller.bookBus(bus)
+                      : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryAccent,
+                    backgroundColor: available > 0
+                        ? AppColors.primaryAccent
+                        : AppColors.secondaryGreyBlue,
                     minimumSize: const Size(0, 0),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -520,7 +543,10 @@ class SearchResultsView extends GetView<SearchResultsController> {
                     ),
                     elevation: 0,
                   ),
-                  child: Text('Select', style: AppTextStyles.buttonText),
+                  child: Text(
+                    available > 0 ? 'Select' : 'Full',
+                    style: AppTextStyles.buttonText,
+                  ),
                 ),
               ],
             ),
@@ -535,10 +561,7 @@ class SearchResultsView extends GetView<SearchResultsController> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.primaryAccent,
-            Colors.pinkAccent.shade200,
-          ],
+          colors: [AppColors.primaryAccent, Colors.pinkAccent.shade200],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),

@@ -133,10 +133,12 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      controller.boardingPoint,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
+                    Obx(
+                      () => Text(
+                        controller.boardingPoint.value,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -150,10 +152,12 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      controller.droppingPoint,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
+                    Obx(
+                      () => Text(
+                        controller.droppingPoint.value,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -202,11 +206,11 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    controller.rideType,
+                    controller.busName,
                     style: AppTextStyles.h3.copyWith(fontSize: 16),
                   ),
                   Text(
-                    controller.rideTime,
+                    '${controller.journeyDate} • Seats: ${controller.selectedSeats.join(", ")}',
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.secondaryGreyBlue,
                     ),
@@ -234,11 +238,14 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
           const SizedBox(height: 16),
 
           // Price Rows
-          _buildSummaryRow('Base Fare', controller.baseFare),
+          Obx(
+            () => _buildSummaryRow(
+              'Base Fare (${controller.selectedSeats.length} Seats)', 
+              controller.baseFare.value
+            )
+          ),
           const SizedBox(height: 12),
-          _buildSummaryRow('Distance Charge (12km)', controller.distanceCharge),
-          const SizedBox(height: 12),
-          _buildSummaryRow('Tax & Fees', controller.taxAndFees),
+          _buildSummaryRow('Taxes & Fees', controller.taxAndFees),
           const SizedBox(height: 20),
 
           // Total Amount

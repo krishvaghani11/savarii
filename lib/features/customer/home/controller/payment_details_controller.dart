@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class PaymentDetailsController extends GetxController {
-  // Dummy Trip Data
-  final String boardingPoint = "Central Station";
-  final String droppingPoint = "MG Road";
-  final String rideType = "Standard Ride";
-  final String rideTime = "Today, 2:30 PM";
+  // Navigation Payload Parameters
+  String busId = '';
+  String busName = '';
+  String journeyDate = '';
+  double seatPrice = 0.0;
+  List<String> selectedSeats = [];
 
-  // Pricing Data (Scaled for realistic INR values)
-  final double baseFare = 500.00;
-  final double distanceCharge = 1250.00;
+  // Reactive String Fields mapping straight to the View Elements
+  final RxString boardingPoint = ''.obs;
+  final RxString droppingPoint = ''.obs;
+  
+  // Tax calculations
   final double taxAndFees = 250.00;
 
-  // Reactive Total (Updates if promo is applied)
+  // Reactively track the real Base Fare
+  late RxDouble baseFare;
   late RxDouble totalAmount;
 
   final TextEditingController promoController = TextEditingController();
@@ -21,7 +25,21 @@ class PaymentDetailsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    totalAmount = (baseFare + distanceCharge + taxAndFees).obs;
+
+    if (Get.arguments != null) {
+      final args = Get.arguments as Map<String, dynamic>;
+      busId = args['busId'] ?? '';
+      busName = args['busName'] ?? 'Standard Ride';
+      journeyDate = args['journeyDate'] ?? 'Unknown Date';
+      seatPrice = args['seatPrice'] ?? 0.0;
+      selectedSeats = List<String>.from(args['selectedSeats'] ?? []);
+      
+      boardingPoint.value = args['boardingPoint']?.toString() ?? 'Not Selected';
+      droppingPoint.value = args['droppingPoint']?.toString() ?? 'Not Selected';
+    }
+
+    baseFare = (seatPrice * selectedSeats.length).obs;
+    totalAmount = (baseFare.value + taxAndFees).obs;
   }
 
   void applyPromo() {

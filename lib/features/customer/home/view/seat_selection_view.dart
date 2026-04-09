@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:savarii/core/constants/app_assets.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/features/customer/home/controller/seat_selection_controller.dart';
@@ -122,12 +121,18 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
                   style: AppTextStyles.h3.copyWith(fontSize: 18),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'A/C Sleeper (2+1) • 14h 30m',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.secondaryGreyBlue,
-                  ),
-                ),
+                Obx(() {
+                  String combined = controller.busType.value;
+                  if (controller.durationInfo.value.isNotEmpty) {
+                    combined += ' • ${controller.durationInfo.value}';
+                  }
+                  return Text(
+                    combined,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.secondaryGreyBlue,
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -282,33 +287,33 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
   Widget _buildSeatGrid() {
     return Obx(() {
       final isLower = controller.isLowerDeck.value;
-      final prefix = isLower ? 'L' : 'U'; // L for Lower, U for Upper
+      final prefixL = isLower ? 'L' : 'UL';
+      final prefixR = isLower ? 'R' : 'UR';
 
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Left Column (Single Seats)
+          // Left Column (Single Seats) 1 to 5
           Column(
             children: List.generate(5, (index) {
-              int seatNum = (index * 2) + 1; // 1, 3, 5, 7, 9
-              return _buildSleeperSeat('$prefix$seatNum');
+              return _buildSleeperSeat('$prefixL${index + 1}');
             }),
           ),
 
           // Right Column (Double Seats)
           Row(
             children: [
+              // Inner Column 1 to 5
               Column(
                 children: List.generate(5, (index) {
-                  int seatNum = (index * 2) + 2; // 2, 4, 6, 8, 10
-                  return _buildSleeperSeat('$prefix$seatNum');
+                  return _buildSleeperSeat('$prefixR${index + 1}');
                 }),
               ),
               const SizedBox(width: 10),
+              // Outer Column 6 to 10
               Column(
                 children: List.generate(5, (index) {
-                  int seatNum = (index * 2) + 1; // R1, R3...
-                  return _buildSleeperSeat('R$seatNum');
+                  return _buildSleeperSeat('$prefixR${index + 6}');
                 }),
               ),
             ],
@@ -437,10 +442,10 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
                   switch (controller.selectedTab.value) {
                     case 'Bus Info':
                       return _buildBusInfoContent();
-                    case 'Routes':
-                      return _buildRoutesContent();
                     case 'Boarding':
                       return _buildBoardingContent();
+                    case 'Dropping':
+                      return _buildDroppingContent();
                     case 'Rest Stops':
                       return _buildRestStopsContent();
                     case 'Rating':
@@ -522,67 +527,45 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
           ],
         ),
         const SizedBox(height: 24),
-
-        // Boarding Point Overview
-        Text('Boarding Point', style: AppTextStyles.h3),
-        const SizedBox(height: 12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(
-              Icons.location_on,
-              color: AppColors.primaryAccent,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Katraj NH4 Bypass',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'Near Petrol Pump, Pune • 10:30 PM',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.secondaryGreyBlue,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        Divider(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
         const SizedBox(height: 16),
-        // Map Placeholder
-        Container(
-          height: 120,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.lightBackground,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-            ),
-            image: const DecorationImage(
-              // Assuming you have the map asset from the location screen
-              image: AssetImage(AppAssets.locationMapImage),
-              fit: BoxFit.cover,
-              colorFilter: ColorFilter.mode(
-                Colors.white54,
-                BlendMode.lighten,
-              ), // Softens the map to look like a background
-            ),
+        
+        // Dynamic Driver & Bus Specifics
+        Text(
+          'Driver & Bus Details',
+          style: AppTextStyles.h3.copyWith(fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        
+        Obx(() => _buildInfoRow(Icons.person_outline, 'Driver Name', controller.driverName.value)),
+        const SizedBox(height: 10),
+        Obx(() => _buildInfoRow(Icons.phone_outlined, 'Contact Number', controller.driverMobile.value)),
+        const SizedBox(height: 10),
+        Obx(() => _buildInfoRow(Icons.directions_bus_outlined, 'Bus License Plate', controller.busNumber.value)),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.secondaryGreyBlue),
+        const SizedBox(width: 8),
+        Text(
+          '$label:',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.secondaryGreyBlue,
           ),
-          child: const Center(
-            child: Icon(
-              Icons.location_on,
-              color: AppColors.primaryAccent,
-              size: 32,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryDark,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -602,21 +585,54 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
     );
   }
 
-  // Dummy content for other tabs based on your request
-  Widget _buildRoutesContent() => Text(
-    'Timeline: Pune -> Lonavala -> Mumbai -> Bangalore',
-    style: AppTextStyles.bodyMedium,
-  );
+  // --- Dynamic Tab Display Widgets ---
 
-  Widget _buildBoardingContent() => Text(
-    'Multiple Boarding points listed here...',
-    style: AppTextStyles.bodyMedium,
-  );
+  Widget _buildPointList(List<Map<String, dynamic>> points, String titleKey, String subtitleKey, IconData icon) {
+    if (points.isEmpty) {
+      return Text('No details found.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.secondaryGreyBlue));
+    }
 
-  Widget _buildRestStopsContent() => Text(
-    'Food Mall, Mumbai Highway (11:30 PM - 20 mins)',
-    style: AppTextStyles.bodyMedium,
-  );
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: points.length,
+      itemBuilder: (context, index) {
+        final pt = points[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: AppColors.primaryAccent, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pt[titleKey]?.toString() ?? 'Unknown',
+                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      pt[subtitleKey]?.toString() ?? '--',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBoardingContent() => _buildPointList(controller.boardingPoints, 'pointName', 'time', Icons.my_location);
+
+  Widget _buildDroppingContent() => _buildPointList(controller.droppingPoints, 'pointName', 'time', Icons.location_on_outlined);
+
+  Widget _buildRestStopsContent() => _buildPointList(controller.restStops, 'stopName', 'duration', Icons.restaurant_menu);
 
   Widget _buildRatingContent() =>
       Text('4.2/5 based on 124 user reviews.', style: AppTextStyles.bodyMedium);

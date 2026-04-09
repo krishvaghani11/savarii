@@ -13,6 +13,7 @@ import 'package:savarii/features/customer/home/bindings/book_parcel_binding.dart
 import 'package:savarii/features/customer/home/bindings/book_ticket_binding.dart';
 import 'package:savarii/features/customer/home/bindings/booking_confirmation_binding.dart';
 import 'package:savarii/features/customer/home/bindings/bookings_binding.dart';
+import 'package:savarii/features/customer/home/bindings/customer_select_points_binding.dart';
 import 'package:savarii/features/customer/home/bindings/edit_profile_binding.dart';
 import 'package:savarii/features/customer/home/bindings/help_support_binding.dart';
 import 'package:savarii/features/customer/home/bindings/language_binding.dart';
@@ -37,6 +38,7 @@ import 'package:savarii/features/customer/home/view/book_parcel_view.dart';
 import 'package:savarii/features/customer/home/view/book_ticket_view.dart';
 import 'package:savarii/features/customer/home/view/booking_confirmation_view.dart';
 import 'package:savarii/features/customer/home/view/bookings_view.dart';
+import 'package:savarii/features/customer/home/view/customer_select_points_view.dart';
 import 'package:savarii/features/customer/home/view/edit_profile_view.dart';
 import 'package:savarii/features/customer/home/view/help_support_view.dart';
 import 'package:savarii/features/customer/home/view/language_view.dart';
@@ -271,6 +273,17 @@ class AppPages {
       binding: TermsConditionsBinding(),
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      name: AppRoutes.customerSelectPoints,
+      page: () => const CustomerSelectPointsView(),
+      binding: CustomerSelectPointsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+
+
+
+
 
     // vendor side routes
     GetPage(

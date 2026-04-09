@@ -2,13 +2,22 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:savarii/core/services/firestore_service.dart';
-import 'package:savarii/models/location_model.dart';
 import 'package:savarii/models/recent_search_model.dart';
+import 'package:savarii/core/services/city_geolocation_service.dart';
+
+class CitySuggestionModel {
+  final String city;
+  final String fullName;
+  final String placeId;
+
+  CitySuggestionModel({
+    required this.city,
+    required this.fullName,
+    required this.placeId,
+  });
+}
 
 class BookTicketController extends GetxController {
-  final FirestoreService _firestoreService = Get.find<FirestoreService>();
-
   // 1. Text Controllers for locations
   final TextEditingController fromController = TextEditingController();
   final TextEditingController toController = TextEditingController();
@@ -17,13 +26,12 @@ class BookTicketController extends GetxController {
   final Rx<DateTime> selectedDate = DateTime.now().obs;
   final RxInt passengerCount = 1.obs;
 
-  // 3. Location Data
-  final RxList<LocationModel> allLocations = <LocationModel>[].obs;
-  final RxList<LocationModel> filteredFrom = <LocationModel>[].obs;
-  final RxList<LocationModel> filteredTo = <LocationModel>[].obs;
+  // 3. City Suggestion Data (from Geolocation API)
+  final RxList<CitySuggestionModel> filteredFrom = <CitySuggestionModel>[].obs;
+  final RxList<CitySuggestionModel> filteredTo = <CitySuggestionModel>[].obs;
 
-  final Rxn<LocationModel> selectedFrom = Rxn<LocationModel>();
-  final Rxn<LocationModel> selectedTo = Rxn<LocationModel>();
+  final Rxn<CitySuggestionModel> selectedFrom = Rxn<CitySuggestionModel>();
+  final Rxn<CitySuggestionModel> selectedTo = Rxn<CitySuggestionModel>();
 
   // 4. Recent Searches
   final RxList<RecentSearchModel> recentSearches = <RecentSearchModel>[].obs;
@@ -31,46 +39,81 @@ class BookTicketController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _fetchLocations();
     loadRecentSearches();
-    
+
     // Listeners for autocomplete
     fromController.addListener(() {
-      _filterLocations(fromController.text, isFrom: true);
+      _fetchCitySuggestions(fromController.text, isFrom: true);
     });
     toController.addListener(() {
-      _filterLocations(toController.text, isFrom: false);
+      _fetchCitySuggestions(toController.text, isFrom: false);
     });
   }
 
-  Future<void> _fetchLocations() async {
-    final locations = await _firestoreService.getLocations();
-    allLocations.assignAll(locations);
-  }
-
-  void _filterLocations(String query, {required bool isFrom}) {
+  Future<void> _fetchCitySuggestions(
+    String query, {
+    required bool isFrom,
+  }) async {
     if (query.isEmpty) {
-      if (isFrom) filteredFrom.clear();
-      else filteredTo.clear();
+      if (isFrom) {
+        filteredFrom.clear();
+      } else {
+        filteredTo.clear();
+      }
       return;
     }
-    final filtered = allLocations
-        .where((loc) => loc.name.toLowerCase().contains(query.toLowerCase()) || 
-                         loc.city.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-    if (isFrom) filteredFrom.assignAll(filtered);
-    else filteredTo.assignAll(filtered);
+
+    try {
+      // Fetch city suggestions from geolocation service (only cities)
+      final citySuggestions = await CityGeolocationService.fetchCitySuggestions(query);
+
+      final suggestions = citySuggestions.map((cs) {
+        return CitySuggestionModel(
+          city: cs.city,
+          fullName: cs.fullName,
+          placeId: cs.placeId,
+        );
+      }).toList();
+
+      // Filter out the city already selected in the other field
+      if (isFrom && selectedTo.value != null) {
+        suggestions.removeWhere((s) => s.city == selectedTo.value!.city);
+      } else if (!isFrom && selectedFrom.value != null) {
+        suggestions.removeWhere((s) => s.city == selectedFrom.value!.city);
+      }
+
+      if (isFrom) {
+        filteredFrom.assignAll(suggestions);
+      } else {
+        filteredTo.assignAll(suggestions);
+      }
+    } catch (e) {
+      print('Error fetching city suggestions: $e');
+      if (isFrom) {
+        filteredFrom.clear();
+      } else {
+        filteredTo.clear();
+      }
+    }
   }
 
-  void selectLocation(LocationModel location, {required bool isFrom}) {
+  void selectLocation(CitySuggestionModel location, {required bool isFrom}) {
     if (isFrom) {
       selectedFrom.value = location;
-      fromController.text = location.name;
+      fromController.text = location.city; // Show only city name
       filteredFrom.clear();
+      // Also update To suggestions to remove this city
+      if (filteredTo.isNotEmpty) {
+        filteredTo.removeWhere((s) => s.city == location.city);
+      }
     } else {
       selectedTo.value = location;
-      toController.text = location.name;
+      toController.text = location.city; // Show only city name
       filteredTo.clear();
+      // Also update From suggestions to remove this city
+      if (filteredFrom.isNotEmpty) {
+        filteredFrom.removeWhere((s) => s.city == location.city);
+      }
     }
   }
 
@@ -83,6 +126,10 @@ class BookTicketController extends GetxController {
     String tempText = fromController.text;
     fromController.text = toController.text;
     toController.text = tempText;
+
+    // Clear suggestions after swap
+    filteredFrom.clear();
+    filteredTo.clear();
   }
 
   // Select date using native calendar picker
@@ -126,34 +173,11 @@ class BookTicketController extends GetxController {
     final List<String>? searchesJson = prefs.getStringList('recent_searches');
     if (searchesJson != null) {
       recentSearches.assignAll(
-        searchesJson.map((s) => RecentSearchModel.fromJson(jsonDecode(s))).toList()
+        searchesJson
+            .map((s) => RecentSearchModel.fromJson(jsonDecode(s)))
+            .toList(),
       );
     }
-  }
-
-  Future<void> saveRecentSearch(LocationModel from, LocationModel to) async {
-    final newSearch = RecentSearchModel(
-      fromId: from.id,
-      fromName: from.name,
-      toId: to.id,
-      toName: to.name,
-      timestamp: DateTime.now(),
-    );
-
-    // Remove duplicates
-    recentSearches.removeWhere((s) => s.fromId == from.id && s.toId == to.id);
-    recentSearches.insert(0, newSearch);
-
-    // Keep only last 5
-    if (recentSearches.length > 5) {
-      recentSearches.removeLast();
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      'recent_searches',
-      recentSearches.map((s) => jsonEncode(s.toJson())).toList()
-    );
   }
 
   Future<void> clearRecentSearches() async {
@@ -165,37 +189,82 @@ class BookTicketController extends GetxController {
   void selectRecentSearch(RecentSearchModel search) {
     fromController.text = search.fromName;
     toController.text = search.toName;
-    
-    // Find the actual objects if they exist in cache
-    selectedFrom.value = allLocations.firstWhereOrNull((l) => l.id == search.fromId);
-    selectedTo.value = allLocations.firstWhereOrNull((l) => l.id == search.toId);
-    
+
+    // Create CitySuggestionModel from recent search
+    selectedFrom.value = CitySuggestionModel(
+      city: search.fromName,
+      fullName: search.fromName,
+      placeId: search.fromId,
+    );
+    selectedTo.value = CitySuggestionModel(
+      city: search.toName,
+      fullName: search.toName,
+      placeId: search.toId,
+    );
+
     searchBuses();
   }
 
   // Action: Search Buses
   void searchBuses() {
     if (selectedFrom.value == null || selectedTo.value == null) {
-      Get.snackbar('Error', 'Please select valid From and To locations',
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        'Please select valid From and To cities',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
-    if (selectedFrom.value!.id == selectedTo.value!.id) {
-      Get.snackbar('Error', 'From and To locations cannot be the same',
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    if (selectedFrom.value!.city == selectedTo.value!.city) {
+      Get.snackbar(
+        'Error',
+        'From and To cities cannot be the same',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
-    saveRecentSearch(selectedFrom.value!, selectedTo.value!);
+    // Save recent search
+    final newSearch = RecentSearchModel(
+      fromId: selectedFrom.value!.city,
+      fromName: selectedFrom.value!.city,
+      toId: selectedTo.value!.city,
+      toName: selectedTo.value!.city,
+      timestamp: DateTime.now(),
+    );
 
-    Get.toNamed('/search-results', arguments: {
-      'fromId': selectedFrom.value!.id,
-      'fromName': selectedFrom.value!.name,
-      'toId': selectedTo.value!.id,
-      'toName': selectedTo.value!.name,
-      'date': selectedDate.value,
-      'passengers': passengerCount.value,
-    });
+    // Remove duplicates and add to recent searches
+    recentSearches.removeWhere((s) => s.fromId == selectedFrom.value!.city && s.toId == selectedTo.value!.city);
+    recentSearches.insert(0, newSearch);
+
+    // Keep only last 5
+    if (recentSearches.length > 5) {
+      recentSearches.removeLast();
+    }
+
+    _saveRecentSearches();
+
+    Get.toNamed(
+      '/search-results',
+      arguments: {
+        'fromCity': selectedFrom.value!.city,
+        'toCity': selectedTo.value!.city,
+        'date': selectedDate.value,
+        'passengers': passengerCount.value,
+      },
+    );
+  }
+
+  Future<void> _saveRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'recent_searches',
+      recentSearches.map((s) => jsonEncode(s.toJson())).toList(),
+    );
   }
 }

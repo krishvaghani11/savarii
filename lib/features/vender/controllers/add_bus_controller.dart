@@ -51,16 +51,37 @@ class AddBusController extends GetxController {
         licenseController.text = driver['licenseNumber'] ?? '';
 
         if (route['boardingPoints'] != null) {
-          savedBoardingPoints.assignAll(List<Map<String, String>>.from(route['boardingPoints'].map((x) => Map<String, String>.from(x))));
+          final List<dynamic> bps = route['boardingPoints'];
+          savedBoardingPoints.assignAll(bps.map((e) {
+            final map = e as Map<dynamic, dynamic>;
+            return {
+              'pointName': map['pointName']?.toString() ?? '',
+              'time': map['time']?.toString() ?? '',
+            };
+          }).toList());
         }
         
         // Load dropping points if they exist
         if (route['droppingPoints'] != null) {
-          savedDroppingPoints.assignAll(List<Map<String, String>>.from(route['droppingPoints'].map((x) => Map<String, String>.from(x))));
+          final List<dynamic> dps = route['droppingPoints'];
+          savedDroppingPoints.assignAll(dps.map((e) {
+            final map = e as Map<dynamic, dynamic>;
+            return {
+              'pointName': map['pointName']?.toString() ?? '',
+              'time': map['time']?.toString() ?? '',
+            };
+          }).toList());
         }
         
         if (route['restStops'] != null) {
-          savedRestStops.assignAll(List<Map<String, String>>.from(route['restStops'].map((x) => Map<String, String>.from(x))));
+          final List<dynamic> rss = route['restStops'];
+          savedRestStops.assignAll(rss.map((e) {
+            final map = e as Map<dynamic, dynamic>;
+            return {
+              'stopName': map['stopName']?.toString() ?? '',
+              'duration': map['duration']?.toString() ?? '',
+            };
+          }).toList());
         }
       }
     } catch (e) {
@@ -277,6 +298,17 @@ class AddBusController extends GetxController {
 
   /// SAVE BUS + ROUTE
   Future<void> saveBusAndRoute() async {
+    // Auto-flush ghost text into arrays
+    if (bpNameController.text.trim().isNotEmpty && bpTime.value != '--:-- --') {
+      addBoardingPoint();
+    }
+    if (dpNameController.text.trim().isNotEmpty && dpTime.value != '--:-- --') {
+      addDroppingPoint();
+    }
+    if (rsNameController.text.trim().isNotEmpty && rsDurationController.text.trim().isNotEmpty) {
+      addRestStop();
+    }
+
     if (!formKey.currentState!.validate()) {
       Get.snackbar(
         "Incomplete Form",

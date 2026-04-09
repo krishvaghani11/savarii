@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/services/firestore_service.dart';
 import 'package:savarii/models/bus_model.dart';
@@ -6,9 +7,7 @@ class SearchResultsController extends GetxController {
   final FirestoreService _firestoreService = Get.find<FirestoreService>();
 
   // --- Search Parameters ---
-  late String fromId;
   late String fromCity;
-  late String toId;
   late String toCity;
   late DateTime travelDate;
   late int passengers;
@@ -28,10 +27,8 @@ class SearchResultsController extends GetxController {
   void onInit() {
     super.onInit();
     final args = Get.arguments as Map<String, dynamic>;
-    fromId = args['fromId'];
-    fromCity = args['fromName'];
-    toId = args['toId'];
-    toCity = args['toName'];
+    fromCity = args['fromCity'];
+    toCity = args['toCity'];
     travelDate = args['date'];
     passengers = args['passengers'];
 
@@ -41,14 +38,34 @@ class SearchResultsController extends GetxController {
   Future<void> fetchResults() async {
     isLoading.value = true;
     try {
-      // 1. Get buses where route contains fromId
-      final allBusesMatchedFrom = await _firestoreService.searchBuses(fromId);
-      
-      // 2. Filter in-app: indexOf(fromId) < indexOf(toId)
-      final filteredBuses = allBusesMatchedFrom.where((bus) {
-        final fromIndex = bus.route.indexOf(fromId);
-        final toIndex = bus.route.indexOf(toId);
-        return fromIndex != -1 && toIndex != -1 && fromIndex < toIndex;
+      // 1. Get ALL buses from Firestore
+      final allBuses = await _getAllBuses();
+
+      // 2. Filter buses: must have fromCity and toCity in route (fromCity before toCity)
+      final filteredBuses = allBuses.where((bus) {
+        final searchFromCity = fromCity.toLowerCase().trim();
+        final searchToCity = toCity.toLowerCase().trim();
+
+        // 1. Direct match on main endpoints
+        final busFromCity = bus.fromCity.toLowerCase().trim();
+        final busToCity = bus.toCity.toLowerCase().trim();
+        if (busFromCity == searchFromCity && busToCity == searchToCity) {
+          return true;
+        }
+
+        // 2. Match intermediate route points
+        if (bus.route.isNotEmpty) {
+          final normalizedRoute = bus.route.map((city) => city.toLowerCase().trim()).toList();
+          final fromIndex = normalizedRoute.indexOf(searchFromCity);
+          final toIndex = normalizedRoute.indexOf(searchToCity);
+
+          // Both cities must be in the route, and the boarding point must be before the dropping point
+          if (fromIndex != -1 && toIndex != -1 && fromIndex < toIndex) {
+            return true;
+          }
+        }
+
+        return false;
       }).toList();
 
       buses.assignAll(filteredBuses);
@@ -64,9 +81,22 @@ class SearchResultsController extends GetxController {
     }
   }
 
+  /// Fetch all buses from Firestore
+  Future<List<BusModel>> _getAllBuses() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('buses').get();
+      return snapshot.docs
+          .map((doc) => BusModel.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      print('Error fetching all buses: $e');
+      return [];
+    }
+  }
+
   Future<void> _fetchSeatAvailability(BusModel bus) async {
-    final seatList = await _firestoreService.getSeatList(bus.id);
-    int bookedCount = seatList.where((s) => s['isBooked'] == true).length;
+    final formattedDate = '${travelDate.day.toString().padLeft(2, '0')}-${travelDate.month.toString().padLeft(2, '0')}-${travelDate.year}';
+    final bookedCount = await _firestoreService.getBookedSeatsCount(bus.id, formattedDate);
     int totalSeats = bus.totalSeats;
     int availableCount = totalSeats - bookedCount;
 
@@ -86,14 +116,15 @@ class SearchResultsController extends GetxController {
 
   void bookBus(BusModel bus) {
     print("Selecting seats for ${bus.busName}...");
+    String formattedDate = "${travelDate.day.toString().padLeft(2, '0')}/${travelDate.month.toString().padLeft(2, '0')}/${travelDate.year}";
+    
     Get.toNamed('/seat-selection', arguments: {
       'busId': bus.id,
       'busName': bus.busName,
-      'fromId': fromId,
-      'fromName': fromCity,
-      'toId': toId,
-      'toName': toCity,
-      'date': travelDate,
+      'fromCity': fromCity,
+      'toCity': toCity,
+      'journeyDate': formattedDate,
+      'seatPrice': bus.price.toDouble(),
     });
   }
 }

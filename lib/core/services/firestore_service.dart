@@ -193,6 +193,20 @@ class FirestoreService extends GetxService {
     });
   }
 
+  Future<int> getBookedSeatsCount(String busId, String formattedDate) async {
+    try {
+      final doc = await _db.collection('buses').doc(busId).get();
+      if (!doc.exists) return 0;
+      final data = doc.data() ?? {};
+      final bookedSeatsByDate = data['bookedSeatsByDate'] as Map<String, dynamic>? ?? {};
+      final bookedSeats = bookedSeatsByDate[formattedDate] as List<dynamic>? ?? [];
+      return bookedSeats.length;
+    } catch (e) {
+      print('Error fetching booked seats count: $e');
+      return 0;
+    }
+  }
+
   // --- Location Selection Methods ---
   Future<List<LocationModel>> getLocations() async {
     try {
@@ -202,6 +216,49 @@ class FirestoreService extends GetxService {
           .toList();
     } catch (e) {
       print('Error fetching locations: $e');
+      return [];
+    }
+  }
+
+  /// Search locations by name or city
+  /// Supports partial matches and multi-word queries
+  Future<List<LocationModel>> searchLocations(String query) async {
+    try {
+      if (query.isEmpty) {
+        return await getLocations();
+      }
+
+      final lowerQuery = query.toLowerCase().trim();
+      final allLocations = await getLocations();
+
+      // Filter locations based on query
+      List<LocationModel> filtered = allLocations.where((loc) {
+        final locNameLower = loc.name.toLowerCase();
+        final locCityLower = loc.city.toLowerCase();
+        
+        return locNameLower.contains(lowerQuery) || 
+               locCityLower.contains(lowerQuery);
+      }).toList();
+
+      // Sort by relevance
+      filtered.sort((a, b) {
+        final aName = a.name.toLowerCase();
+        final bName = b.name.toLowerCase();
+
+        // Prioritize name matches over city matches
+        bool aNameMatch = aName.contains(lowerQuery);
+        bool bNameMatch = bName.contains(lowerQuery);
+
+        if (aNameMatch && !bNameMatch) return -1;
+        if (bNameMatch && !aNameMatch) return 1;
+
+        // If both match name or both match city, sort alphabetically
+        return aName.compareTo(bName);
+      });
+
+      return filtered;
+    } catch (e) {
+      print('Error searching locations: $e');
       return [];
     }
   }

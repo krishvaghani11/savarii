@@ -30,11 +30,7 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [
-        Locale('en'),
-        Locale('gu'),
-        Locale('hi'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('gu'), Locale('hi')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
       startLocale: Locale(savedLang),
@@ -55,7 +51,6 @@ class SavariiApp extends StatelessWidget {
       defaultTransition: Transition.fadeIn,
       initialRoute: AppRoutes.splash,
       getPages: AppPages.routes,
-      // Wire EasyLocalization into GetMaterialApp
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,

@@ -11,7 +11,7 @@ class LocationModel {
 
   factory LocationModel.fromMap(Map<String, dynamic> map, String id) {
     return LocationModel(
-      id: id,
+      id: map['name'] ?? '',
       name: map['name'] ?? '',
       city: map['city'] ?? '',
     );

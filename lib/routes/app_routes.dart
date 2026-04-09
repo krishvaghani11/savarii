@@ -32,6 +32,7 @@ class AppRoutes {
   static const String securitySettings = '/security-settings';
   static const String privacyPolicy = '/privacy-policy';
   static const String termsConditions = '/terms-conditions';
+  static const String customerSelectPoints = '/customer-select-points';
 
   //vendor side routes
   static const String vendorRegistration = '/vendor-registration';
