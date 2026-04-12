@@ -17,7 +17,11 @@ class CitySuggestion {
 }
 
 class CityGeolocationService {
+<<<<<<< HEAD
   static String get googleApiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+=======
+  static const String googleApiKey = '';//YOUR API KEY HERE
+>>>>>>> 61ae6490bf357503051ffbf7178dcce0efc405c9
 
   /// Fetch city suggestions from Google Places API
   /// Returns only city-level results, not detailed addresses
