@@ -21,6 +21,7 @@ class VendorTicketModel {
   final double platformFee;
   final String paymentMethod;
   final String ticketUrl;
+  final String status;
 
   VendorTicketModel({
     required this.passengerName,
@@ -36,6 +37,7 @@ class VendorTicketModel {
     this.platformFee = 10.0,
     this.paymentMethod = 'UPI',
     this.ticketUrl = '',
+    this.status = 'confirmed',
   });
 
   factory VendorTicketModel.fromMap(Map<String, dynamic> map) {
@@ -56,6 +58,7 @@ class VendorTicketModel {
       platformFee: p(map['platformFee'], 10.0),
       paymentMethod: map['paymentMethod'] ?? 'UPI',
       ticketUrl: map['ticketUrl'] ?? '',
+      status: map['status'] ?? 'confirmed',
     );
   }
 }

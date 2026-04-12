@@ -11,7 +11,7 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: AppColors.lightBackground, // Light grey background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -19,8 +19,7 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
         title: Text('Confirmation', style: AppTextStyles.h3),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primaryDark),
-          onPressed: controller
-              .backToHome, // Route home on back to prevent going back to payment
+          onPressed: controller.backToHome, // Route home to prevent going back to payment
         ),
       ),
       body: SafeArea(
@@ -41,7 +40,7 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Your request has been received. Our courier will\narrive shortly to pick up your package.',
+                'Your request has been received. Our courier\nwill arrive shortly to pick up your package.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.secondaryGreyBlue,
@@ -50,7 +49,7 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
               ),
               const SizedBox(height: 32),
 
-              // 3. Tracking Details Card
+              // 3. Tracking Details Card (Updated with timeline)
               _buildTrackingCard(),
               const SizedBox(height: 40),
 
@@ -69,9 +68,9 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
 
   Widget _buildSuccessGraphic() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(24),
       child: Image.asset(
-        AppAssets.parcelSuccessImage, // The path to your 3D box graphic
+        AppAssets.parcelBoxImage, // Replace with your actual 3D box asset path
         height: 200,
         width: 200,
         fit: BoxFit.cover,
@@ -80,7 +79,7 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
           width: 200,
           decoration: BoxDecoration(
             color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
           ),
           child: const Icon(
             Icons.inventory_2,
@@ -109,65 +108,147 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Tracking ID Label & Copy Button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'TRACKING ID',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.secondaryGreyBlue,
-                  letterSpacing: 1,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              GestureDetector(
-                onTap: controller.copyTrackingId,
-                child: const Icon(
-                  Icons.copy,
-                  color: AppColors.primaryAccent,
-                  size: 18,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Row 2: Icon and ID Details
+          // Row 1: Icon, Tracking ID & Copy Button
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryAccent.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                  color: const Color(0xFF2A2D3E), // Dark navy color from mockup
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
-                  Icons.inventory_2,
-                  color: AppColors.primaryAccent,
+                  Icons.inventory_2_outlined,
+                  color: AppColors.white,
                   size: 24,
                 ),
               ),
               const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    controller.trackingId,
-                    style: AppTextStyles.h2.copyWith(fontSize: 20),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Savarii Express Delivery',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.secondaryGreyBlue,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TRACKING ID',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.secondaryGreyBlue,
+                        letterSpacing: 0.5,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      controller.trackingId,
+                      style: AppTextStyles.h2.copyWith(fontSize: 18),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: controller.copyTrackingId,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ],
+                  child: const Icon(
+                    Icons.copy_all,
+                    color: AppColors.secondaryGreyBlue,
+                    size: 20,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+
+          // Row 2: Vertical Timeline (Pickup and Drop-off)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Timeline Dots and Line
+              Column(
+                children: [
+                  const SizedBox(height: 6),
+                  const Icon(
+                    Icons.circle,
+                    color: AppColors.primaryAccent,
+                    size: 14,
+                  ),
+                  Container(
+                    height: 50,
+                    width: 1.5,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: CustomPaint(
+                      painter: DottedLinePainter(),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.circle,
+                    color: AppColors.primaryDark,
+                    size: 14,
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              // Timeline Text
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'PICKUP',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.secondaryGreyBlue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      controller.pickupLocation,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                    Text(
+                      controller.pickupTime,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.secondaryGreyBlue,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'DROP-OFF',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.secondaryGreyBlue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      controller.dropoffLocation,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                    Text(
+                      controller.dropoffTime,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.secondaryGreyBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
 
           // Row 3: Download Invoice Button
           SizedBox(
@@ -187,43 +268,16 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                backgroundColor: AppColors.primaryAccent.withOpacity(0.05),
+                backgroundColor: AppColors.primaryAccent.withOpacity(0.05), // Light pink background
                 side: BorderSide(
-                  color: AppColors.primaryAccent.withOpacity(0.2),
+                  color: AppColors.primaryAccent.withOpacity(0.2), // Light red border
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
-          ),
-
-          const SizedBox(height: 20),
-          Divider(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-            height: 1,
-          ),
-          const SizedBox(height: 20),
-
-          // Row 4: Estimated Pickup
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Estimated Pickup',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.secondaryGreyBlue,
-                ),
-              ),
-              Text(
-                '10:30 AM Today',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryDark,
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -236,7 +290,7 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
         // Track Parcel Button (Solid Red)
         ElevatedButton.icon(
           onPressed: controller.trackParcel,
-          icon: const Icon(Icons.location_on, color: AppColors.white, size: 18),
+          icon: const Icon(Icons.location_on_outlined, color: AppColors.white, size: 20),
           label: Text('Track Parcel', style: AppTextStyles.buttonText),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryAccent,
@@ -253,9 +307,9 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
         ElevatedButton(
           onPressed: controller.backToHome,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryAccent.withOpacity(0.08),
+            backgroundColor: AppColors.white,
             foregroundColor: AppColors.primaryDark,
-            // Dark text
+            side: BorderSide(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
             minimumSize: const Size(double.infinity, 54),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -272,4 +326,22 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
       ],
     );
   }
+}
+
+// Custom Painter for the dotted vertical line in the timeline
+class DottedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashHeight = 4, dashSpace = 4, startY = 0;
+    final paint = Paint()
+      ..color = AppColors.secondaryGreyBlue.withOpacity(0.4)
+      ..strokeWidth = 1.5;
+    while (startY < size.height) {
+      canvas.drawLine(Offset(0, startY), Offset(0, startY + dashHeight), paint);
+      startY += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

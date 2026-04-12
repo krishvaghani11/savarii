@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../core/services/auth_services.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/services/ticket_pdf_service.dart';
@@ -69,7 +70,7 @@ class VendorRazorpayController extends GetxController {
     final amountInPaise = (totalAmount * 100).toInt();
 
     final options = {
-      'key': 'rzp_test_SYcIlV5G19FLqH', 
+      'key': dotenv.env['RAZORPAY_KEY'], 
       'amount': amountInPaise,
       'name': 'Savarii Bus Booking',
       'description': '$origin → $destination | $seat',

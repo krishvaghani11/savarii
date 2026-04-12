@@ -21,30 +21,47 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
           onPressed: () => Get.back(),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Trip Details Card
-              _buildTripDetailsCard(),
-              const SizedBox(height: 16),
-
-              // 2. Fare Breakdown Card
-              _buildFareBreakdownCard(),
-              const SizedBox(height: 16),
-
-              // 3. Promo Code Field Card
-              _buildPromoCodeCard(),
-
-              const SizedBox(height: 120), // Buffer for sticky bottom bar
-            ],
-          ),
-        ),
-      ),
       // Sticky Bottom Bar
       bottomNavigationBar: _buildBottomBar(),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. Trip Details Card
+                  _buildTripDetailsCard(),
+                  const SizedBox(height: 16),
+
+                  // 2. Fare Breakdown Card
+                  _buildFareBreakdownCard(),
+                  const SizedBox(height: 16),
+
+                  // 3. Promo Code Field Card
+                  _buildPromoCodeCard(),
+
+                  const SizedBox(height: 120), // Buffer for sticky bottom bar
+                ],
+              ),
+            ),
+            // Loading Overlay
+            Obx(() => controller.isLoading.value
+                ? Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primaryAccent),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink()),
+          ],
+        ),
+      ),
     );
   }
 
@@ -245,7 +262,9 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
             )
           ),
           const SizedBox(height: 12),
-          _buildSummaryRow('Taxes & Fees', controller.taxAndFees),
+          Obx(() => _buildSummaryRow('GST (5%)', controller.gst.value)),
+          const SizedBox(height: 12),
+          _buildSummaryRow('Platform Fees', controller.platformFee),
           const SizedBox(height: 20),
 
           // Total Amount

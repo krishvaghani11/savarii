@@ -33,6 +33,8 @@ class AppRoutes {
   static const String privacyPolicy = '/privacy-policy';
   static const String termsConditions = '/terms-conditions';
   static const String customerSelectPoints = '/customer-select-points';
+  static const String customerAddPassenger = '/customer-add-passenger';
+  static const String cancelBooking = '/cancel-booking';
 
   //vendor side routes
   static const String vendorRegistration = '/vendor-registration';

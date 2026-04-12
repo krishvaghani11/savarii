@@ -6,6 +6,7 @@ class SeatSelectionController extends GetxController {
   final String busId = Get.arguments?['busId'] ?? '';
   final String journeyDate = Get.arguments?['journeyDate'] ?? '';
   final double seatPrice = Get.arguments?['seatPrice'] ?? 1250.0;
+  final String vendorId = Get.arguments?['vendorId'] ?? '';
 
   // Deck Toggle (true = Lower Deck, false = Upper Deck)
   final RxBool isLowerDeck = true.obs;
@@ -164,6 +165,7 @@ class SeatSelectionController extends GetxController {
       'selectedSeats': selectedSeats.toList(),
       'boardingPointsData': boardingPoints.toList(),
       'droppingPointsData': droppingPoints.toList(),
+      'vendorId': vendorId,
     });
   }
 }

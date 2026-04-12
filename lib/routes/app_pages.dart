@@ -9,10 +9,12 @@ import 'package:savarii/features/auth/view/location_access_view.dart';
 import 'package:savarii/features/auth/view/customer_login_view.dart';
 import 'package:savarii/features/auth/view/role_selection_view.dart';
 import 'package:savarii/features/customer/home/bindings/about_us_binding.dart';
+import 'package:savarii/features/customer/home/bindings/add_passenger_binding.dart';
 import 'package:savarii/features/customer/home/bindings/book_parcel_binding.dart';
 import 'package:savarii/features/customer/home/bindings/book_ticket_binding.dart';
 import 'package:savarii/features/customer/home/bindings/booking_confirmation_binding.dart';
 import 'package:savarii/features/customer/home/bindings/bookings_binding.dart';
+import 'package:savarii/features/customer/home/bindings/cancel_booking_binding.dart';
 import 'package:savarii/features/customer/home/bindings/customer_select_points_binding.dart';
 import 'package:savarii/features/customer/home/bindings/edit_profile_binding.dart';
 import 'package:savarii/features/customer/home/bindings/help_support_binding.dart';
@@ -34,10 +36,12 @@ import 'package:savarii/features/customer/home/bindings/terms_conditions_binding
 import 'package:savarii/features/customer/home/bindings/track_bus_binding.dart';
 import 'package:savarii/features/customer/home/bindings/wallet_binding.dart';
 import 'package:savarii/features/customer/home/view/about_us_view.dart';
+import 'package:savarii/features/customer/home/view/add_passenger_view.dart';
 import 'package:savarii/features/customer/home/view/book_parcel_view.dart';
 import 'package:savarii/features/customer/home/view/book_ticket_view.dart';
 import 'package:savarii/features/customer/home/view/booking_confirmation_view.dart';
 import 'package:savarii/features/customer/home/view/bookings_view.dart';
+import 'package:savarii/features/customer/home/view/cancel_booking_view.dart';
 import 'package:savarii/features/customer/home/view/customer_select_points_view.dart';
 import 'package:savarii/features/customer/home/view/edit_profile_view.dart';
 import 'package:savarii/features/customer/home/view/help_support_view.dart';
@@ -277,6 +281,18 @@ class AppPages {
       name: AppRoutes.customerSelectPoints,
       page: () => const CustomerSelectPointsView(),
       binding: CustomerSelectPointsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.customerAddPassenger,
+      page: () => const CustomerAddPassengerView(),
+      binding: CustomerAddPassengerBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cancelBooking,
+      page: () => const CancelBookingView(),
+      binding: CancelBookingBinding(),
       transition: Transition.rightToLeft,
     ),
 

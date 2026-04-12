@@ -4,6 +4,7 @@ import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/core/utils/locale_utils.dart';
+import 'package:savarii/core/widgets/bus_seat_layout.dart';
 import '../controllers/vendor_book_ticket_controller.dart';
 
 class VendorBookTicketView extends GetView<VendorBookTicketController> {
@@ -680,123 +681,14 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
   }
 
   Widget _buildSeatMapContainer() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.secondaryGreyBlue.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const Icon(
-            Icons.tune,
-            color: AppColors.secondaryGreyBlue,
-            size: 24,
-          ), // Steering wheel placeholder
-          const SizedBox(height: 16),
-          // Dynamically building the 1+2 layout rows
-          Obx(
-            () => Column(
-              children: List.generate(5, (index) {
-                int rowNum = index + 1;
-                // If upper deck is selected, prefix with 'U'. Otherwise empty.
-                String prefix = controller.selectedDeck.value == 'UPPER DECK'
-                    ? 'U'
-                    : '';
-
-                String left = '${prefix}L$rowNum';
-                String right1 = '${prefix}R${(index * 2) + 1}';
-                String right2 = '${prefix}R${(index * 2) + 2}';
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSeat(left),
-                      const Spacer(), // Aisle
-                      _buildSeat(right1),
-                      const SizedBox(width: 16),
-                      _buildSeat(right2),
-                    ],
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
+    return Obx(
+      () => BusSeatLayout(
+        bookedSeats: controller.bookedSeats.toList(),
+        selectedSeats: controller.selectedSeats.toList(),
+        isUpperDeck: controller.selectedDeck.value == 'UPPER DECK',
+        onSeatTap: controller.toggleSeat,
       ),
     );
-  }
-
-  Widget _buildSeat(String seatId) {
-    return Obx(() {
-      bool isBooked = controller.bookedSeats.contains(seatId);
-      bool isSelected = controller.selectedSeats.contains(seatId);
-
-      Color bgColor = AppColors.white;
-      Color borderColor = AppColors.secondaryGreyBlue.withOpacity(0.2);
-      Color textColor = AppColors.primaryDark;
-
-      if (isBooked) {
-        bgColor = AppColors.secondaryGreyBlue.withOpacity(0.15);
-        borderColor = Colors.transparent;
-        textColor = AppColors.secondaryGreyBlue.withOpacity(0.5);
-      } else if (isSelected) {
-        bgColor = AppColors.primaryAccent.withOpacity(0.05);
-        borderColor = AppColors.primaryAccent;
-        textColor = AppColors.primaryAccent;
-      }
-
-      return GestureDetector(
-        onTap: () => controller.toggleSeat(seatId),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              width: 55,
-              height: 75,
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: borderColor,
-                  width: isSelected ? 1.5 : 1,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  seatId,
-                  style: AppTextStyles.caption.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            if (isSelected)
-              Positioned(
-                right: -4,
-                top: -4,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryAccent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    color: AppColors.white,
-                    size: 10,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      );
-    });
   }
 
   Widget _buildGenderSelection() {

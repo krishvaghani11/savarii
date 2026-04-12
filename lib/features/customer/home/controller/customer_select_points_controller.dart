@@ -8,6 +8,7 @@ class CustomerSelectPointsController extends GetxController {
   String journeyDate = '';
   double seatPrice = 0.0;
   List<String> selectedSeats = [];
+  String vendorId = '';
 
   // Reactive states for the selected points
   final RxString selectedBoardingPoint = 'Choose location'.obs;
@@ -27,6 +28,7 @@ class CustomerSelectPointsController extends GetxController {
       journeyDate = args['journeyDate'] ?? '';
       seatPrice = args['seatPrice'] ?? 0.0;
       selectedSeats = List<String>.from(args['selectedSeats'] ?? []);
+      vendorId = args['vendorId'] ?? '';
       
       final bpData = args['boardingPointsData'] as List<dynamic>? ?? [];
       final dpData = args['droppingPointsData'] as List<dynamic>? ?? [];
@@ -74,7 +76,7 @@ class CustomerSelectPointsController extends GetxController {
 
     print("Navigating to Payment Details with Boarding: ${selectedBoardingPoint.value} and Dropping: ${selectedDroppingPoint.value}");
     
-    Get.toNamed('/payment-details', arguments: {
+    Get.toNamed('/customer-add-passenger', arguments: {
       'busId': busId,
       'busName': busName,
       'journeyDate': journeyDate,
@@ -82,6 +84,7 @@ class CustomerSelectPointsController extends GetxController {
       'selectedSeats': selectedSeats,
       'boardingPoint': selectedBoardingPoint.value,
       'droppingPoint': selectedDroppingPoint.value,
+      'vendorId': vendorId,
     });
   }
 }

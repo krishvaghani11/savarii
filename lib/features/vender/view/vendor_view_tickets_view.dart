@@ -245,24 +245,31 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD6FFE8),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'tickets.success_status'.tr(),
-                    style: AppTextStyles.caption.copyWith(
-                      color: const Color(0xFF00A65A),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
+                Builder(builder: (context) {
+                  final isCancelled = ticket.status.toLowerCase() == 'cancelled';
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
                     ),
-                  ),
-                ),
+                    decoration: BoxDecoration(
+                      color: isCancelled
+                          ? const Color(0xFFFFE5E5)
+                          : const Color(0xFFD6FFE8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      isCancelled ? 'Cancelled' : 'tickets.success_status'.tr(),
+                      style: AppTextStyles.caption.copyWith(
+                        color: isCancelled
+                            ? const Color(0xFFE82E59)
+                            : const Color(0xFF00A65A),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  );
+                }),
               ],
             ),
             const SizedBox(height: 4),
@@ -294,10 +301,14 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                   size: 16,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  ticket.route,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.secondaryGreyBlue,
+                Expanded(
+                  child: Text(
+                    ticket.route,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.secondaryGreyBlue,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -320,10 +331,14 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  ticket.origin,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.secondaryGreyBlue,
+                Expanded(
+                  child: Text(
+                    ticket.origin,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.secondaryGreyBlue,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

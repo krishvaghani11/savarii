@@ -1,11 +1,41 @@
+import 'dart:async';
 import 'package:get/get.dart';
+import 'package:savarii/core/services/auth_services.dart';
+import 'package:savarii/core/services/firestore_service.dart';
 import 'package:savarii/features/auth/controllers/auth_controller.dart';
 import 'package:savarii/features/customer/home/controller/main_layout_controller.dart';
 
 class ProfileController extends GetxController {
-  // Dummy user data
-  final RxString userName = 'John Doe'.obs;
-  final RxString phoneNumber = '+1(555) 012-3456'.obs;
+  final AuthService _authService = Get.find<AuthService>();
+  final FirestoreService _firestoreService = Get.find<FirestoreService>();
+
+  // Global user data
+  final RxString userName = 'Savarii User'.obs;
+  final RxString phoneNumber = ''.obs;
+  final RxString profileImageUrl = ''.obs;
+
+  StreamSubscription? _profileSubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    final uid = _authService.currentUser?.uid;
+    if (uid != null) {
+      _profileSubscription = _firestoreService.getCustomerProfileStream(uid).listen((data) {
+        if (data != null) {
+          userName.value = data['name'] ?? 'Savarii User';
+          phoneNumber.value = data['phone'] ?? '';
+          profileImageUrl.value = data['profileImageUrl'] ?? '';
+        }
+      });
+    }
+  }
+
+  @override
+  void onClose() {
+    _profileSubscription?.cancel();
+    super.onClose();
+  }
 
   void editProfilePicture() {
     print("Opening image picker for profile picture...");

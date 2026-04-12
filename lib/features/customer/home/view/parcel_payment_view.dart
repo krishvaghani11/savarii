@@ -41,15 +41,20 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
             children: [
               // 1. Delivery Details Card
               _buildDeliveryDetailsCard(),
+              const SizedBox(height: 20),
+
+              // 2. Estimated Times Banner (Updated to split Pickup/Drop-off)
+              _buildEstimatedTimeBanner(),
               const SizedBox(height: 24),
 
-              // 2. Charge Summary Card
+              // 3. Bus & Driver Details Card (NEW)
+              _buildSectionTitle('Bus & Driver Details'),
+              _buildBusAndDriverDetailsCard(),
+              const SizedBox(height: 24),
+
+              // 4. Charge Summary Card
               _buildSectionTitle('Charge Summary'),
               _buildChargeSummaryCard(),
-              const SizedBox(height: 24),
-
-              // 3. Promo Code Field
-              _buildPromoCodeField(),
 
               const SizedBox(height: 100), // Buffer for sticky bottom bar
             ],
@@ -66,7 +71,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: Text(title, style: AppTextStyles.h3.copyWith(fontSize: 16)),
+      child: Text(title, style: AppTextStyles.h3.copyWith(fontSize: 16, color: AppColors.primaryDark)),
     );
   }
 
@@ -129,22 +134,24 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
               // Timeline Dots and Line
               Column(
                 children: [
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   const Icon(
                     Icons.circle,
                     color: AppColors.primaryAccent,
-                    size: 12,
+                    size: 14,
                   ),
                   Container(
-                    width: 2,
-                    height: 40,
-                    color: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                    height: 45,
+                    width: 1.5,
                     margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: CustomPaint(
+                      painter: DottedLinePainter(),
+                    ),
                   ),
                   const Icon(
                     Icons.circle,
                     color: AppColors.primaryDark,
-                    size: 12,
+                    size: 14,
                   ),
                 ],
               ),
@@ -164,7 +171,8 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                     Text(
                       controller.pickupLocation,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
                       ),
                     ),
                     Text(
@@ -184,7 +192,8 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                     Text(
                       controller.dropoffLocation,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
                       ),
                     ),
                     Text(
@@ -203,12 +212,191 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
     );
   }
 
+  Widget _buildEstimatedTimeBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryAccent.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.primaryAccent.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primaryAccent, width: 1.5),
+            ),
+            child: const Icon(Icons.access_time, color: AppColors.primaryAccent, size: 16),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ESTIMATED PICKUP',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.primaryAccent,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          fontSize: 9,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        controller.estimatedPickupTime,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryDark,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ESTIMATED DROP-OFF',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.primaryAccent,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          fontSize: 9,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        controller.estimatedDropoffTime,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryDark,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBusAndDriverDetailsCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Bus Details Row
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.directions_bus_outlined, color: AppColors.primaryDark, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      controller.busName,
+                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      controller.busNumber,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Driver Details Row
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.person_outline, color: AppColors.primaryDark, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      controller.driverName,
+                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      controller.driverPhone,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Call Button
+              GestureDetector(
+                onTap: controller.callDriver,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.phone_in_talk, color: Colors.green, size: 20),
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildChargeSummaryCard() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondaryGreyBlue.withOpacity(0.05),
@@ -221,15 +409,12 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
         children: [
           _buildSummaryRow('Base Fare', controller.baseFare),
           const SizedBox(height: 12),
-          _buildSummaryRow(
-            'Weight Surcharge (5kg)',
-            controller.weightSurcharge,
-          ),
+          _buildSummaryRow('Weight Surcharge (5kg)', controller.weightSurcharge),
           const SizedBox(height: 12),
           _buildSummaryRow('Service Fee', controller.serviceFee),
           const SizedBox(height: 12),
           _buildSummaryRow('Tax', controller.tax),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Divider(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
           const SizedBox(height: 16),
           Row(
@@ -237,15 +422,14 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
             children: [
               Text(
                 'Total Payable',
-                style: AppTextStyles.h3.copyWith(fontSize: 16),
+                style: AppTextStyles.h3.copyWith(fontSize: 16, color: AppColors.primaryDark),
               ),
               Obx(
                 () => Text(
                   '₹${controller.totalAmount.value.toStringAsFixed(2)}',
-                  // <-- Changed here!
                   style: AppTextStyles.h3.copyWith(
-                    fontSize: 18,
-                    color: AppColors.primaryAccent,
+                    fontSize: 20,
+                    color: AppColors.primaryAccent, // Red highlighted total
                   ),
                 ),
               ),
@@ -269,7 +453,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
         Text(
           '₹${amount.toStringAsFixed(2)}',
           style: AppTextStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
             color: AppColors.primaryDark,
           ),
         ),
@@ -277,65 +461,12 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
     );
   }
 
-  Widget _buildPromoCodeField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.02),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller.promoController,
-        style: AppTextStyles.bodyLarge,
-        decoration: InputDecoration(
-          hintText: 'Have a promo code?',
-          hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.6),
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          prefixIcon: const Icon(
-            Icons.local_offer_outlined,
-            color: AppColors.primaryAccent,
-            size: 20,
-          ),
-          suffixIcon: TextButton(
-            onPressed: controller.applyPromo,
-            child: Text(
-              'Apply',
-              style: AppTextStyles.buttonText.copyWith(
-                color: AppColors.primaryAccent,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildBottomBar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       decoration: BoxDecoration(
-        color: AppColors.lightBackground,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        color: AppColors.white,
+        border: Border(top: BorderSide(color: AppColors.secondaryGreyBlue.withOpacity(0.1))),
       ),
       child: SafeArea(
         child: Column(
@@ -353,7 +484,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                 Obx(
                   () => Text(
                     '₹${controller.totalAmount.value.toStringAsFixed(2)}',
-                    style: AppTextStyles.h2.copyWith(fontSize: 22),
+                    style: AppTextStyles.h2.copyWith(fontSize: 20, color: AppColors.primaryDark),
                   ),
                 ),
               ],
@@ -373,7 +504,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Pay Now',
+                    'Confirm & Pay Now',
                     style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                   ),
                   const SizedBox(width: 8),
@@ -390,4 +521,22 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
       ),
     );
   }
+}
+
+// Custom Painter for the dotted vertical line
+class DottedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashHeight = 4, dashSpace = 4, startY = 0;
+    final paint = Paint()
+      ..color = AppColors.secondaryGreyBlue.withOpacity(0.4)
+      ..strokeWidth = 1.5;
+    while (startY < size.height) {
+      canvas.drawLine(Offset(0, startY), Offset(0, startY + dashHeight), paint);
+      startY += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

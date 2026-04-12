@@ -125,6 +125,7 @@ class SearchResultsController extends GetxController {
       'toCity': toCity,
       'journeyDate': formattedDate,
       'seatPrice': bus.price.toDouble(),
+      'vendorId': bus.vendorId,
     });
   }
 }

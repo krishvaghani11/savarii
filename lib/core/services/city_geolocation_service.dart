@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CitySuggestion {
   final String city;
@@ -16,7 +17,7 @@ class CitySuggestion {
 }
 
 class CityGeolocationService {
-  static const String googleApiKey = 'AIzaSyAQ4z51oX34F0WzWez-ya-N2IfC6ZAs86w';
+  static String get googleApiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
 
   /// Fetch city suggestions from Google Places API
   /// Returns only city-level results, not detailed addresses

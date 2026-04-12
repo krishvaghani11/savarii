@@ -17,6 +17,32 @@ class FirestoreService extends GetxService {
     await _db.collection('users').doc(user.uid).set(user.toMap());
   }
 
+  // --- Customer Profile Methods ---
+  Future<void> updateCustomerProfile(String uid, Map<String, dynamic> data) async {
+    await _db.collection('customers').doc(uid).set(data, SetOptions(merge: true));
+  }
+
+  Stream<Map<String, dynamic>?> getCustomerProfileStream(String uid) {
+    return _db.collection('customers').doc(uid).snapshots().map((doc) => doc.data());
+  }
+  
+  Future<Map<String, dynamic>?> getCustomerProfile(String uid) async {
+    final doc = await _db.collection('customers').doc(uid).get();
+    return doc.data();
+  }
+
+  Future<String> uploadCustomerProfileImage(String uid, File imageFile) async {
+    try {
+      final ref = _storage.ref().child('customer_profiles').child('$uid.jpg');
+      await ref.putFile(imageFile);
+      final downloadUrl = await ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading customer profile image: $e');
+      rethrow;
+    }
+  }
+
   // --- Travels Methods ---
   Future<void> updateTravelsDetail(String uid, Map<String, dynamic> data) async {
     await _db.collection(travelsCollection).doc(uid).set(data, SetOptions(merge: true));
@@ -162,6 +188,28 @@ class FirestoreService extends GetxService {
     await _db.collection('tickets').add(ticketData);
   }
 
+  Future<void> updateTicketStatus(String ticketId, String status) async {
+    await _db.collection('tickets').doc(ticketId).update({'status': status});
+  }
+
+  /// Looks up a ticket document by its PNR / bookingId field.
+  /// Returns the doc data including Firestore document ID as 'id', or null if not found.
+  Future<Map<String, dynamic>?> getTicketByPnr(String pnr) async {
+    try {
+      final snapshot = await _db
+          .collection('tickets')
+          .where('bookingId', isEqualTo: pnr.trim())
+          .limit(1)
+          .get();
+      if (snapshot.docs.isEmpty) return null;
+      final doc = snapshot.docs.first;
+      return {'id': doc.id, ...doc.data()};
+    } catch (e) {
+      print('Error fetching ticket by PNR: $e');
+      return null;
+    }
+  }
+
   Future<String> uploadTicketPdf(String bookingId, Uint8List pdfBytes) async {
     try {
       final ref = _storage.ref().child('tickets').child('$bookingId.pdf');
@@ -178,6 +226,18 @@ class FirestoreService extends GetxService {
     return _db
         .collection('tickets')
         .where('vendorId', isEqualTo: vendorId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {'id': doc.id, ...doc.data()})
+              .toList(),
+        );
+  }
+
+  Stream<List<Map<String, dynamic>>> getCustomerTicketsStream(String customerId) {
+    return _db
+        .collection('tickets')
+        .where('customerId', isEqualTo: customerId)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs

@@ -9,6 +9,7 @@ class BusModel {
   final String arrivalTime;
   final int price;
   final String? description;
+  final String vendorId;
 
   BusModel({
     required this.id,
@@ -20,6 +21,7 @@ class BusModel {
     required this.departureTime,
     required this.arrivalTime,
     required this.price,
+    required this.vendorId,
     this.description,
   });
 
@@ -75,6 +77,7 @@ class BusModel {
       arrivalTime: arrTime,
       price: ticketPrice,
       description: map['description'],
+      vendorId: map['vendorId'] ?? '',
     );
   }
 
@@ -89,6 +92,7 @@ class BusModel {
       'arrivalTime': arrivalTime,
       'price': price,
       'description': description,
+      'vendorId': vendorId,
     };
   }
 }

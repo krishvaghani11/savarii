@@ -5,6 +5,12 @@ import 'package:get/get.dart';
 class ParcelConfirmationController extends GetxController {
   final String trackingId = '#SAV-8923';
 
+  // Timeline Data matching the previous screen
+  final String pickupLocation = 'Downtown Bus Terminal';
+  final String pickupTime = '10:30 AM Today';
+  final String dropoffLocation = 'Sector 42, Gurgaon';
+  final String dropoffTime = '03:00 PM Today';
+
   void copyTrackingId() {
     Clipboard.setData(ClipboardData(text: trackingId));
     Get.snackbar(

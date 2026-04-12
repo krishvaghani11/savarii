@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:savarii/core/constants/app_assets.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/features/customer/home/controller/booking_confirmation_controller.dart';
@@ -109,19 +108,22 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
           ),
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.primaryAccent.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primaryAccent.withOpacity(0.2)),
-          ),
-          child: Text(
-            'Booking ID: ${controller.bookingId}',
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.primaryAccent,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
+        Obx(
+          () => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border:
+                  Border.all(color: AppColors.primaryAccent.withOpacity(0.2)),
+            ),
+            child: Text(
+              'Booking ID: ${controller.bookingId.value}',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.primaryAccent,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ),
@@ -146,87 +148,57 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
           ),
           child: Column(
             children: [
-              // Top Image Area
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+              // Top Logo Area
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryAccent,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
                 ),
-                child: Stack(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      AppAssets.destinationCityImage, // E.g., Mumbai skyline
-                      height: 140,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        height: 140,
-                        color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-                        child: const Center(
-                          child: Icon(
-                            Icons.location_city,
-                            size: 40,
-                            color: AppColors.secondaryGreyBlue,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Dark Gradient Overlay for text readability
-                    Container(
-                      height: 140,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.black.withOpacity(0.6),
-                            Colors.transparent,
-                          ],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 16,
-                      left: 16,
-                      right: 16,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'UPCOMING TRIP',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.white.withOpacity(0.8),
-                                  letterSpacing: 1,
-                                  fontSize: 10,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${controller.fromCity} to ${controller.toCity}',
-                                style: AppTextStyles.h2.copyWith(
-                                  color: AppColors.white,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
+                          Text(
+                            'UPCOMING TRIP',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.white.withOpacity(0.8),
+                              letterSpacing: 1,
+                              fontSize: 10,
                             ),
-                            child: const Icon(
-                              Icons.directions_bus,
-                              color: AppColors.white,
-                              size: 20,
+                          ),
+                          const SizedBox(height: 4),
+                          Obx(
+                            () => Text(
+                              '${controller.fromCity.value} to ${controller.toCity.value}',
+                              style: AppTextStyles.h2.copyWith(
+                                color: AppColors.white,
+                                fontSize: 18,
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.directions_bus,
+                        color: AppColors.white,
+                        size: 28,
                       ),
                     ),
                   ],
@@ -243,24 +215,26 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Departure
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          controller.departureTime,
-                          style: AppTextStyles.h2.copyWith(
-                            fontSize: 22,
-                            height: 1.1,
+                    Obx(
+                      () => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            controller.departureTime.value,
+                            style: AppTextStyles.h2.copyWith(
+                              fontSize: 22,
+                              height: 1.1,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          controller.fromCity,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.secondaryGreyBlue,
+                          const SizedBox(height: 4),
+                          Text(
+                            controller.fromCity.value,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.secondaryGreyBlue,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     // Dashed Line & Duration
                     Expanded(
@@ -268,10 +242,12 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Column(
                           children: [
-                            Text(
-                              controller.duration,
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.secondaryGreyBlue,
+                            Obx(
+                              () => Text(
+                                controller.duration.value,
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.secondaryGreyBlue,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -330,25 +306,27 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
                       ),
                     ),
                     // Arrival
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          controller.arrivalTime,
-                          style: AppTextStyles.h2.copyWith(
-                            fontSize: 22,
-                            height: 1.1,
+                    Obx(
+                      () => Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            controller.arrivalTime.value,
+                            style: AppTextStyles.h2.copyWith(
+                              fontSize: 22,
+                              height: 1.1,
+                            ),
+                            textAlign: TextAlign.right,
                           ),
-                          textAlign: TextAlign.right,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          controller.toCity,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.secondaryGreyBlue,
+                          const SizedBox(height: 4),
+                          Text(
+                            controller.toCity.value,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.secondaryGreyBlue,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -371,19 +349,19 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildGridItem(
-                            Icons.calendar_today,
-                            'DATE',
-                            controller.date,
-                          ),
+                          child: Obx(() => _buildGridItem(
+                                Icons.calendar_today,
+                                'DATE',
+                                controller.date.value,
+                              )),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _buildGridItem(
-                            Icons.airline_seat_recline_normal,
-                            'SEAT',
-                            controller.seat,
-                          ),
+                          child: Obx(() => _buildGridItem(
+                                Icons.airline_seat_recline_normal,
+                                'SEAT',
+                                controller.seat.value,
+                              )),
                         ),
                       ],
                     ),
@@ -391,19 +369,39 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildGridItem(
-                            Icons.people,
-                            'PASSENGERS',
-                            controller.passengers,
-                          ),
+                          child: Obx(() => _buildGridItem(
+                                Icons.people,
+                                'PASSENGERS',
+                                controller.passengers.value,
+                              )),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _buildGridItem(
-                            Icons.star,
-                            'CLASS',
-                            controller.travelClass,
-                          ),
+                          child: Obx(() => _buildGridItem(
+                                Icons.star,
+                                'CLASS',
+                                controller.travelClass.value,
+                              )),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Obx(() => _buildGridItem(
+                                Icons.person,
+                                'PRIMARY PASSENGER',
+                                controller.passengerName.value,
+                              )),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Obx(() => _buildGridItem(
+                                Icons.phone,
+                                'CONTACT NUMBER',
+                                controller.passengerPhone.value,
+                              )),
                         ),
                       ],
                     ),
@@ -459,13 +457,17 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
             children: [
               Icon(icon, color: AppColors.primaryAccent, size: 14),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primaryAccent,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.primaryAccent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -477,6 +479,8 @@ class BookingConfirmationView extends GetView<BookingConfirmationController> {
               fontWeight: FontWeight.w600,
               color: AppColors.primaryDark,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

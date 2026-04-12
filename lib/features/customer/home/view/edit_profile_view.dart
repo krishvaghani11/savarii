@@ -31,33 +31,41 @@ class EditProfileView extends GetView<EditProfileController> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Profile Picture Section
-              _buildHeader(),
-              const SizedBox(height: 32),
+        child: Obx(() => Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. Profile Picture Section
+                  _buildHeader(context),
+                  const SizedBox(height: 32),
 
-              // 2. Form Fields
-              _buildFormFields(),
-              const SizedBox(height: 32),
+                  // 2. Form Fields
+                  _buildFormFields(),
+                  const SizedBox(height: 32),
 
-              // 3. Bottom Action Buttons
-              _buildActionButtons(),
+                  // 3. Bottom Action Buttons
+                  _buildActionButtons(),
 
-              const SizedBox(height: 30), // Bottom buffer
-            ],
-          ),
-        ),
+                  const SizedBox(height: 30), // Bottom buffer
+                ],
+              ),
+            ),
+            if (controller.isLoading.value) ...[
+              Container(color: Colors.black.withOpacity(0.3)),
+              const Center(child: CircularProgressIndicator(color: AppColors.primaryAccent))
+            ]
+          ],
+        )),
       ),
     );
   }
 
   // --- Sub-Widgets for cleaner code ---
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
         Stack(
@@ -75,21 +83,25 @@ class EditProfileView extends GetView<EditProfileController> {
                   ),
                 ],
               ),
-              child: CircleAvatar(
+              child: Obx(() => CircleAvatar(
                 radius: 60,
                 backgroundColor: AppColors.secondaryGreyBlue.withOpacity(0.1),
-                child: const Icon(
-                  Icons.person,
-                  size: 60,
-                  color: AppColors.primaryDark,
-                ),
-                // backgroundImage: AssetImage(AppAssets.profileImage), // When you have a real image
-              ),
+                backgroundImage: controller.profileImageUrl.value.isNotEmpty
+                    ? NetworkImage(controller.profileImageUrl.value)
+                    : null,
+                child: controller.profileImageUrl.value.isEmpty
+                    ? const Icon(
+                        Icons.person,
+                        size: 60,
+                        color: AppColors.primaryDark,
+                      )
+                    : null,
+              )),
             ),
 
             // Edit Camera Icon Overlay
             GestureDetector(
-              onTap: controller.changeProfilePicture,
+              onTap: () => controller.changeProfilePicture(context),
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: const BoxDecoration(

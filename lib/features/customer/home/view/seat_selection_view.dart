@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/widgets/bus_seat_layout.dart';
 import 'package:savarii/features/customer/home/controller/seat_selection_controller.dart';
 
 class SeatSelectionView extends GetView<SeatSelectionController> {
@@ -286,103 +287,11 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
 
   Widget _buildSeatGrid() {
     return Obx(() {
-      final isLower = controller.isLowerDeck.value;
-      final prefixL = isLower ? 'L' : 'UL';
-      final prefixR = isLower ? 'R' : 'UR';
-
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Left Column (Single Seats) 1 to 5
-          Column(
-            children: List.generate(5, (index) {
-              return _buildSleeperSeat('$prefixL${index + 1}');
-            }),
-          ),
-
-          // Right Column (Double Seats)
-          Row(
-            children: [
-              // Inner Column 1 to 5
-              Column(
-                children: List.generate(5, (index) {
-                  return _buildSleeperSeat('$prefixR${index + 1}');
-                }),
-              ),
-              const SizedBox(width: 10),
-              // Outer Column 6 to 10
-              Column(
-                children: List.generate(5, (index) {
-                  return _buildSleeperSeat('$prefixR${index + 6}');
-                }),
-              ),
-            ],
-          ),
-        ],
-      );
-    });
-  }
-
-  Widget _buildSleeperSeat(String seatId) {
-    return Obx(() {
-      final isBooked = controller.bookedSeats.contains(seatId);
-      final isSelected = controller.selectedSeats.contains(seatId);
-
-      Color bgColor = AppColors.white;
-      Color borderColor = AppColors.secondaryGreyBlue.withOpacity(0.5);
-      Color textColor = AppColors.secondaryGreyBlue;
-
-      if (isBooked) {
-        bgColor = AppColors.secondaryGreyBlue.withOpacity(0.15);
-        borderColor = Colors.transparent;
-        textColor = AppColors.secondaryGreyBlue.withOpacity(0.5);
-      } else if (isSelected) {
-        bgColor = AppColors.primaryAccent.withOpacity(0.1);
-        borderColor = AppColors.primaryAccent;
-        textColor = AppColors.primaryAccent;
-      }
-
-      return GestureDetector(
-        onTap: () => controller.toggleSeat(seatId),
-        child: Container(
-          width: 50,
-          height: 80,
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
-          ),
-          child: Stack(
-            children: [
-              Center(
-                child: Text(
-                  seatId,
-                  style: AppTextStyles.caption.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              if (isSelected)
-                Positioned(
-                  top: -4,
-                  right: -4,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: AppColors.white,
-                      size: 12,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+      return BusSeatLayout(
+        bookedSeats: controller.bookedSeats.toList(),
+        selectedSeats: controller.selectedSeats.toList(),
+        isUpperDeck: !controller.isLowerDeck.value,
+        onSeatTap: controller.toggleSeat,
       );
     });
   }

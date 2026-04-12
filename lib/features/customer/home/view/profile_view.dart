@@ -91,17 +91,22 @@ class ProfileView extends GetView<ProfileController> {
       children: [
         Stack(
           children: [
-            CircleAvatar(
+            Obx(() => CircleAvatar(
               radius: 50,
               backgroundColor: AppColors.secondaryGreyBlue.withValues(
                 alpha: 0.1,
               ),
-              child: const Icon(
-                Icons.person,
-                size: 50,
-                color: AppColors.primaryDark,
-              ),
-            ),
+              backgroundImage: controller.profileImageUrl.value.isNotEmpty
+                  ? NetworkImage(controller.profileImageUrl.value)
+                  : null,
+              child: controller.profileImageUrl.value.isEmpty
+                  ? const Icon(
+                      Icons.person,
+                      size: 50,
+                      color: AppColors.primaryDark,
+                    )
+                  : null,
+            )),
             Positioned(
               bottom: 0,
               right: 0,

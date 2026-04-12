@@ -37,10 +37,50 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
               _buildQuickActionsGrid(),
               const SizedBox(height: 30),
 
-              // Active Ticket Section (Empty State)
-              Text('Active Ticket', style: AppTextStyles.h3),
-              const SizedBox(height: 16),
-              _buildActiveTicketCard(),
+              // Active Ticket Section
+              Obx(() => controller.activeTickets.isEmpty
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('Active Ticket', style: AppTextStyles.h3),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(Icons.directions_bus_outlined, size: 48, color: AppColors.secondaryGreyBlue),
+                              const SizedBox(height: 16),
+                              Text('No upcoming trips', style: AppTextStyles.h3.copyWith(color: AppColors.secondaryGreyBlue)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('Active Tickets (${controller.activeTickets.length})', style: AppTextStyles.h3),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 265, // Enough height for the ticket card without vertical overflow
+                          child: PageView.builder(
+                            itemCount: controller.activeTickets.length,
+                            controller: PageController(viewportFraction: 0.95), // Allows next ticket to slightly peek in
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: _buildActiveTicketCard(controller.activeTickets[index]),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    )),
 
               const SizedBox(height: 20), // Bottom buffer
             ],
@@ -64,17 +104,16 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
               // Profile Avatar with online indicator
               Stack(
                 children: [
-                  CircleAvatar(
+                  Obx(() => CircleAvatar(
                     radius: 24,
-                    backgroundColor: AppColors.secondaryGreyBlue.withOpacity(
-                      0.2,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: AppColors.primaryDark,
-                    ),
-                    // backgroundImage: AssetImage('assets/images/profile.png'), // Use when you have image
-                  ),
+                    backgroundColor: AppColors.secondaryGreyBlue.withOpacity(0.2),
+                    backgroundImage: controller.profileImageUrl.value.isNotEmpty
+                        ? NetworkImage(controller.profileImageUrl.value)
+                        : null,
+                    child: controller.profileImageUrl.value.isEmpty
+                        ? const Icon(Icons.person, color: AppColors.primaryDark)
+                        : null,
+                  )),
                   Positioned(
                     bottom: 0,
                     right: 0,
@@ -99,10 +138,10 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Good Morning 👋', style: AppTextStyles.caption),
-                  Text(
-                    controller.userName,
+                  Obx(() => Text(
+                    controller.userName.value,
                     style: AppTextStyles.h3.copyWith(fontSize: 18),
-                  ),
+                  )),
                 ],
               ),
             ],
@@ -254,7 +293,25 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
     );
   }
 
-  Widget _buildActiveTicketCard() {
+  Widget _buildActiveTicketCard(Map<String, dynamic> ticket) {
+    // Attempt parsing custom date format or fallback to raw
+    final parts = (ticket['route']?.toString() ?? 'Unknown route').split(' to ');
+    final fromCity = parts.isNotEmpty ? parts[0].trim() : 'N/A';
+    final toCity = parts.length > 1 ? parts[1].trim() : 'N/A';
+
+    // Attempt extracting times if present in origin/destination
+    final fromParts = (ticket['origin']?.toString() ?? '').split(' - ');
+    final fromTime = fromParts.length > 1 ? fromParts[1].trim() : '--:--';
+
+    final toParts = (ticket['destination']?.toString() ?? '').split(' - ');
+    final toTime = toParts.length > 1 ? toParts[1].trim() : '--:--';
+
+    // Extract Seat Info
+    final busAndSeat = ticket['busAndSeat']?.toString() ?? '| N/A';
+    final seatParts = busAndSeat.split('|');
+    final seat = seatParts.length > 1 ? seatParts[1].trim() : 'N/A';
+    final date = ticket['journeyDate']?.toString() ?? 'N/A';
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -275,23 +332,30 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.confirmation_number,
-                    color: AppColors.white,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'TICKET #84920',
-                    style: AppTextStyles.h3.copyWith(
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.confirmation_number,
                       color: AppColors.white,
-                      letterSpacing: 1,
+                      size: 24,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'TICKET #${ticket['bookingId'] ?? 'N/A'}',
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.white,
+                          letterSpacing: 1,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -322,31 +386,37 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // From Section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'From',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.white.withOpacity(0.8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'From',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.white.withOpacity(0.8),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'New York',
-                    style: AppTextStyles.h2.copyWith(
-                      color: AppColors.white,
-                      fontSize: 20,
+                    const SizedBox(height: 4),
+                    Text(
+                      fromCity,
+                      style: AppTextStyles.h2.copyWith(
+                        color: AppColors.white,
+                        fontSize: 18,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '08:00 AM',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.white,
+                    const SizedBox(height: 4),
+                    Text(
+                      fromTime,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               // Center Dotted Timeline & Duration
@@ -429,7 +499,7 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '4h 30m',
+                        'Direct',
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.white.withOpacity(0.9),
                         ),
@@ -440,31 +510,37 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
               ),
 
               // To Section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'To',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.white.withOpacity(0.8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'To',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.white.withOpacity(0.8),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Boston',
-                    style: AppTextStyles.h2.copyWith(
-                      color: AppColors.white,
-                      fontSize: 20,
+                    const SizedBox(height: 4),
+                    Text(
+                      toCity,
+                      style: AppTextStyles.h2.copyWith(
+                        color: AppColors.white,
+                        fontSize: 18,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '12:30 PM',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.white,
+                    const SizedBox(height: 4),
+                    Text(
+                      toTime,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -475,41 +551,52 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.airline_seat_recline_normal,
-                    color: AppColors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Seat 4A',
-                    style: AppTextStyles.bodyMedium.copyWith(
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.airline_seat_recline_normal,
                       color: AppColors.white,
-                      fontWeight: FontWeight.w600,
+                      size: 18,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Icon(
-                    Icons.calendar_today,
-                    color: AppColors.white,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Today',
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        seat,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Icon(
+                      Icons.calendar_today,
                       color: AppColors.white,
-                      fontWeight: FontWeight.w600,
+                      size: 16,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        date,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8), // buffer before button
+                  ],
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
-                  print("View QR Tapped");
-                  // Add your navigation or modal pop-up logic here
+                  print("View Ticket Tapped");
+                  Get.toNamed('/booking-confirmation', arguments: ticket);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.white,
@@ -525,7 +612,7 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
                   minimumSize: const Size(0, 36),
                 ),
                 child: Text(
-                  'View QR',
+                  'View Detail',
                   style: AppTextStyles.buttonText.copyWith(
                     color: AppColors.primaryAccent,
                     fontSize: 14,
@@ -570,31 +657,40 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
                       ),
                       color: AppColors.white,
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person,
-                        size: 40,
-                        color: AppColors.primaryDark,
-                      ),
-                      // backgroundImage: AssetImage('assets/images/profile.png'), // When you have a real image
-                    ),
+                    child: Obx(() => Center(
+                      child: controller.profileImageUrl.value.isNotEmpty
+                        ? ClipOval(
+                            child: Image.network(
+                              controller.profileImageUrl.value,
+                              width: 70,
+                              height: 70,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            size: 40,
+                            color: AppColors.primaryDark,
+                          ),
+                    )),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Savarii User',
-                    // Replace with controller.userName when dynamic
+                  Obx(() => Text(
+                    controller.userName.value,
                     style: AppTextStyles.h2.copyWith(
                       color: AppColors.white,
                       fontSize: 20,
                     ),
-                  ),
+                  )),
                   const SizedBox(height: 4),
-                  Text(
-                    '+91 98765 43210',
+                  Obx(() => Text(
+                    controller.phoneNumber.value.isNotEmpty
+                      ? controller.phoneNumber.value
+                      : 'No phone number',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.secondaryGreyBlue,
                     ),
-                  ),
+                  )),
                 ],
               ),
             ),
