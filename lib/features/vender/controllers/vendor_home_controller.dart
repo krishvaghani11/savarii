@@ -139,6 +139,11 @@ class VendorHomeController extends GetxController {
     Get.toNamed('/vendor-fleet-tracking');
   }
 
+  void addDriver() {
+    print("Navigating to Driver Management...");
+    Get.toNamed('/vendor-driver-management');
+  }
+
   // Sidebar Actions
   void closeDrawer() => Get.back();
 

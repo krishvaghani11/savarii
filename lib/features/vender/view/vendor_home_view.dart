@@ -164,6 +164,13 @@ class VendorHomeView extends GetView<VendorHomeController> {
                 'home.bus_tracking_subtitle'.tr(),
                 controller.busTracking,
               ),
+              const SizedBox(height: 12),
+              _buildOptionCard(
+                Icons.person_add,
+                'Add a Driver', // Hardcoded as per the request, but can be localization key later
+                'Register and manage driver profiles',
+                controller.addDriver,
+              ),
               const SizedBox(height: 24),
 
               // 4. Weekly Performance Chart

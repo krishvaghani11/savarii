@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/services/auth_services.dart';
 import 'package:savarii/core/services/firestore_service.dart';
+import 'package:savarii/core/services/ticket_pdf_service.dart';
 import 'package:savarii/routes/app_routes.dart';
 
 class BookingsController extends GetxController {
@@ -15,12 +16,21 @@ class BookingsController extends GetxController {
 
   // Master list from Firestore
   final RxList<Map<String, dynamic>> allTickets = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> allParcels = <Map<String, dynamic>>[].obs;
   StreamSubscription? _ticketsSubscription;
+  StreamSubscription? _parcelsSubscription;
 
-  // Filtered lists per tab
+  // Filtered lists per status
   final RxList<Map<String, dynamic>> activeTickets = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> completedTickets = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> cancelledTickets = <Map<String, dynamic>>[].obs;
+
+  final RxList<Map<String, dynamic>> activeParcels = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> completedParcels = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> cancelledParcels = <Map<String, dynamic>>[].obs;
+
+  // Top level tab manager (Tickets or Parcels)
+  final RxInt currentMainTab = 0.obs; // 0 = Tickets, 1 = Parcels
 
   final RxBool isLoading = true.obs;
 
@@ -34,7 +44,13 @@ class BookingsController extends GetxController {
   @override
   void onClose() {
     _ticketsSubscription?.cancel();
+    _parcelsSubscription?.cancel();
     super.onClose();
+  }
+
+  void switchMainTab(int index) {
+    currentMainTab.value = index;
+    // Re-trigger visual layout if needed, though GetX will handle it automatically based on RxInt
   }
 
   // -------------------------------------------------------
@@ -92,6 +108,12 @@ class BookingsController extends GetxController {
       isLoading.value = false;
       _applyFilters();
     });
+
+    _parcelsSubscription = 
+        _firestoreService.getCustomerParcelsStream(customerId).listen((parcels) {
+      allParcels.assignAll(parcels);
+      _applyFilters();
+    });
   }
 
   void _applyFilters() {
@@ -103,50 +125,69 @@ class BookingsController extends GetxController {
     final today = DateTime(
         DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
+    _filterTicketsSublist(allTickets, activeTickets, completedTickets, cancelledTickets, selected, today, true);
+    _filterTicketsSublist(allParcels, activeParcels, completedParcels, cancelledParcels, selected, today, false);
+  }
+
+  void _filterTicketsSublist(
+    List<Map<String, dynamic>> source, 
+    RxList<Map<String, dynamic>> activeList,
+    RxList<Map<String, dynamic>> completedList,
+    RxList<Map<String, dynamic>> cancelledList,
+    DateTime selected,
+    DateTime today,
+    bool isTicket
+  ) {
     final List<Map<String, dynamic>> active = [];
     final List<Map<String, dynamic>> completed = [];
     final List<Map<String, dynamic>> cancelled = [];
 
-    for (final ticket in allTickets) {
+    for (final ticket in source) {
       final status = (ticket['status'] ?? '').toString().toLowerCase();
-      final journeyDateStr = ticket['journeyDate']?.toString() ?? '';
-      final journeyDate = _parseDate(journeyDateStr);
+      
+      // For tickets, journeyDate. For Parcels, createdAt or estimatedPickupTime
+      String journeyDateStr = '';
+      if (isTicket) {
+        journeyDateStr = ticket['journeyDate']?.toString() ?? '';
+      } else {
+        // Parcels might not have a formal 'journeyDate', fall back to createdAt for filtering
+        journeyDateStr = ticket['createdAt']?.toString() ?? ''; 
+        if (journeyDateStr.contains('T')) {
+          journeyDateStr = journeyDateStr.split('T').first;
+        }
+      }
 
+      final journeyDate = _parseDate(journeyDateStr);
       if (journeyDate == null) continue;
 
-      // Cancelled — show if journeyDate matches selected date
       if (status == 'cancelled') {
-        if (_isSameDay(journeyDate, selected)) {
-          cancelled.add(ticket);
-        }
+        if (_isSameDay(journeyDate, selected)) cancelled.add(ticket);
         continue;
       }
 
-      // Only show tickets whose journeyDate matches the selected date
       if (!_isSameDay(journeyDate, selected)) continue;
 
-      // Active = selected date >= today
       if (!journeyDate.isBefore(today)) {
         active.add(ticket);
       } else {
-        // Completed = journeyDate is in the past
         completed.add(ticket);
       }
     }
 
-    // Sort each list by departureTime (earliest first)
     for (final list in [active, completed, cancelled]) {
       list.sort((a, b) {
-        final dateA = _parseDate(a['journeyDate']?.toString() ?? '');
-        final dateB = _parseDate(b['journeyDate']?.toString() ?? '');
+        final dateAStr = isTicket ? (a['journeyDate']?.toString() ?? '') : (a['createdAt']?.toString() ?? '');
+        final dateBStr = isTicket ? (b['journeyDate']?.toString() ?? '') : (b['createdAt']?.toString() ?? '');
+        final dateA = _parseDate(dateAStr.contains('T') ? dateAStr.split('T').first : dateAStr);
+        final dateB = _parseDate(dateBStr.contains('T') ? dateBStr.split('T').first : dateBStr);
         if (dateA != null && dateB != null) return dateA.compareTo(dateB);
         return 0;
       });
     }
 
-    activeTickets.assignAll(active);
-    completedTickets.assignAll(completed);
-    cancelledTickets.assignAll(cancelled);
+    activeList.assignAll(active);
+    completedList.assignAll(completed);
+    cancelledList.assignAll(cancelled);
   }
 
   // -------------------------------------------------------
@@ -181,6 +222,49 @@ class BookingsController extends GetxController {
       'passengerPhone': ticket['passengerPhone'] ?? '',
       'customerEmail': ticket['customerEmail'] ?? '',
     });
+  }
+
+  void goToCancelParcel(Map<String, dynamic> parcel) {
+    Get.toNamed(AppRoutes.cancelParcel, arguments: {
+      'parcelId': parcel['id'] ?? '',
+      'trackingId': parcel['trackingId'] ?? '',
+      'senderPhone': parcel['senderPhone'] ?? '',
+    });
+  }
+
+  Future<void> downloadTicket(Map<String, dynamic> ticket) async {
+    try {
+      final pdfData = TicketDownloadData.fromMap(ticket);
+      await TicketPdfService().downloadTicket(pdfData);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to generate ticket PDF: $e');
+    }
+  }
+
+  Future<void> downloadParcel(Map<String, dynamic> parcel) async {
+    try {
+      final pdfData = ParcelDownloadData(
+        trackingId: parcel['trackingId'] ?? '',
+        senderName: parcel['senderName'] ?? '',
+        senderPhone: parcel['senderPhone'] ?? '',
+        receiverName: parcel['receiverName'] ?? '',
+        receiverPhone: parcel['receiverPhone'] ?? '',
+        pickupLocation: parcel['pickupCity'] ?? '',
+        dropLocation: parcel['dropCity'] ?? '',
+        estimatedPickupTime: parcel['estimatedPickupTime'] ?? '',
+        estimatedDropTime: parcel['estimatedDropoffTime'] ?? '',
+        busAndDriver: '${parcel['busName'] ?? ''} | ${parcel['busNumber'] ?? ''}',
+        weight: (parcel['weight'] as num?)?.toDouble() ?? 0.0,
+        paymentMethod: parcel['paymentMethod'] ?? 'Razorpay',
+        baseFare: (parcel['baseFare'] as num?)?.toDouble() ?? 0.0,
+        serviceFee: (parcel['serviceFee'] as num?)?.toDouble() ?? 0.0,
+        gst: (parcel['tax'] as num?)?.toDouble() ?? 0.0,
+        totalPaid: (parcel['totalAmount'] as num?)?.toDouble() ?? (parcel['totalPaid'] as num?)?.toDouble() ?? 0.0,
+      );
+      await TicketPdfService().downloadParcel(pdfData);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to generate invoice PDF: $e');
+    }
   }
 
   void bookAgain(String type) {

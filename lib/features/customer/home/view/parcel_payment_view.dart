@@ -34,31 +34,66 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Delivery Details Card
-              _buildDeliveryDetailsCard(),
-              const SizedBox(height: 20),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. Delivery Details Card
+                  _buildDeliveryDetailsCard(),
+                  const SizedBox(height: 20),
 
-              // 2. Estimated Times Banner (Updated to split Pickup/Drop-off)
-              _buildEstimatedTimeBanner(),
-              const SizedBox(height: 24),
+                  // 2. Estimated Times Banner
+                  _buildEstimatedTimeBanner(),
+                  const SizedBox(height: 24),
 
-              // 3. Bus & Driver Details Card (NEW)
-              _buildSectionTitle('Bus & Driver Details'),
-              _buildBusAndDriverDetailsCard(),
-              const SizedBox(height: 24),
+                  // 3. Bus & Driver Details Card
+                  _buildSectionTitle('Bus & Driver Details'),
+                  _buildBusAndDriverDetailsCard(),
+                  const SizedBox(height: 24),
 
-              // 4. Charge Summary Card
-              _buildSectionTitle('Charge Summary'),
-              _buildChargeSummaryCard(),
+                  // 4. Charge Summary Card
+                  _buildSectionTitle('Charge Summary'),
+                  _buildChargeSummaryCard(),
 
-              const SizedBox(height: 100), // Buffer for sticky bottom bar
-            ],
-          ),
+                  // 5. Payment Method Selection
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('Payment Method'),
+                  _buildPaymentMethodSection(),
+
+                  const SizedBox(height: 100), // Buffer for sticky bottom bar
+                ],
+              ),
+            ),
+            // Loading Overlay — shown when wallet payment is processing
+            Obx(() => controller.isLoading.value
+                ? Container(
+                    color: Colors.black.withOpacity(0.4),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primaryAccent),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Processing wallet payment...',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink()),
+          ],
         ),
       ),
       // Sticky Bottom Bar
@@ -115,12 +150,6 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                     'Standard Delivery',
                     style: AppTextStyles.h3.copyWith(fontSize: 16),
                   ),
-                  Text(
-                    'Order ID: ${controller.orderId}',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.secondaryGreyBlue,
-                    ),
-                  ),
                 ],
               ),
             ],
@@ -176,7 +205,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                       ),
                     ),
                     Text(
-                      controller.pickupTime,
+                      controller.estimatedPickupTime,
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.secondaryGreyBlue,
                       ),
@@ -197,7 +226,7 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                       ),
                     ),
                     Text(
-                      controller.dropoffTime,
+                      controller.estimatedDropoffTime,
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.secondaryGreyBlue,
                       ),
@@ -440,6 +469,122 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
     );
   }
 
+  Widget _buildPaymentMethodSection() {
+    return Obx(() => Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.secondaryGreyBlue.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildParcelMethodTile(
+            value: 'Razorpay',
+            label: 'Razorpay',
+            subtitle: 'UPI, Cards, Net Banking',
+            icon: Icons.credit_card,
+            iconColor: Colors.indigo,
+          ),
+          const SizedBox(height: 12),
+          _buildParcelMethodTile(
+            value: 'Wallet',
+            label: 'Savarii Wallet',
+            subtitle: 'Balance: ₹${controller.walletBalance.value.toStringAsFixed(2)}',
+            icon: Icons.account_balance_wallet,
+            iconColor: Colors.teal,
+          ),
+          if (controller.hasInsufficientBalance) ...
+            [
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 14),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Insufficient balance in wallet, please top up wallet, and try again',
+                      style: TextStyle(color: Colors.red, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+        ],
+      ),
+    ));
+  }
+
+  Widget _buildParcelMethodTile({
+    required String value,
+    required String label,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    final isSelected = controller.selectedPaymentMethod.value == value;
+    return GestureDetector(
+      onTap: () => controller.selectedPaymentMethod.value = value,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryAccent.withOpacity(0.05) : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryAccent : AppColors.secondaryGreyBlue.withOpacity(0.25),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 18),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text(subtitle, style: TextStyle(color: AppColors.secondaryGreyBlue, fontSize: 12)),
+                ],
+              ),
+            ),
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? AppColors.primaryAccent : AppColors.secondaryGreyBlue,
+                  width: 2,
+                ),
+                color: isSelected ? AppColors.primaryAccent : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 12)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSummaryRow(String label, double amount) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -490,10 +635,11 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
               ],
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: controller.payNow,
+            Obx(() => ElevatedButton(
+              onPressed: controller.hasInsufficientBalance ? null : controller.payNow,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryAccent,
+                disabledBackgroundColor: AppColors.primaryAccent.withOpacity(0.4),
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -504,18 +650,16 @@ class ParcelPaymentView extends GetView<ParcelPaymentController> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Confirm & Pay Now',
-                    style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+                    controller.selectedPaymentMethod.value == 'Wallet'
+                        ? 'Pay with Wallet · ₹${controller.totalAmount.value.toStringAsFixed(2)}'
+                        : 'Confirm & Pay Now',
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(
-                    Icons.arrow_forward,
-                    color: AppColors.white,
-                    size: 20,
-                  ),
+                  const Icon(Icons.arrow_forward, color: AppColors.white, size: 20),
                 ],
               ),
-            ),
+            )),
           ],
         ),
       ),

@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/core/services/firestore_service.dart';
+import 'package:savarii/core/services/city_geolocation_service.dart';
+import 'package:savarii/models/bus_model.dart';
 
 class BookParcelController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final GlobalKey<FormState> sheetFormKey = GlobalKey<FormState>();
+  final FirestoreService _firestoreService = Get.find<FirestoreService>();
 
   // Location Controllers
   final TextEditingController pickupController = TextEditingController();
@@ -39,6 +43,14 @@ class BookParcelController extends GetxController {
   final Rxn<Map<String, String>> dropResidentDetails = Rxn();
   bool isEditingPickupResident = true; // Tracks which location the sheet is for
 
+  // Loading state
+  final RxBool isLoading = false.obs;
+
+  // Autocomplete suggestion logic
+  Future<List<CitySuggestion>> getCitySuggestions(String query) async {
+    return await CityGeolocationService.fetchCitySuggestions(query);
+  }
+
   // Dropdown Data
   final List<String> parcelTypes = [
     'Documents',
@@ -52,15 +64,7 @@ class BookParcelController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Setting up mock data based on the screenshot provided
-    fullNameController.text = 'John Doe';
-    mobileController.text = '98765 43210';
-    emailController.text = 'john@example.com';
-    
-    receiverNameController.text = 'Jane Doe';
-    receiverMobileController.text = '91234 56789';
-    
-    weightController.text = '0.5';
+    // Fields are now empty by default for production use.
   }
 
   void selectParcelType(String? type) {
@@ -217,19 +221,121 @@ class BookParcelController extends GetxController {
     }
   }
 
-  void continueToReview() {
-    if (pickupController.text.isEmpty || dropController.text.isEmpty) {
+  Future<void> continueToReview() async {
+    final pickupCity = pickupController.text.trim();
+    final dropCity = dropController.text.trim();
+
+    if (pickupCity.isEmpty || dropCity.isEmpty) {
       Get.snackbar('Locations Required', 'Please enter both pickup and drop locations.', snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
-    if (weightController.text.isEmpty) {
+    final weightText = weightController.text.trim();
+    if (weightText.isEmpty) {
       Get.snackbar('Weight Required', 'Please specify the weight of the parcel.', snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
-    print("Continuing to Review step...");
-    Get.toNamed('/parcel-payment');
+    final double weight = double.tryParse(weightText) ?? -1;
+    if (weight <= 0) {
+      Get.snackbar('Invalid Weight', 'Please enter a valid weight in kg.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    if (!formKey.currentState!.validate()) return;
+
+    isLoading.value = true;
+    try {
+      final buses = await _firestoreService.getActiveBuses();
+      
+      BusModel? matchedBus;
+      String estimatedPickupTime = '--:--';
+      String estimatedDropoffTime = '--:--';
+
+      for (final bus in buses) {
+        String pickupLower = pickupCity.toLowerCase();
+        String dropLower = dropCity.toLowerCase();
+        
+        // Find boarding point match
+        final boardingMatch = bus.boardingPoints.firstWhere((p) => p.toLowerCase().contains(pickupLower), orElse: () => '');
+        // Find dropping point match
+        final droppingMatch = bus.droppingPoints.firstWhere((p) => p.toLowerCase().contains(dropLower), orElse: () => '');
+
+        if (boardingMatch.isNotEmpty && droppingMatch.isNotEmpty) {
+          matchedBus = bus;
+          
+          // Improved time extraction logic
+          if (boardingMatch.contains('-')) {
+            estimatedPickupTime = boardingMatch.split('-').last.trim();
+          }
+          // Fallback to main bus departure time if point extraction is weak
+          if (estimatedPickupTime == '--:--' || estimatedPickupTime.isEmpty) {
+            estimatedPickupTime = bus.departureTime;
+          }
+
+          if (droppingMatch.contains('-')) {
+            estimatedDropoffTime = droppingMatch.split('-').last.trim();
+          }
+          // Fallback to main bus arrival time
+          if (estimatedDropoffTime == '--:--' || estimatedDropoffTime.isEmpty) {
+            estimatedDropoffTime = bus.arrivalTime;
+          }
+          
+          break; // Use first matching bus
+        }
+      }
+
+      if (matchedBus == null) {
+        Get.snackbar(
+          'No Bus Found', 
+          'We currently have no buses running between $pickupCity and $dropCity capable of handling parcels.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // Calculate pricing logic (1kg = 100rs, service fee = 45)
+      final double baseFare = weight * 100.0;
+      final double serviceFee = 45.0;
+      final double tax = (baseFare + serviceFee) * 0.05;
+
+      // Ensure bus number is populated (if unavailable, fallback)
+      String busNumber = matchedBus.busNumber;
+      if (busNumber.isEmpty) busNumber = 'Unknown Register';
+
+      final routePayload = {
+        'pickupCity': pickupCity,
+        'dropCity': dropCity,
+        'weight': weight,
+        'parcelType': selectedParcelType.value,
+        'senderName': fullNameController.text.trim(),
+        'senderPhone': mobileController.text.trim(),
+        'receiverName': receiverNameController.text.trim(),
+        'receiverPhone': receiverMobileController.text.trim(),
+        'pickupResident': pickupResidentDetails.value,
+        'dropResident': dropResidentDetails.value,
+        'notes': notesController.text.trim(),
+        'busId': matchedBus.id,
+        'busName': matchedBus.busName,
+        'busNumber': busNumber,
+        'vendorId': matchedBus.vendorId, // Needs to be captured for Vendor rendering
+        'driverName': matchedBus.driverName,
+        'driverPhone': matchedBus.driverPhone,
+        'estimatedPickupTime': estimatedPickupTime,
+        'estimatedDropoffTime': estimatedDropoffTime,
+        'baseFare': baseFare,
+        'serviceFee': serviceFee,
+        'tax': tax,
+      };
+
+      print("Continuing to Review step...");
+      Get.toNamed('/parcel-payment', arguments: routePayload);
+
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to search for available routes. Please try again.');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   @override

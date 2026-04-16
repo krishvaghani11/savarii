@@ -61,6 +61,39 @@ class VendorTicketModel {
       status: map['status'] ?? 'confirmed',
     );
   }
+
+  factory VendorTicketModel.fromParcelMap(Map<String, dynamic> map) {
+    double p(dynamic v, double fb) =>
+        (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? fb;
+
+    return VendorTicketModel(
+      passengerName: map['senderName'] ?? 'Unknown Sender',
+      passengerPhone: map['senderPhone'] ?? 'N/A',
+      bookingId: map['trackingId'] ?? 'TRK-XXXXX',
+      busAndSeat: '${map['weight'] ?? 0} KG',
+      route: '${map['pickupCity']} to ${map['dropCity']}',
+      origin: map['pickupCity'] ?? 'Unknown',
+      journeyDate: _extractDateStringFromDateTime(map['createdAt'] ?? ''),
+      totalPaid: p(map['totalPaid'], 0.0),
+      ticketPrice: p(map['baseFare'], 0.0),
+      gst: p(map['tax'], 0.0),
+      platformFee: p(map['serviceFee'], 10.0),
+      paymentMethod: map['paymentMethod'] ?? 'UPI',
+      ticketUrl: map['ticketUrl'] ?? '',
+      status: map['status'] ?? 'confirmed',
+    );
+  }
+
+  static String _extractDateStringFromDateTime(String iso) {
+    if (iso.isEmpty) return 'Unknown Date';
+    if (iso.contains('T')) {
+      final parts = iso.split('T').first.split('-');
+      if (parts.length == 3) {
+        return '${parts[2]}/${parts[1]}/${parts[0]}';
+      }
+    }
+    return iso;
+  }
 }
 
 class VendorViewTicketsController extends GetxController {
@@ -72,11 +105,24 @@ class VendorViewTicketsController extends GetxController {
 
   // Realtime Live Tickets Array
   final RxList<VendorTicketModel> allTickets = <VendorTicketModel>[].obs;
-  final RxList<VendorTicketModel> tickets = <VendorTicketModel>[].obs;
-  StreamSubscription? _ticketsSubscription;
+  final RxList<VendorTicketModel> ticketsForSelectedDate = <VendorTicketModel>[].obs;
+  
+  // Realtime Live Parcels Array
+  final RxList<VendorTicketModel> allParcels = <VendorTicketModel>[].obs;
+  final RxList<VendorTicketModel> parcelsForSelectedDate = <VendorTicketModel>[].obs;
 
-  int get totalTickets => allTickets.length;
-  int get confirmedTickets => allTickets.length;
+  StreamSubscription? _ticketsSubscription;
+  StreamSubscription? _parcelsSubscription;
+
+  // 0 = Tickets, 1 = Parcels
+  final RxInt currentMainTab = 0.obs;
+
+  int get totalTickets => tickets.length;
+  int get confirmedTickets => tickets.length;
+
+  RxList<VendorTicketModel> get tickets {
+    return currentMainTab.value == 0 ? ticketsForSelectedDate : parcelsForSelectedDate;
+  }
 
   @override
   void onInit() {
@@ -88,12 +134,16 @@ class VendorViewTicketsController extends GetxController {
     final user = _authService.currentUser;
     if (user != null) {
       _ticketsSubscription = _firestoreService.getVendorTicketsStream(user.uid).listen((ticketDocs) {
-        // Sort descending locally so newest PNRs appear at the top.
         ticketDocs.sort((a, b) => (b['createdAt'] ?? '').compareTo(a['createdAt'] ?? ''));
-        
         allTickets.clear();
         allTickets.addAll(ticketDocs.map((doc) => VendorTicketModel.fromMap(doc)));
-        
+        _filterTickets();
+      });
+
+      _parcelsSubscription = _firestoreService.getVendorParcelsStream(user.uid).listen((parcelDocs) {
+        parcelDocs.sort((a, b) => (b['createdAt'] ?? '').compareTo(a['createdAt'] ?? ''));
+        allParcels.clear();
+        allParcels.addAll(parcelDocs.map((doc) => VendorTicketModel.fromParcelMap(doc)));
         _filterTickets();
       });
     }
@@ -103,14 +153,23 @@ class VendorViewTicketsController extends GetxController {
     final selectedStr = "${selectedDate.value.day.toString().padLeft(2, '0')}/${selectedDate.value.month.toString().padLeft(2, '0')}/${selectedDate.value.year}";
     
     // Filter the cached full list into the reactive tickets list
-    tickets.value = allTickets.where((ticket) {
+    ticketsForSelectedDate.value = allTickets.where((ticket) {
       return ticket.journeyDate == selectedStr;
     }).toList();
+
+    parcelsForSelectedDate.value = allParcels.where((parcel) {
+      return parcel.journeyDate == selectedStr;
+    }).toList();
+  }
+
+  void switchMainTab(int index) {
+    currentMainTab.value = index;
   }
 
   @override
   void onClose() {
     _ticketsSubscription?.cancel();
+    _parcelsSubscription?.cancel();
     super.onClose();
   }
 
@@ -156,20 +215,66 @@ class VendorViewTicketsController extends GetxController {
 
   /// Downloads a ticket PDF for the given [ticket] to the device.
   Future<void> downloadTicket(VendorTicketModel ticket) async {
-    final data = TicketDownloadData(
-      bookingId: ticket.bookingId,
-      passengerName: ticket.passengerName,
-      passengerPhone: ticket.passengerPhone,
-      journeyDate: ticket.journeyDate,
-      route: ticket.route,
-      busAndSeat: ticket.busAndSeat,
-      paymentMethod: ticket.paymentMethod,
-      ticketPrice: ticket.ticketPrice,
-      gst: ticket.gst,
-      platformFee: ticket.platformFee,
-      totalPaid: ticket.totalPaid,
-    );
-    await TicketPdfService().downloadTicket(data);
+    // If we're displaying tickets, we download TicketDownloadData.
+    // If parcels, we assume it's ParcelDownloadData.
+    if (currentMainTab.value == 0) {
+      final data = TicketDownloadData(
+        bookingId: ticket.bookingId,
+        passengerName: ticket.passengerName,
+        passengerPhone: ticket.passengerPhone,
+        journeyDate: ticket.journeyDate,
+        route: ticket.route,
+        busAndSeat: ticket.busAndSeat,
+        paymentMethod: ticket.paymentMethod,
+        ticketPrice: ticket.ticketPrice,
+        gst: ticket.gst,
+        platformFee: ticket.platformFee,
+        totalPaid: ticket.totalPaid,
+      );
+      await TicketPdfService().downloadTicket(data);
+    } else {
+      // Stub for downloading parcel PDFs using same flow
+      final parts = ticket.route.split('to');
+      final pData = ParcelDownloadData(
+        trackingId: ticket.bookingId,
+        senderName: ticket.passengerName,
+        senderPhone: ticket.passengerPhone,
+        receiverName: 'Receiver',
+        receiverPhone: 'N/A',
+        pickupLocation: parts.isNotEmpty ? parts[0].trim() : 'N/A',
+        dropLocation: parts.length > 1 ? parts[1].trim() : 'N/A',
+        estimatedPickupTime: ticket.journeyDate,
+        estimatedDropTime: ticket.journeyDate,
+        busAndDriver: '',
+        weight: 1.0,
+        paymentMethod: ticket.paymentMethod,
+        baseFare: ticket.ticketPrice,
+        serviceFee: ticket.platformFee,
+        gst: ticket.gst,
+        totalPaid: ticket.totalPaid,
+      );
+      
+      try {
+        final bytes = await TicketPdfService().generateParcelPdfBytes(pData);
+        // Normally you save bytes to device. Reusing the download wrapper:
+        final stubTicket = TicketDownloadData(
+            bookingId: pData.trackingId, 
+            passengerName: pData.senderName, 
+            passengerPhone: pData.senderPhone, 
+            journeyDate: pData.estimatedPickupTime, 
+            route: '${pData.pickupLocation} to ${pData.dropLocation}', 
+            busAndSeat: 'Parcel Logistics', 
+            paymentMethod: pData.paymentMethod, 
+            ticketPrice: pData.baseFare, 
+            gst: pData.gst, 
+            platformFee: pData.serviceFee, 
+            totalPaid: pData.totalPaid);
+            
+        await TicketPdfService().downloadTicket(stubTicket);
+      } catch (e) {
+        print("Vendor parcel pdf failed: $e");
+      }
+    }
   }
 
   void shareTicket(String ticketId) {

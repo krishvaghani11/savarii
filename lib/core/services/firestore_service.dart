@@ -18,14 +18,24 @@ class FirestoreService extends GetxService {
   }
 
   // --- Customer Profile Methods ---
-  Future<void> updateCustomerProfile(String uid, Map<String, dynamic> data) async {
-    await _db.collection('customers').doc(uid).set(data, SetOptions(merge: true));
+  Future<void> updateCustomerProfile(
+    String uid,
+    Map<String, dynamic> data,
+  ) async {
+    await _db
+        .collection('customers')
+        .doc(uid)
+        .set(data, SetOptions(merge: true));
   }
 
   Stream<Map<String, dynamic>?> getCustomerProfileStream(String uid) {
-    return _db.collection('customers').doc(uid).snapshots().map((doc) => doc.data());
+    return _db
+        .collection('customers')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.data());
   }
-  
+
   Future<Map<String, dynamic>?> getCustomerProfile(String uid) async {
     final doc = await _db.collection('customers').doc(uid).get();
     return doc.data();
@@ -44,8 +54,14 @@ class FirestoreService extends GetxService {
   }
 
   // --- Travels Methods ---
-  Future<void> updateTravelsDetail(String uid, Map<String, dynamic> data) async {
-    await _db.collection(travelsCollection).doc(uid).set(data, SetOptions(merge: true));
+  Future<void> updateTravelsDetail(
+    String uid,
+    Map<String, dynamic> data,
+  ) async {
+    await _db
+        .collection(travelsCollection)
+        .doc(uid)
+        .set(data, SetOptions(merge: true));
   }
 
   Future<Map<String, dynamic>?> getTravelsDetail(String uid) async {
@@ -61,7 +77,11 @@ class FirestoreService extends GetxService {
   }
 
   Stream<Map<String, dynamic>?> getTravelsDetailStream(String uid) {
-    return _db.collection(travelsCollection).doc(uid).snapshots().map((doc) => doc.data());
+    return _db
+        .collection(travelsCollection)
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.data());
   }
 
   Future<String> uploadTravelsImage(String uid, File imageFile) async {
@@ -213,7 +233,10 @@ class FirestoreService extends GetxService {
   Future<String> uploadTicketPdf(String bookingId, Uint8List pdfBytes) async {
     try {
       final ref = _storage.ref().child('tickets').child('$bookingId.pdf');
-      await ref.putData(pdfBytes, SettableMetadata(contentType: 'application/pdf'));
+      await ref.putData(
+        pdfBytes,
+        SettableMetadata(contentType: 'application/pdf'),
+      );
       final downloadUrl = await ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
@@ -234,7 +257,9 @@ class FirestoreService extends GetxService {
         );
   }
 
-  Stream<List<Map<String, dynamic>>> getCustomerTicketsStream(String customerId) {
+  Stream<List<Map<String, dynamic>>> getCustomerTicketsStream(
+    String customerId,
+  ) {
     return _db
         .collection('tickets')
         .where('customerId', isEqualTo: customerId)
@@ -246,7 +271,60 @@ class FirestoreService extends GetxService {
         );
   }
 
-  Future<void> addBookedSeatsToBus(String busId, String journeyDate, List<String> seats) async {
+  // --- Parcels Methods ---
+  Future<void> addParcel(Map<String, dynamic> parcelData) async {
+    await _db.collection('parcels').add(parcelData);
+  }
+
+  Stream<List<Map<String, dynamic>>> getVendorParcelsStream(String vendorId) {
+    return _db
+        .collection('parcels')
+        .where('vendorId', isEqualTo: vendorId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {'id': doc.id, ...doc.data()})
+              .toList(),
+        );
+  }
+
+  Stream<List<Map<String, dynamic>>> getCustomerParcelsStream(
+    String customerId,
+  ) {
+    return _db
+        .collection('parcels')
+        .where('customerId', isEqualTo: customerId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {'id': doc.id, ...doc.data()})
+              .toList(),
+        );
+  }
+
+  Future<void> updateParcelStatus(String parcelId, String status) async {
+    await _db.collection('parcels').doc(parcelId).update({'status': status});
+  }
+
+  Future<String> uploadParcelPdf(String trackingId, Uint8List pdfBytes) async {
+    try {
+      final ref = _storage.ref().child('parcels').child('$trackingId.pdf');
+      await ref.putData(
+        pdfBytes,
+        SettableMetadata(contentType: 'application/pdf'),
+      );
+      return await ref.getDownloadURL();
+    } catch (e) {
+      print('Error uploading parcel PDF for $trackingId: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addBookedSeatsToBus(
+    String busId,
+    String journeyDate,
+    List<String> seats,
+  ) async {
     final formattedDate = journeyDate.replaceAll('/', '-');
     await _db.collection('buses').doc(busId).update({
       'bookedSeatsByDate.$formattedDate': FieldValue.arrayUnion(seats),
@@ -258,8 +336,10 @@ class FirestoreService extends GetxService {
       final doc = await _db.collection('buses').doc(busId).get();
       if (!doc.exists) return 0;
       final data = doc.data() ?? {};
-      final bookedSeatsByDate = data['bookedSeatsByDate'] as Map<String, dynamic>? ?? {};
-      final bookedSeats = bookedSeatsByDate[formattedDate] as List<dynamic>? ?? [];
+      final bookedSeatsByDate =
+          data['bookedSeatsByDate'] as Map<String, dynamic>? ?? {};
+      final bookedSeats =
+          bookedSeatsByDate[formattedDate] as List<dynamic>? ?? [];
       return bookedSeats.length;
     } catch (e) {
       print('Error fetching booked seats count: $e');
@@ -295,9 +375,9 @@ class FirestoreService extends GetxService {
       List<LocationModel> filtered = allLocations.where((loc) {
         final locNameLower = loc.name.toLowerCase();
         final locCityLower = loc.city.toLowerCase();
-        
-        return locNameLower.contains(lowerQuery) || 
-               locCityLower.contains(lowerQuery);
+
+        return locNameLower.contains(lowerQuery) ||
+            locCityLower.contains(lowerQuery);
       }).toList();
 
       // Sort by relevance
@@ -324,9 +404,25 @@ class FirestoreService extends GetxService {
   }
 
   // --- Bus Search Methods ---
+  Future<List<BusModel>> getActiveBuses() async {
+    try {
+      final snapshot = await _db
+          .collection('buses')
+          .where('isActive', isEqualTo: true)
+          .get();
+      return snapshot.docs
+          .map((doc) => BusModel.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      print('Error fetching active buses: $e');
+      return [];
+    }
+  }
+
   Future<List<BusModel>> searchBuses(String fromId) async {
     try {
-      final snapshot = await _db.collection('buses')
+      final snapshot = await _db
+          .collection('buses')
           .where('route', arrayContains: fromId)
           .get();
       return snapshot.docs
@@ -340,7 +436,8 @@ class FirestoreService extends GetxService {
 
   Future<List<Map<String, dynamic>>> getSeatList(String busId) async {
     try {
-      final snapshot = await _db.collection('seats')
+      final snapshot = await _db
+          .collection('seats')
           .doc(busId)
           .collection('seatList')
           .get();
@@ -351,5 +448,88 @@ class FirestoreService extends GetxService {
       print('Error fetching seat list: $e');
       return [];
     }
+  }
+
+  // --- Wallet Methods ---
+  Future<void> updateWalletBalance(String userId, double amountToAdd) async {
+    // We use SetOptions(merge: true) in case walletBalance doesn't exist yet
+    await _db.collection('users').doc(userId).set({
+      'walletBalance': FieldValue.increment(amountToAdd),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> addWalletTransaction(
+    String userId,
+    Map<String, dynamic> transactionData,
+  ) async {
+    // Store in root-level wallet_transactions collection with userId for cross-user queries
+    final docRef = _db.collection('wallet_transactions').doc();
+    await docRef.set({'docId': docRef.id, 'userId': userId, ...transactionData});
+  }
+
+  Future<void> debitWalletBalance({
+    required String userId,
+    required double amount,
+    required Map<String, dynamic> walletTransactionData,
+  }) async {
+    final userRef = _db.collection('users').doc(userId);
+    final txnRef = _db.collection('wallet_transactions').doc();
+
+    await _db.runTransaction((transaction) async {
+      final userSnapshot = await transaction.get(userRef);
+      
+      if (!userSnapshot.exists) {
+        throw Exception('User document does not exist');
+      }
+
+      final currentBalance = (userSnapshot.data()?['walletBalance'] as num?)?.toDouble() ?? 0.0;
+      
+      if (currentBalance < amount) {
+        throw Exception('Insufficient wallet balance');
+      }
+
+      // 1. Deduct balance
+      transaction.update(userRef, {
+        'walletBalance': FieldValue.increment(-amount),
+      });
+
+      // 2. Log transaction
+      transaction.set(txnRef, {
+        'docId': txnRef.id,
+        'userId': userId,
+        ...walletTransactionData,
+      });
+    });
+  }
+
+  Stream<List<Map<String, dynamic>>> getWalletTransactions(String userId) {
+    return _db
+        .collection('wallet_transactions')
+        .where('userId', isEqualTo: userId)
+        // No orderBy here — avoids requiring a composite Firestore index.
+        // We sort client-side after receiving the snapshot.
+        .snapshots()
+        .map((snapshot) {
+          final docs = snapshot.docs
+              .map((doc) => {'id': doc.id, ...doc.data()})
+              .toList();
+          // Sort by createdAt descending (newest first)
+          docs.sort((a, b) {
+            final aDate = DateTime.tryParse(a['createdAt']?.toString() ?? '') ?? DateTime(2000);
+            final bDate = DateTime.tryParse(b['createdAt']?.toString() ?? '') ?? DateTime(2000);
+            return bDate.compareTo(aDate);
+          });
+          return docs;
+        });
+  }
+
+  Stream<double> streamWalletBalance(String userId) {
+    return _db.collection('users').doc(userId).snapshots().map((doc) {
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        return (data['walletBalance'] as num?)?.toDouble() ?? 0.0;
+      }
+      return 0.0;
+    });
   }
 }

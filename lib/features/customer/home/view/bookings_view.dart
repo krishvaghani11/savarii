@@ -53,6 +53,9 @@ class BookingsView extends GetView<BookingsController> {
         ),
         body: Column(
           children: [
+            // Top Level Toggle for Bus Tickets vs Parcels
+            _buildTypeToggle(),
+
             // Date Selector Row
             _buildDateSelector(context),
 
@@ -69,6 +72,74 @@ class BookingsView extends GetView<BookingsController> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTypeToggle() {
+    return Container(
+      color: AppColors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Obx(() {
+        return Container(
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F8FA),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => controller.switchMainTab(0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: controller.currentMainTab.value == 0
+                          ? AppColors.primaryAccent
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Bus Tickets',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: controller.currentMainTab.value == 0
+                              ? Colors.white
+                              : AppColors.secondaryGreyBlue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => controller.switchMainTab(1),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: controller.currentMainTab.value == 1
+                          ? AppColors.primaryAccent
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Parcels',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: controller.currentMainTab.value == 1
+                              ? Colors.white
+                              : AppColors.secondaryGreyBlue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -190,14 +261,18 @@ class BookingsView extends GetView<BookingsController> {
         return const Center(
             child: CircularProgressIndicator(color: AppColors.primaryAccent));
       }
-      if (controller.activeTickets.isEmpty) {
-        return _buildEmptyState('No active trips on this date');
+      
+      final isTickets = controller.currentMainTab.value == 0;
+      final targetList = isTickets ? controller.activeTickets : controller.activeParcels;
+
+      if (targetList.isEmpty) {
+        return _buildEmptyState(isTickets ? 'No active trips on this date' : 'No active parcels on this date');
       }
       return ListView.builder(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-        itemCount: controller.activeTickets.length,
+        itemCount: targetList.length,
         itemBuilder: (context, index) {
-          return _buildActiveCard(controller.activeTickets[index]);
+          return _buildActiveCard(targetList[index], isParcel: !isTickets);
         },
       );
     });
@@ -209,14 +284,18 @@ class BookingsView extends GetView<BookingsController> {
         return const Center(
             child: CircularProgressIndicator(color: AppColors.primaryAccent));
       }
-      if (controller.completedTickets.isEmpty) {
-        return _buildEmptyState('No completed trips on this date');
+      
+      final isTickets = controller.currentMainTab.value == 0;
+      final targetList = isTickets ? controller.completedTickets : controller.completedParcels;
+
+      if (targetList.isEmpty) {
+        return _buildEmptyState(isTickets ? 'No completed trips on this date' : 'No completed parcels on this date');
       }
       return ListView.builder(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-        itemCount: controller.completedTickets.length,
+        itemCount: targetList.length,
         itemBuilder: (context, index) {
-          return _buildCompletedCard(controller.completedTickets[index]);
+          return _buildCompletedCard(targetList[index], isParcel: !isTickets);
         },
       );
     });
@@ -228,14 +307,18 @@ class BookingsView extends GetView<BookingsController> {
         return const Center(
             child: CircularProgressIndicator(color: AppColors.primaryAccent));
       }
-      if (controller.cancelledTickets.isEmpty) {
-        return _buildEmptyState('No cancelled trips on this date');
+      
+      final isTickets = controller.currentMainTab.value == 0;
+      final targetList = isTickets ? controller.cancelledTickets : controller.cancelledParcels;
+
+      if (targetList.isEmpty) {
+        return _buildEmptyState(isTickets ? 'No cancelled trips on this date' : 'No cancelled parcels on this date');
       }
       return ListView.builder(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-        itemCount: controller.cancelledTickets.length,
+        itemCount: targetList.length,
         itemBuilder: (context, index) {
-          return _buildCancelledCard(controller.cancelledTickets[index]);
+          return _buildCancelledCard(targetList[index], isParcel: !isTickets);
         },
       );
     });
@@ -245,17 +328,18 @@ class BookingsView extends GetView<BookingsController> {
   // Cards
   // -------------------------------------------------------
 
-  Widget _buildActiveCard(Map<String, dynamic> ticket) {
-    final ticketId = ticket['id']?.toString() ?? '';
-    final from = ticket['origin']?.toString() ?? '-';
-    final to = ticket['destination']?.toString() ?? '-';
-    final travelsName = ticket['busName']?.toString() ?? 'Bus Journey';
-    final journeyDate = ticket['journeyDate']?.toString() ?? '-';
-    final busAndSeat = ticket['busAndSeat']?.toString() ?? '';
-    final pnr = ticket['bookingId']?.toString() ?? '';
-    final passengerName = ticket['passengerName']?.toString() ?? '';
-    final passengerPhone = ticket['passengerPhone']?.toString() ?? '';
-    final totalPaid = ticket['totalPaid'];
+  Widget _buildActiveCard(Map<String, dynamic> item, {required bool isParcel}) {
+    final from = isParcel ? (item['pickupCity']?.toString() ?? '-') : (item['origin']?.toString() ?? '-');
+    final to = isParcel ? (item['dropCity']?.toString() ?? '-') : (item['destination']?.toString() ?? '-');
+    final title = item['busName']?.toString() ?? (isParcel ? 'Parcel Booking' : 'Bus Journey');
+    final dateValue = isParcel ? (item['estimatedPickupTime']?.toString() ?? '-') : (item['journeyDate']?.toString() ?? '-');
+    final desc1 = isParcel ? 'Weight: ${item['weight']} KG' : (item['busAndSeat']?.toString() ?? '');
+    final bookingId = isParcel ? (item['trackingId']?.toString() ?? '') : (item['bookingId']?.toString() ?? '');
+    final nameKey = isParcel ? 'senderName' : 'passengerName';
+    final phoneKey = isParcel ? 'senderPhone' : 'passengerPhone';
+    final name = item[nameKey]?.toString() ?? '';
+    final phone = item[phoneKey]?.toString() ?? '';
+    final totalPaid = item['totalPaid'];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -283,12 +367,12 @@ class BookingsView extends GetView<BookingsController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _statusBadge('Active', Colors.green),
-                    if (busAndSeat.isNotEmpty)
+                    if (desc1.isNotEmpty)
                       Flexible(
                         child: Text(
-                          busAndSeat.contains('|')
-                              ? busAndSeat.split('|').last.trim()
-                              : busAndSeat,
+                          desc1.contains('|')
+                              ? desc1.split('|').last.trim()
+                              : desc1,
                           style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue),
                           maxLines: 1,
@@ -312,7 +396,7 @@ class BookingsView extends GetView<BookingsController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            travelsName,
+                            title,
                             style: AppTextStyles.h3.copyWith(fontSize: 15),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -349,42 +433,42 @@ class BookingsView extends GetView<BookingsController> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            journeyDate,
+                            dateValue,
                             style: AppTextStyles.caption.copyWith(
                                 color: AppColors.secondaryGreyBlue),
                           ),
-                          if (busAndSeat.isNotEmpty) ...[
+                          if (desc1.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
-                              busAndSeat,
+                              desc1,
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondaryGreyBlue),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                          if (passengerName.isNotEmpty) ...[
+                          if (name.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'Passenger: $passengerName',
+                              '${isParcel ? "Sender" : "Passenger"}: $name',
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondaryGreyBlue),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                          if (passengerPhone.isNotEmpty) ...[
+                          if (phone.isNotEmpty) ...[
                             const SizedBox(height: 2),
                             Text(
-                              'Phone: $passengerPhone',
+                              'Phone: $phone',
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondaryGreyBlue),
                             ),
                           ],
-                          if (pnr.isNotEmpty) ...[
+                          if (bookingId.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'PNR: $pnr',
+                              '${isParcel ? "Tracking" : "PNR"}: $bookingId',
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.primaryAccent,
                                 fontWeight: FontWeight.w700,
@@ -413,25 +497,35 @@ class BookingsView extends GetView<BookingsController> {
           // Divider
           const Divider(height: 1, thickness: 1, color: Color(0xFFF4F4F4)),
 
-          // Cancel button
-          TextButton.icon(
-            onPressed: () => controller.cancelBooking(ticket),
-            icon: const Icon(Icons.close, color: AppColors.primaryAccent, size: 17),
-            label: Text(
-              'Cancel Booking',
-              style: AppTextStyles.buttonText.copyWith(
-                  color: AppColors.primaryAccent, fontSize: 14),
-            ),
-            style: TextButton.styleFrom(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              shape: const RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      )),
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                // Download Button (for both)
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => isParcel ? controller.downloadParcel(item) : controller.downloadTicket(item),
+                    icon: const Icon(Icons.download, color: AppColors.primaryAccent, size: 17),
+                    label: Text(
+                      isParcel ? 'Invoice' : 'Ticket',
+                      style: AppTextStyles.buttonText.copyWith(color: AppColors.primaryAccent, fontSize: 13),
+                    ),
+                  ),
+                ),
+                const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFF4F4F4)),
+                // Cancel Button
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => isParcel ? controller.goToCancelParcel(item) : controller.cancelBooking(item),
+                    icon: const Icon(Icons.close, color: Color(0xFFE82E59), size: 17),
+                    label: Text(
+                      'Cancel',
+                      style: AppTextStyles.buttonText.copyWith(color: const Color(0xFFE82E59), fontSize: 13),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -439,17 +533,19 @@ class BookingsView extends GetView<BookingsController> {
     );
   }
 
-  Widget _buildCompletedCard(Map<String, dynamic> ticket) {
-    final ticketId = ticket['id']?.toString() ?? '';
-    final from = ticket['origin']?.toString() ?? '-';
-    final to = ticket['destination']?.toString() ?? '-';
-    final travelsName = ticket['busName']?.toString() ?? 'Bus Journey';
-    final journeyDate = ticket['journeyDate']?.toString() ?? '-';
-    final busAndSeat = ticket['busAndSeat']?.toString() ?? '';
-    final pnr = ticket['bookingId']?.toString() ?? '';
-    final passengerName = ticket['passengerName']?.toString() ?? '';
-    final passengerPhone = ticket['passengerPhone']?.toString() ?? '';
-    final totalPaid = ticket['totalPaid'];
+  Widget _buildCompletedCard(Map<String, dynamic> item, {required bool isParcel}) {
+    final itemId = item['id']?.toString() ?? '';
+    final from = isParcel ? (item['pickupCity']?.toString() ?? '-') : (item['origin']?.toString() ?? '-');
+    final to = isParcel ? (item['dropCity']?.toString() ?? '-') : (item['destination']?.toString() ?? '-');
+    final title = item['busName']?.toString() ?? (isParcel ? 'Parcel Booking' : 'Bus Journey');
+    final dateValue = isParcel ? (item['estimatedPickupTime']?.toString() ?? '-') : (item['journeyDate']?.toString() ?? '-');
+    final desc1 = isParcel ? 'Weight: ${item['weight']} KG' : (item['busAndSeat']?.toString() ?? '');
+    final bookingId = isParcel ? (item['trackingId']?.toString() ?? '') : (item['bookingId']?.toString() ?? '');
+    final nameKey = isParcel ? 'senderName' : 'passengerName';
+    final phoneKey = isParcel ? 'senderPhone' : 'passengerPhone';
+    final name = item[nameKey]?.toString() ?? '';
+    final phone = item[phoneKey]?.toString() ?? '';
+    final totalPaid = item['totalPaid'];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -475,12 +571,12 @@ class BookingsView extends GetView<BookingsController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _statusBadge('Completed', Colors.blue),
-                    if (busAndSeat.isNotEmpty)
+                    if (desc1.isNotEmpty)
                       Flexible(
                         child: Text(
-                          busAndSeat.contains('|')
-                              ? busAndSeat.split('|').last.trim()
-                              : busAndSeat,
+                          desc1.contains('|')
+                              ? desc1.split('|').last.trim()
+                              : desc1,
                           style: AppTextStyles.caption
                               .copyWith(color: AppColors.secondaryGreyBlue),
                           maxLines: 1,
@@ -499,7 +595,7 @@ class BookingsView extends GetView<BookingsController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [                          Text(
-                            travelsName,
+                            title,
                             style: AppTextStyles.h3.copyWith(fontSize: 15),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -535,42 +631,42 @@ class BookingsView extends GetView<BookingsController> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            journeyDate,
+                            dateValue,
                             style: AppTextStyles.caption.copyWith(
                                 color: AppColors.secondaryGreyBlue),
                           ),
-                          if (busAndSeat.isNotEmpty) ...[
+                          if (desc1.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
-                              busAndSeat,
+                              desc1,
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondaryGreyBlue),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                          if (passengerName.isNotEmpty) ...[
+                          if (name.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'Passenger: $passengerName',
+                              '${isParcel ? "Sender" : "Passenger"}: $name',
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondaryGreyBlue),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                          if (passengerPhone.isNotEmpty) ...[
+                          if (phone.isNotEmpty) ...[
                             const SizedBox(height: 2),
                             Text(
-                              'Phone: $passengerPhone',
+                              'Phone: $phone',
                               style: AppTextStyles.caption.copyWith(
                                   color: AppColors.secondaryGreyBlue),
                             ),
                           ],
-                          if (pnr.isNotEmpty) ...[
+                          if (bookingId.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'PNR: $pnr',
+                              '${isParcel ? "Tracking" : "PNR"}: $bookingId',
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.primaryAccent,
                                 fontWeight: FontWeight.w700,
@@ -605,19 +701,39 @@ class BookingsView extends GetView<BookingsController> {
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
+                // Download
+                GestureDetector(
+                  onTap: () => isParcel ? controller.downloadParcel(item) : controller.downloadTicket(item),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.download_outlined,
+                          color: AppColors.primaryAccent, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        isParcel ? 'Invoice' : 'Ticket',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.primaryAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
                 // Report
                 GestureDetector(
-                  onTap: () => controller.reportIssue(ticketId),
+                  onTap: () => controller.reportIssue(itemId),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.error_outline,
-                          color: AppColors.primaryAccent, size: 16),
+                          color: AppColors.secondaryGreyBlue, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         'Report',
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.primaryAccent,
+                          color: AppColors.secondaryGreyBlue,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -628,7 +744,7 @@ class BookingsView extends GetView<BookingsController> {
                 // Book Again
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => controller.bookAgain('bus'),
+                    onPressed: () => controller.bookAgain(isParcel ? 'parcel' : 'bus'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           AppColors.primaryAccent.withOpacity(0.1),
@@ -652,7 +768,7 @@ class BookingsView extends GetView<BookingsController> {
                 // Rate Trip
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => controller.rateTrip(ticketId),
+                    onPressed: () => controller.rateTrip(itemId),
                     icon: const Icon(Icons.star_border,
                         color: AppColors.primaryDark, size: 15),
                     label: Text(
@@ -681,14 +797,12 @@ class BookingsView extends GetView<BookingsController> {
     );
   }
 
-  Widget _buildCancelledCard(Map<String, dynamic> ticket) {
-    final from = ticket['origin']?.toString() ?? '-';
-    final to = ticket['destination']?.toString() ?? '-';
-    final travelsName = ticket['busName']?.toString() ?? 'Bus Journey';
-    final journeyDate = ticket['journeyDate']?.toString() ?? '-';
-    final busAndSeat = ticket['busAndSeat']?.toString() ?? '';
-    final pnr = ticket['bookingId']?.toString() ?? '';
-    final passengerName = ticket['passengerName']?.toString() ?? '';
+  Widget _buildCancelledCard(Map<String, dynamic> item, {required bool isParcel}) {
+    final from = isParcel ? (item['pickupCity']?.toString() ?? '-') : (item['origin']?.toString() ?? '-');
+    final to = isParcel ? (item['dropCity']?.toString() ?? '-') : (item['destination']?.toString() ?? '-');
+    final title = item['busName']?.toString() ?? (isParcel ? 'Parcel Booking' : 'Bus Journey');
+    final dateValue = isParcel ? (item['estimatedPickupTime']?.toString() ?? '-') : (item['journeyDate']?.toString() ?? '-');
+    final bookingId = isParcel ? (item['trackingId']?.toString() ?? '') : (item['bookingId']?.toString() ?? '');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -703,100 +817,65 @@ class BookingsView extends GetView<BookingsController> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _busIconWidget(greyed: true),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _busIconWidget(greyed: true),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(
-                          travelsName,
-                          style: AppTextStyles.h3.copyWith(fontSize: 15),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _statusBadge('Cancelled', Colors.red),
+                          Text(
+                            dateValue,
+                            style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
+                          ),
+                        ],
                       ),
-                      _statusBadge('Cancelled', Colors.red),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          from,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.secondaryGreyBlue),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      const SizedBox(height: 8),
+                      Text(
+                        title,
+                        style: AppTextStyles.h3.copyWith(fontSize: 15, color: AppColors.secondaryGreyBlue),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6),
-                        child: Icon(Icons.arrow_forward,
-                            size: 13, color: AppColors.secondaryGreyBlue),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$from → $to',
+                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.secondaryGreyBlue),
                       ),
-                      Flexible(
-                        child: Text(
-                          to,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.secondaryGreyBlue),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${isParcel ? "Tracking" : "PNR"}: $bookingId',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    journeyDate,
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.secondaryGreyBlue),
-                  ),
-                  if (busAndSeat.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      busAndSeat,
-                      style: AppTextStyles.caption.copyWith(
-                          color: AppColors.secondaryGreyBlue),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  if (passengerName.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Passenger: $passengerName',
-                      style: AppTextStyles.caption.copyWith(
-                          color: AppColors.secondaryGreyBlue),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  if (pnr.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'PNR: $pnr',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.secondaryGreyBlue,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF4F4F4)),
+          TextButton.icon(
+            onPressed: () => isParcel ? controller.downloadParcel(item) : controller.downloadTicket(item),
+            icon: const Icon(Icons.download, color: AppColors.secondaryGreyBlue, size: 16),
+            label: Text(
+              'Download ${isParcel ? "Invoice" : "Ticket"}',
+              style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue, fontWeight: FontWeight.bold),
+            ),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(double.infinity, 44),
+            ),
+          ),
+        ],
       ),
     );
   }

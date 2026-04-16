@@ -17,7 +17,7 @@ class RoleSelectionView extends GetView<RoleSelectionController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header Row: App Name & Help Icon
+              // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [Text('Savarii', style: AppTextStyles.h3)],
@@ -38,31 +38,46 @@ class RoleSelectionView extends GetView<RoleSelectionController> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
 
-              // Customer Card
-              _buildRoleCard(
-                roleId: 'customer',
-                title: 'Customer',
-                subtitle:
-                    'Book rides for your daily commute and send parcels easily across the city.',
-                iconData: Icons.person,
+              // Scrollable Role Cards
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      _buildRoleCard(
+                        roleId: 'customer',
+                        title: 'Customer',
+                        subtitle:
+                            'Book rides for your daily commute and send parcels easily across the city.',
+                        iconData: Icons.person,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildRoleCard(
+                        roleId: 'vendor',
+                        title: 'Vendor',
+                        subtitle:
+                            'Drive with us, manage your fleet, or handle delivery logistics efficiently.',
+                        iconData: Icons.local_shipping,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildRoleCard(
+                        roleId: 'driver',
+                        title: 'Driver',
+                        subtitle:
+                            'Join our community of riders and earn while helping people move around.',
+                        iconData: Icons.drive_eta,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              // Vendor Card
-              _buildRoleCard(
-                roleId: 'vendor',
-                title: 'Vendor',
-                subtitle:
-                    'Drive with us, manage your fleet, or handle delivery logistics efficiently.',
-                iconData: Icons.local_shipping,
-              ),
-
-              const Spacer(),
-
-              // Bottom Continue Button
+              // Continue Button — always pinned at the bottom
               ElevatedButton(
                 onPressed: controller.continueToNextScreen,
                 style: ElevatedButton.styleFrom(

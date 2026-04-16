@@ -35,6 +35,10 @@ class PaymentDetailsController extends GetxController {
   late RxDouble baseFare;
   late RxDouble totalAmount;
 
+  // ── Wallet payment ──────────────────────────────────────────────────────────
+  final RxString selectedPaymentMethod = 'Razorpay'.obs;
+  final RxDouble walletBalance = 0.0.obs;
+
   final RxBool isLoading = false.obs;
   final TextEditingController promoController = TextEditingController();
 
@@ -67,6 +71,14 @@ class PaymentDetailsController extends GetxController {
     gst.value = baseFare.value * 0.05;
     totalAmount = (baseFare.value + gst.value + platformFee).obs;
 
+    // Stream live wallet balance for display in payment method selector
+    final userId = _authService.currentUser?.uid;
+    if (userId != null) {
+      _firestoreService.streamWalletBalance(userId).listen((bal) {
+        walletBalance.value = bal;
+      });
+    }
+
     // Setup Razorpay
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _onPaymentSuccess);
@@ -74,10 +86,14 @@ class PaymentDetailsController extends GetxController {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _onExternalWallet);
   }
 
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  bool get hasInsufficientBalance =>
+      selectedPaymentMethod.value == 'Wallet' &&
+      walletBalance.value < totalAmount.value;
+
   void applyPromo() {
     if (promoController.text.isNotEmpty) {
       print("Applying Promo Code: ${promoController.text}");
-      // Example: deduct ₹150 discount
       totalAmount.value -= 150.00;
       Get.snackbar(
         'Promo Applied',
@@ -89,11 +105,106 @@ class PaymentDetailsController extends GetxController {
   }
 
   void confirmPayment() {
-    openRazorpayCheckout();
+    if (selectedPaymentMethod.value == 'Wallet') {
+      _payWithWallet();
+    } else {
+      openRazorpayCheckout();
+    }
   }
 
+  // ── Wallet Payment Flow ───────────────────────────────────────────────────────
+  Future<void> _payWithWallet() async {
+    if (hasInsufficientBalance) {
+      Get.snackbar(
+        'Insufficient Balance',
+        'Insufficient balance in wallet, please top up wallet, and try again',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade800,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    isLoading.value = true;
+    final pnr = 'PNR${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+    final customerId = _authService.currentUser?.uid ?? '';
+    final ticketPayload = _buildTicketPayload(pnr, 'Savarii Wallet', '');
+
+    try {
+      // 1. Generate & upload PDF
+      final pdfData = TicketDownloadData(
+        bookingId: pnr,
+        passengerName: ticketPayload['passengerName'] as String,
+        passengerPhone: ticketPayload['passengerPhone'] as String,
+        journeyDate: journeyDate,
+        route: ticketPayload['route'] as String,
+        busAndSeat: ticketPayload['busAndSeat'] as String,
+        paymentMethod: 'Savarii Wallet',
+        ticketPrice: baseFare.value,
+        gst: gst.value,
+        platformFee: platformFee,
+        totalPaid: totalAmount.value,
+      );
+      final pdfBytes = await TicketPdfService().generatePdfBytes(pdfData);
+      final ticketUrl = await _firestoreService.uploadTicketPdf(pnr, pdfBytes);
+      ticketPayload['ticketUrl'] = ticketUrl;
+
+      // 2. Atomically deduct wallet + log transaction
+      await _firestoreService.debitWalletBalance(
+        userId: customerId,
+        amount: totalAmount.value,
+        walletTransactionData: {
+          'transactionId': 'T${DateTime.now().millisecondsSinceEpoch}',
+          'razorpayPaymentId': 'N/A',
+          'title': 'Ticket Booking (PNR: $pnr)',
+          'amount': totalAmount.value,
+          'isCredit': false,
+          'iconType': 'ticket',
+          'status': 'Completed',
+          'paymentMethod': 'Wallet',
+          'name': ticketPayload['passengerName'],
+          'mobile': contactPhone,
+          'remarks': 'Bus: $busName | Seats: ${selectedSeats.join(", ")}',
+          'createdAt': DateTime.now().toIso8601String(),
+        },
+      );
+
+      // 3. Save ticket
+      await _firestoreService.addTicket(ticketPayload);
+
+      // 4. Block seats on bus document
+      if (busId.isNotEmpty && selectedSeats.isNotEmpty) {
+        await _firestoreService.addBookedSeatsToBus(busId, journeyDate, selectedSeats);
+      }
+
+      Get.snackbar(
+        '✅ Payment Successful',
+        '₹${totalAmount.value.toStringAsFixed(2)} deducted from your Savarii Wallet',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade100,
+        colorText: Colors.green.shade800,
+      );
+
+      Get.offNamed('/booking-confirmation', arguments: ticketPayload);
+    } catch (e) {
+      final msg = e.toString().contains('Insufficient')
+          ? 'Insufficient balance in wallet, please top up wallet, and try again'
+          : 'Payment failed: $e';
+      Get.snackbar(
+        'Error',
+        msg,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade800,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // ── Razorpay Flow ─────────────────────────────────────────────────────────────
   void openRazorpayCheckout() {
-    // Amount must be in paise (multiply by 100)
     final amountInPaise = (totalAmount.value * 100).toInt();
 
     final options = {
@@ -126,13 +237,53 @@ class PaymentDetailsController extends GetxController {
 
   void _onPaymentSuccess(PaymentSuccessResponse response) async {
     isLoading.value = true;
+    final pnr = 'PNR${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+    final ticketPayload = _buildTicketPayload(pnr, 'Razorpay', response.paymentId ?? '');
 
-    // Generate random PNR
-    final pnr =
-        'PNR${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+    try {
+      final pdfData = TicketDownloadData(
+        bookingId: pnr,
+        passengerName: ticketPayload['passengerName'] as String,
+        passengerPhone: ticketPayload['passengerPhone'] as String,
+        journeyDate: journeyDate,
+        route: ticketPayload['route'] as String,
+        busAndSeat: ticketPayload['busAndSeat'] as String,
+        paymentMethod: 'Razorpay',
+        ticketPrice: baseFare.value,
+        gst: gst.value,
+        platformFee: platformFee,
+        totalPaid: totalAmount.value,
+      );
+      final pdfBytes = await TicketPdfService().generatePdfBytes(pdfData);
+      final ticketUrl = await _firestoreService.uploadTicketPdf(pnr, pdfBytes);
+      ticketPayload['ticketUrl'] = ticketUrl;
+
+      await _firestoreService.addTicket(ticketPayload);
+
+      if (busId.isNotEmpty && selectedSeats.isNotEmpty) {
+        await _firestoreService.addBookedSeatsToBus(busId, journeyDate, selectedSeats);
+      }
+
+      debugPrint('Customer Ticket $pnr saved. Seats blocked: $selectedSeats');
+      Get.offNamed('/booking-confirmation', arguments: ticketPayload);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Payment succeeded but failed to save ticket: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade100,
+        colorText: Colors.orange.shade900,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // ── Shared Payload Builder ────────────────────────────────────────────────────
+  Map<String, dynamic> _buildTicketPayload(
+      String pnr, String paymentMethod, String razorpayId) {
     final customerId = _authService.currentUser?.uid ?? '';
-
-    final ticketPayload = {
+    return {
       'customerId': customerId,
       'vendorId': vendorId,
       'busId': busId,
@@ -152,60 +303,13 @@ class PaymentDetailsController extends GetxController {
       'journeyDate': journeyDate,
       'route': '${boardingPoint.value} to ${droppingPoint.value}',
       'busAndSeat': '$busName | ${selectedSeats.join(", ")}',
-      'paymentMethod': 'Razorpay',
-      'razorpayPaymentId': response.paymentId ?? '',
+      'paymentMethod': paymentMethod,
+      'razorpayPaymentId': razorpayId,
       'ticketPrice': baseFare.value,
       'gst': gst.value,
       'platformFee': platformFee,
       'totalPaid': totalAmount.value,
     };
-
-    try {
-      // 0. Generate and Upload PDF Ticket (Format matching vendor side)
-      final pdfData = TicketDownloadData(
-        bookingId: pnr,
-        passengerName: ticketPayload['passengerName'] as String,
-        passengerPhone: ticketPayload['passengerPhone'] as String,
-        journeyDate: journeyDate,
-        route: ticketPayload['route'] as String,
-        busAndSeat: ticketPayload['busAndSeat'] as String,
-        paymentMethod: 'Razorpay',
-        ticketPrice: baseFare.value,
-        gst: gst.value,
-        platformFee: platformFee,
-        totalPaid: totalAmount.value,
-      );
-      final pdfBytes = await TicketPdfService().generatePdfBytes(pdfData);
-      final ticketUrl = await _firestoreService.uploadTicketPdf(pnr, pdfBytes);
-      ticketPayload['ticketUrl'] = ticketUrl;
-
-      // 1. Save ticket to Firestore
-      await _firestoreService.addTicket(ticketPayload);
-
-      // 2. Block the booked seats on the bus document
-      if (busId.isNotEmpty && selectedSeats.isNotEmpty) {
-        await _firestoreService.addBookedSeatsToBus(
-          busId,
-          journeyDate,
-          selectedSeats,
-        );
-      }
-
-      debugPrint('Customer Ticket $pnr saved. Seats blocked: $selectedSeats');
-
-      // 3. Navigate to confirmation screen
-      Get.offNamed('/booking-confirmation', arguments: ticketPayload);
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Payment succeeded but failed to save ticket: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
-    } finally {
-      isLoading.value = false;
-    }
   }
 
   void _onPaymentError(PaymentFailureResponse response) {

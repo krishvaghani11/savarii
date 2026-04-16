@@ -35,6 +35,9 @@ class AppRoutes {
   static const String customerSelectPoints = '/customer-select-points';
   static const String customerAddPassenger = '/customer-add-passenger';
   static const String cancelBooking = '/cancel-booking';
+  static const String cancelParcel = '/cancel-parcel';
+  static const String walletTopups = '/wallet-topups';
+  static const String walletConfirmation = '/wallet-confirmation';
 
   //vendor side routes
   static const String vendorRegistration = '/vendor-registration';
@@ -61,4 +64,15 @@ class AppRoutes {
   static const String vendorResetPassword = '/vendor-reset-password';
   static const String customerResetPassword = '/customer-reset-password';
   static const String vendorRazorpay = '/vendor-razorpay';
+  static const String vendorDriverManagement = '/vendor-driver-management';
+  static const String driverManagement = '/vendor-driver-management';
+  static const String addDriver = '/vendor-add-driver';
+
+
+
+  //driver side routes
+  static const String driverLogin = '/driver-login';
+  static const String driverSignup = '/driver-signup';
+  static const String driverForgotPassword = '/driver-forgot-password';
+  static const String driverLocationAccess = '/driver-location-access';
 }

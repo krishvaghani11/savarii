@@ -40,7 +40,12 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
                   _buildFareBreakdownCard(),
                   const SizedBox(height: 16),
 
-                  // 3. Promo Code Field Card
+                  // 3. Payment Method Selection
+                  const SizedBox(height: 16),
+                  _buildPaymentMethodCard(),
+
+                  // 4. Promo Code Field Card
+                  const SizedBox(height: 16),
                   _buildPromoCodeCard(),
 
                   const SizedBox(height: 120), // Buffer for sticky bottom bar
@@ -312,6 +317,132 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
     );
   }
 
+  Widget _buildPaymentMethodCard() {
+    return Obx(() => Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryGreyBlue.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.payment, color: AppColors.primaryAccent, size: 20),
+              const SizedBox(width: 8),
+              Text('Payment Method', style: AppTextStyles.h3.copyWith(fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Razorpay option
+          _buildMethodTile(
+            value: 'Razorpay',
+            label: 'Razorpay',
+            subtitle: 'UPI, Cards, Net Banking',
+            icon: Icons.credit_card,
+            iconColor: Colors.indigo,
+          ),
+          const SizedBox(height: 12),
+
+          // Savarii Wallet option
+          _buildMethodTile(
+            value: 'Wallet',
+            label: 'Savarii Wallet',
+            subtitle: 'Balance: ₹${controller.walletBalance.value.toStringAsFixed(2)}',
+            icon: Icons.account_balance_wallet,
+            iconColor: Colors.teal,
+          ),
+
+          // Insufficient balance warning
+          if (controller.hasInsufficientBalance) ...
+            [
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 14),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Insufficient balance in wallet, please top up wallet, and try again',
+                      style: AppTextStyles.caption.copyWith(color: Colors.red, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+        ],
+      ),
+    ));
+  }
+
+  Widget _buildMethodTile({
+    required String value,
+    required String label,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    final isSelected = controller.selectedPaymentMethod.value == value;
+    return GestureDetector(
+      onTap: () => controller.selectedPaymentMethod.value = value,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryAccent.withOpacity(0.05) : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryAccent : AppColors.secondaryGreyBlue.withOpacity(0.25),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 18),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  Text(subtitle, style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue)),
+                ],
+              ),
+            ),
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: isSelected ? AppColors.primaryAccent : AppColors.secondaryGreyBlue, width: 2),
+                color: isSelected ? AppColors.primaryAccent : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 12)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPromoCodeCard() {
     return Container(
       decoration: BoxDecoration(
@@ -394,9 +525,10 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
 
             // Confirm Button
             ElevatedButton(
-              onPressed: controller.confirmPayment,
+              onPressed: controller.hasInsufficientBalance ? null : controller.confirmPayment,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryAccent,
+                disabledBackgroundColor: AppColors.primaryAccent.withOpacity(0.4),
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -405,7 +537,9 @@ class PaymentDetailsView extends GetView<PaymentDetailsController> {
               ),
               child: Obx(
                 () => Text(
-                  'Confirm Payment • ₹${controller.totalAmount.value.toStringAsFixed(2)}',
+                  controller.selectedPaymentMethod.value == 'Wallet'
+                      ? 'Pay with Wallet • ₹${controller.totalAmount.value.toStringAsFixed(2)}'
+                      : 'Confirm Payment • ₹${controller.totalAmount.value.toStringAsFixed(2)}',
                   style: AppTextStyles.buttonText.copyWith(fontSize: 16),
                 ),
               ),

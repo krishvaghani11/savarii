@@ -60,6 +60,10 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
               ),
               const SizedBox(height: 24),
 
+              // NEW: Type Toggle (Tickets vs Parcels)
+              _buildTypeToggle(),
+              const SizedBox(height: 16),
+
               // NEW: 1. Date Selector Layout
               _buildDateSelector(context),
               const SizedBox(height: 16),
@@ -171,6 +175,61 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
     );
   }
 
+  Widget _buildTypeToggle() {
+    return Obx(() {
+      final currentTab = controller.currentMainTab.value;
+      return Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F8FA),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => controller.switchMainTab(0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: currentTab == 0 ? AppColors.primaryAccent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Bus Tickets',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: currentTab == 0 ? Colors.white : AppColors.secondaryGreyBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => controller.switchMainTab(1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: currentTab == 1 ? AppColors.primaryAccent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Parcels',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: currentTab == 1 ? Colors.white : AppColors.secondaryGreyBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
   String _getWeekDayLabel(int weekday) {
     switch (weekday) {
       case 1: return 'MON';
@@ -240,7 +299,9 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  ticket.passengerName,
+                  controller.currentMainTab.value == 0 
+                      ? ticket.passengerName 
+                      : 'Sender: ${ticket.passengerName}',
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -497,7 +558,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'tickets.bus_seat'.tr(),
+                            controller.currentMainTab.value == 0 ? 'tickets.bus_seat'.tr() : 'Weight',
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.secondaryGreyBlue,
                               fontWeight: FontWeight.bold,
@@ -598,7 +659,7 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'tickets.boarding_point'.tr(),
+                          controller.currentMainTab.value == 0 ? 'tickets.boarding_point'.tr() : 'Pickup Point',
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.secondaryGreyBlue,
                             fontWeight: FontWeight.bold,

@@ -10,6 +10,11 @@ class BusModel {
   final int price;
   final String? description;
   final String vendorId;
+  final String busNumber;
+  final List<String> boardingPoints;
+  final List<String> droppingPoints;
+  final String driverName;
+  final String driverPhone;
 
   BusModel({
     required this.id,
@@ -22,11 +27,18 @@ class BusModel {
     required this.arrivalTime,
     required this.price,
     required this.vendorId,
+    required this.busNumber,
+    required this.boardingPoints,
+    required this.droppingPoints,
+    this.driverName = 'Unknown Driver',
+    this.driverPhone = 'No Contact Info',
     this.description,
   });
 
   factory BusModel.fromMap(Map<String, dynamic> map, String id) {
     List<String> generatedRoute = [];
+    List<String> bps = [];
+    List<String> dps = [];
     String fCity = map['fromCity'] ?? '';
     String tCity = map['toCity'] ?? '';
     String depTime = map['departureTime'] ?? '';
@@ -45,26 +57,44 @@ class BusModel {
         ticketPrice = priceVal is int ? priceVal : int.tryParse(priceVal.toString()) ?? 0;
       }
 
-      if (fCity.isNotEmpty) generatedRoute.add(fCity);
+      // Automatically include main departure city as a boarding point
+      if (fCity.isNotEmpty) {
+        generatedRoute.add(fCity);
+        bps.add("$fCity - $depTime");
+      }
 
       final bpList = routeMap['boardingPoints'] as List<dynamic>? ?? [];
       for (var bp in bpList) {
         if (bp is Map && bp['pointName'] != null) {
-          generatedRoute.add(bp['pointName'].toString());
+          final pName = bp['pointName'].toString();
+          final pTime = bp['pointTime']?.toString() ?? '';
+          bps.add("$pName - $pTime");
+          generatedRoute.add(pName);
         }
       }
 
       final dpList = routeMap['droppingPoints'] as List<dynamic>? ?? [];
       for (var dp in dpList) {
         if (dp is Map && dp['pointName'] != null) {
-          generatedRoute.add(dp['pointName'].toString());
+          final pName = dp['pointName'].toString();
+          final pTime = dp['pointTime']?.toString() ?? '';
+          dps.add("$pName - $pTime");
+          generatedRoute.add(pName);
         }
       }
 
-      if (tCity.isNotEmpty) generatedRoute.add(tCity);
+      // Automatically include main arrival city as a dropping point
+      if (tCity.isNotEmpty) {
+        generatedRoute.add(tCity);
+        dps.add("$tCity - $arrTime");
+      }
     } else if (map['route'] is List) {
       generatedRoute = List<String>.from(map['route']);
     }
+
+    final driverMap = map['driver'] as Map<String, dynamic>? ?? {};
+    final drName = driverMap['name']?.toString() ?? 'Unknown Driver';
+    final drPhone = driverMap['mobile']?.toString() ?? 'No Contact Info';
 
     return BusModel(
       id: id,
@@ -78,6 +108,11 @@ class BusModel {
       price: ticketPrice,
       description: map['description'],
       vendorId: map['vendorId'] ?? '',
+      busNumber: map['busNumber'] ?? '',
+      boardingPoints: bps,
+      droppingPoints: dps,
+      driverName: drName,
+      driverPhone: drPhone,
     );
   }
 
@@ -93,6 +128,11 @@ class BusModel {
       'price': price,
       'description': description,
       'vendorId': vendorId,
+      'busNumber': busNumber,
+      'boardingPoints': boardingPoints,
+      'droppingPoints': droppingPoints,
+      'driverName': driverName,
+      'driverPhone': driverPhone,
     };
   }
 }

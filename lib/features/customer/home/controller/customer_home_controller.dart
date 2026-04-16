@@ -17,7 +17,8 @@ class CustomerHomeController extends GetxController {
   final RxString userName = "Savarii User".obs;
   final RxString phoneNumber = "".obs;
   final RxString profileImageUrl = "".obs;
-  final double walletBalance = 45.50;
+  final RxDouble walletBalance = 0.0.obs;
+  StreamSubscription? _walletSubscription;
 
   final RxList<Map<String, dynamic>> activeTickets = <Map<String, dynamic>>[].obs;
   StreamSubscription? _ticketSubscription;
@@ -28,6 +29,16 @@ class CustomerHomeController extends GetxController {
     super.onInit();
     _fetchActiveTicket();
     _fetchProfileData();
+    _initWalletStream();
+  }
+
+  void _initWalletStream() {
+    final customerId = _authService.currentUser?.uid;
+    if (customerId != null) {
+      _walletSubscription = _firestoreService.streamWalletBalance(customerId).listen((balance) {
+        walletBalance.value = balance;
+      });
+    }
   }
 
   void _fetchProfileData() {
@@ -47,6 +58,7 @@ class CustomerHomeController extends GetxController {
   void onClose() {
     _ticketSubscription?.cancel();
     _profileSubscription?.cancel();
+    _walletSubscription?.cancel();
     super.onClose();
   }
 

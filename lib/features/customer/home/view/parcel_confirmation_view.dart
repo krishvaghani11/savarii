@@ -70,10 +70,10 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: Image.asset(
-        AppAssets.parcelBoxImage, // Replace with your actual 3D box asset path
+        AppAssets.parcelSuccessImage, // Using the specific success asset
         height: 200,
         width: 200,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) => Container(
           height: 200,
           width: 200,
@@ -82,7 +82,7 @@ class ParcelConfirmationView extends GetView<ParcelConfirmationController> {
             borderRadius: BorderRadius.circular(24),
           ),
           child: const Icon(
-            Icons.inventory_2,
+            Icons.local_shipping,
             size: 80,
             color: AppColors.primaryAccent,
           ),

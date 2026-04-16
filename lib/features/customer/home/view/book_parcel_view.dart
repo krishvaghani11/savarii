@@ -86,14 +86,14 @@ class BookParcelView extends GetView<BookParcelController> {
                             _buildLabel('FULL NAME'),
                             _buildInputField(
                               controller: controller.fullNameController,
-                              hint: 'John Doe',
+                              hint: 'Enter sender full name',
                               prefixIcon: Icons.badge_outlined,
                             ),
                             const SizedBox(height: 16),
                             _buildLabel('MOBILE NUMBER'),
                             _buildInputField(
                               controller: controller.mobileController,
-                              hint: '98765 43210',
+                              hint: 'Enter mobile number',
                               keyboardType: TextInputType.phone,
                               prefixText: '+91',
                             ),
@@ -101,7 +101,7 @@ class BookParcelView extends GetView<BookParcelController> {
                             _buildLabel('EMAIL ID'),
                             _buildInputField(
                               controller: controller.emailController,
-                              hint: 'john@example.com',
+                              hint: 'Enter email address (Optional)',
                               keyboardType: TextInputType.emailAddress,
                               prefixIcon: Icons.alternate_email,
                             ),
@@ -120,14 +120,14 @@ class BookParcelView extends GetView<BookParcelController> {
                             _buildLabel('FULL NAME'),
                             _buildInputField(
                               controller: controller.receiverNameController,
-                              hint: 'Jane Doe',
+                              hint: 'Enter receiver full name',
                               prefixIcon: Icons.badge_outlined,
                             ),
                             const SizedBox(height: 16),
                             _buildLabel('MOBILE NUMBER'),
                             _buildInputField(
                               controller: controller.receiverMobileController,
-                              hint: '91234 56789',
+                              hint: 'Enter mobile number',
                               keyboardType: TextInputType.phone,
                               prefixText: '+91',
                             ),
@@ -283,20 +283,20 @@ class BookParcelView extends GetView<BookParcelController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildLabel('PICKUP LOCATION'),
-                  _buildInputField(
+                  _buildCityAutocomplete(
                     controller: controller.pickupController,
                     hint: 'Enter pickup address',
-                    prefixIcon: Icons.search,
+                    icon: Icons.search,
                   ),
                   _buildResidentDetails(isPickup: true),
                   _buildAddResidentButton(isPickup: true, context: context),
                   const SizedBox(height: 24),
                   
                   _buildLabel('DROP LOCATION'),
-                  _buildInputField(
+                  _buildCityAutocomplete(
                     controller: controller.dropController,
                     hint: 'Enter delivery address',
-                    prefixIcon: Icons.near_me,
+                    icon: Icons.near_me,
                   ),
                   _buildResidentDetails(isPickup: false),
                   _buildAddResidentButton(isPickup: false, context: context),
@@ -495,6 +495,106 @@ class BookParcelView extends GetView<BookParcelController> {
     );
   }
 
+  Widget _buildCityAutocomplete({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+  }) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) async {
+        if (textEditingValue.text.isEmpty) {
+          return const Iterable<String>.empty();
+        }
+        // Fetch suggestions and map to city name string
+        final suggestions = await this.controller.getCitySuggestions(textEditingValue.text);
+        return suggestions.map((s) => s.city).toList();
+      },
+      onSelected: (String selection) {
+        controller.text = selection;
+      },
+      fieldViewBuilder: (
+        BuildContext context,
+        TextEditingController fieldTextEditingController,
+        FocusNode fieldFocusNode,
+        VoidCallback onFieldSubmitted,
+      ) {
+        // Sync the passed controller with the field's controller
+        fieldTextEditingController.text = controller.text;
+        fieldTextEditingController.addListener(() {
+          controller.text = fieldTextEditingController.text;
+        });
+
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F8FA),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppColors.secondaryGreyBlue, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: fieldTextEditingController,
+                  focusNode: fieldFocusNode,
+                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryDark),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onFieldSubmitted: (String value) {
+                    onFieldSubmitted();
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      optionsViewBuilder: (
+        BuildContext context,
+        AutocompleteOnSelected<String> onSelected,
+        Iterable<String> options,
+      ) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.white,
+            child: SizedBox(
+              height: 200.0,
+              width: MediaQuery.of(context).size.width - 80, // Approximate width
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final String option = options.elementAt(index);
+                  return GestureDetector(
+                    onTap: () {
+                      onSelected(option);
+                    },
+                    child: ListTile(
+                      title: Text(option, style: AppTextStyles.bodyMedium),
+                      leading: const Icon(Icons.location_city, color: AppColors.primaryAccent, size: 20),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -539,28 +639,36 @@ class BookParcelView extends GetView<BookParcelController> {
           ),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: controller.continueToReview,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryAccent,
-          minimumSize: const Size(double.infinity, 54),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Continue to Review',
-              style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+      child: Obx(() {
+        return ElevatedButton(
+          onPressed: controller.isLoading.value ? null : controller.continueToReview,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryAccent,
+            minimumSize: const Size(double.infinity, 54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward, color: AppColors.white, size: 18),
-          ],
-        ),
-      ),
+            elevation: 0,
+          ),
+          child: controller.isLoading.value
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Continue to Review',
+                      style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward, color: AppColors.white, size: 18),
+                  ],
+                ),
+        );
+      }),
     );
   }
 }

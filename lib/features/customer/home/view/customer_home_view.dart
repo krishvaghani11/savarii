@@ -236,13 +236,13 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildActionCard(
+              child: Obx(() => _buildActionCard(
                 title: 'Wallet',
-                subtitle: '₹${controller.walletBalance} Balance',
+                subtitle: '₹${controller.walletBalance.value.toStringAsFixed(2)} Balance',
                 icon: Icons.account_balance_wallet,
                 iconColor: Colors.teal,
                 onTap: controller.goToWallet,
-              ),
+              )),
             ),
           ],
         ),

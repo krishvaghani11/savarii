@@ -47,19 +47,15 @@ class WalletView extends GetView<WalletController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. Main Balance Card
+              // 1. Main Balance Card (Redesigned)
               _buildBalanceCard(),
               const SizedBox(height: 32),
 
-              // 2. Quick Actions
-              _buildQuickActions(),
-              const SizedBox(height: 32),
-
-              // 3. Recent Transactions
+              // 2. Recent Transactions Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Recent Transactions', style: AppTextStyles.h3),
+                  Text('Recent Transactions', style: AppTextStyles.h3.copyWith(fontSize: 16)),
                   TextButton(
                     onPressed: controller.viewAllTransactions,
                     child: Text(
@@ -74,6 +70,7 @@ class WalletView extends GetView<WalletController> {
               ),
               const SizedBox(height: 8),
 
+              // 3. Transactions List
               _buildTransactionsList(),
 
               const SizedBox(height: 20), // Bottom padding
@@ -90,18 +87,11 @@ class WalletView extends GetView<WalletController> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF2A2D3E), // Dark Navy/Grey
-            AppColors.primaryDark,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFF2A2D3E), // Solid dark color matching the mockup
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryDark.withOpacity(0.3),
+            color: const Color(0xFF2A2D3E).withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -143,118 +133,57 @@ class WalletView extends GetView<WalletController> {
                 child: const Icon(
                   Icons.account_balance_wallet,
                   color: AppColors.white,
-                  size: 28,
+                  size: 24,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              // Add Money Button
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: controller.addMoney,
-                  icon: const Icon(Icons.add, color: AppColors.white, size: 20),
-                  label: Text('Add Money', style: AppTextStyles.buttonText),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryAccent, // Red
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
+          
+          // Add Money Button (Pill shaped)
+          ElevatedButton.icon(
+            onPressed: controller.addMoney,
+            icon: const Icon(Icons.add, color: AppColors.white, size: 18),
+            label: Text('Add Money', style: AppTextStyles.buttonText.copyWith(fontSize: 14)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryAccent, // Red
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24), // Pill shape
               ),
-              const SizedBox(width: 16),
-              // Transfer Button
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: controller.transferMoney,
-                  icon: const Icon(
-                    Icons.send,
-                    color: AppColors.white,
-                    size: 18,
-                  ),
-                  // Used send as closest to transfer arrow
-                  label: Text('Transfer', style: AppTextStyles.buttonText),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.white.withOpacity(0.15),
-                    // Semi-transparent
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildActionItem(
-          icon: Icons.qr_code_scanner,
-          label: 'Scan',
-          onTap: controller.scanQR,
-        ),
-        _buildActionItem(
-          icon: Icons.credit_card,
-          label: 'Cards',
-          onTap: controller.manageCards,
-        ),
-        _buildActionItem(
-          icon: Icons.card_giftcard,
-          label: 'Rewards',
-          onTap: controller.viewRewards,
-        ),
-        _buildActionItem(
-          icon: Icons.more_horiz,
-          label: 'More',
-          onTap: controller.moreOptions,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionItem({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.secondaryGreyBlue.withOpacity(0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
-            child: Icon(icon, color: AppColors.primaryAccent, size: 24),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.secondaryGreyBlue,
-              fontWeight: FontWeight.w500,
+          
+          const SizedBox(height: 16),
+          
+          // View Transactions Button (Full width, dark outlined)
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: controller.viewAllTransactions,
+              icon: const Icon(
+                Icons.list_alt,
+                color: AppColors.primaryAccent,
+                size: 18,
+              ),
+              label: Text(
+                'View Transactions',
+                style: AppTextStyles.buttonText.copyWith(
+                  color: AppColors.primaryAccent,
+                  fontSize: 14,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: AppColors.white.withOpacity(0.05),
+                side: BorderSide(
+                  color: AppColors.primaryAccent.withOpacity(0.5),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
             ),
           ),
         ],
@@ -266,17 +195,49 @@ class WalletView extends GetView<WalletController> {
     return Obx(
       () => Column(
         children: controller.recentTransactions.map((tx) {
-          // Determine icon based on transaction type
+          bool isCredit = tx['isCredit'] ?? false;
+          
+          // Determine icon and colors based on transaction type
           IconData txIcon;
-          if (tx['iconType'] == 'ride') {
-            txIcon = Icons.directions_car;
-          } else if (tx['iconType'] == 'wallet') {
-            txIcon = Icons.account_balance_wallet;
-          } else {
-            txIcon = Icons.inventory_2;
+          Color iconBgColor;
+          Color iconColor;
+
+          switch (tx['iconType']) {
+            case 'wallet':
+              txIcon = Icons.account_balance_wallet;
+              iconBgColor = Colors.green.shade50;
+              iconColor = Colors.green.shade600;
+              break;
+            case 'ticket':
+              txIcon = Icons.confirmation_number;
+              iconBgColor = Colors.blue.shade50;
+              iconColor = Colors.blue.shade600;
+              break;
+            case 'parcel':
+              txIcon = Icons.local_shipping;
+              iconBgColor = Colors.orange.shade50;
+              iconColor = Colors.orange.shade600;
+              break;
+            case 'ride':
+              txIcon = Icons.directions_car;
+              iconBgColor = Colors.purple.shade50;
+              iconColor = Colors.purple.shade600;
+              break;
+            default:
+              txIcon = isCredit
+                  ? Icons.add_circle_outline
+                  : Icons.remove_circle_outline;
+              iconBgColor = isCredit
+                  ? Colors.green.shade50
+                  : Colors.red.shade50;
+              iconColor = isCredit
+                  ? Colors.green.shade600
+                  : Colors.red.shade400;
           }
 
-          return Container(
+          return GestureDetector(
+            onTap: () => controller.showTransactionDetails(tx),
+            child: Container(
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -290,54 +251,91 @@ class WalletView extends GetView<WalletController> {
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Left Icon
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.lightBackground,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(txIcon, color: AppColors.primaryDark, size: 24),
-                ),
-                const SizedBox(width: 16),
-
-                // Middle Details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tx['title'],
-                        style: AppTextStyles.h3.copyWith(fontSize: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left Icon
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: iconBgColor,
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${tx['date']} • ${tx['status']}',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.secondaryGreyBlue,
+                      child: Icon(txIcon, color: iconColor, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+
+                    // Middle Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tx['title'] ?? 'Transaction',
+                            style: AppTextStyles.h3.copyWith(fontSize: 15),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${tx['date'] ?? ''} • ${tx['status'] ?? 'Completed'}',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.secondaryGreyBlue,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Right Amount — green for credit, red for debit
+                    Text(
+                      tx['amount'] ?? '',
+                      style: AppTextStyles.h3.copyWith(
+                        fontSize: 15,
+                        color: isCredit
+                            ? Colors.green.shade600
+                            : Colors.red.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Download Invoice Button
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () => controller.downloadInvoice(tx),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.download_outlined,
+                          color: AppColors.primaryAccent,
+                          size: 14,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Right Amount
-                Text(
-                  tx['amount'],
-                  style: AppTextStyles.h3.copyWith(
-                    fontSize: 16,
-                    color: tx['isCredit']
-                        ? Colors.green.shade600
-                        : AppColors.primaryDark,
+                        const SizedBox(width: 4),
+                        Text(
+                          'Download Invoice',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.primaryAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-          );
+          ), // closes Container
+          ); // closes GestureDetector
         }).toList(),
       ),
     );
   }
-}
+}

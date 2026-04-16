@@ -14,7 +14,24 @@ import 'package:savarii/features/customer/home/bindings/book_parcel_binding.dart
 import 'package:savarii/features/customer/home/bindings/book_ticket_binding.dart';
 import 'package:savarii/features/customer/home/bindings/booking_confirmation_binding.dart';
 import 'package:savarii/features/customer/home/bindings/bookings_binding.dart';
-import 'package:savarii/features/customer/home/bindings/cancel_booking_binding.dart';
+import 'package:savarii/features/customer/home/bindings/wallet_confirmation_binding.dart';
+import 'package:savarii/features/customer/home/bindings/wallet_topups_binding.dart';
+import 'package:savarii/features/customer/home/view/wallet_confirmation_view.dart';
+import 'package:savarii/features/customer/home/view/wallet_topups_view.dart';
+import 'package:savarii/features/driver/binding/driver_forgot_password_binding.dart';
+import 'package:savarii/features/driver/binding/driver_login_binding.dart';
+import 'package:savarii/features/driver/binding/driver_signup_binding.dart';
+import 'package:savarii/features/driver/view/driver_forgot_password_view.dart';
+import 'package:savarii/features/driver/view/driver_login_view.dart';
+import 'package:savarii/features/driver/view/driver_signup_view.dart';
+import 'package:savarii/features/vender/bindings/add_driver_binding.dart';
+import 'package:savarii/features/vender/bindings/driver_management_binding.dart';
+import 'package:savarii/features/vender/view/add_driver_view.dart';
+import 'package:savarii/features/vender/view/driver_management_view.dart';
+import '../features/customer/home/bindings/cancel_booking_binding.dart';
+import '../features/customer/home/view/cancel_booking_view.dart';
+import '../features/customer/home/bindings/cancel_parcel_binding.dart';
+import '../features/customer/home/view/cancel_parcel_view.dart';
 import 'package:savarii/features/customer/home/bindings/customer_select_points_binding.dart';
 import 'package:savarii/features/customer/home/bindings/edit_profile_binding.dart';
 import 'package:savarii/features/customer/home/bindings/help_support_binding.dart';
@@ -41,7 +58,6 @@ import 'package:savarii/features/customer/home/view/book_parcel_view.dart';
 import 'package:savarii/features/customer/home/view/book_ticket_view.dart';
 import 'package:savarii/features/customer/home/view/booking_confirmation_view.dart';
 import 'package:savarii/features/customer/home/view/bookings_view.dart';
-import 'package:savarii/features/customer/home/view/cancel_booking_view.dart';
 import 'package:savarii/features/customer/home/view/customer_select_points_view.dart';
 import 'package:savarii/features/customer/home/view/edit_profile_view.dart';
 import 'package:savarii/features/customer/home/view/help_support_view.dart';
@@ -290,10 +306,27 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.cancelParcel,
+      page: () => const CancelParcelView(),
+      binding: CancelParcelBinding(),
+    ),
+    GetPage(
       name: AppRoutes.cancelBooking,
       page: () => const CancelBookingView(),
       binding: CancelBookingBinding(),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.walletTopups,
+      page: () => const WalletTopupsView(),
+      binding: WalletTopupsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.walletConfirmation,
+      page: () => const WalletConfirmationView(),
+      binding: WalletConfirmationBinding(),
+      transition: Transition.fadeIn, 
     ),
 
 
@@ -440,5 +473,42 @@ class AppPages {
       binding: CustomerForgotPasswordBinding(),
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      name: AppRoutes.vendorDriverManagement,
+      page: () => const DriverManagementView(),
+      binding: DriverManagementBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(name: AppRoutes.addDriver,
+     page: () => const AddDriverView(),
+     binding: AddDriverBinding(),
+     transition: Transition.rightToLeft,
+    ),
+
+
+    //driver side routes
+    GetPage(name: AppRoutes.driverLogin,
+     page: () => const DriverLoginView(),
+     binding: DriverLoginBinding(),
+     transition: Transition.rightToLeft,
+    ),
+    GetPage(
+  name: AppRoutes.driverSignup,
+  page: () => const DriverSignupView(),
+  binding: DriverSignupBinding(),
+  transition: Transition.rightToLeft,
+   ),
+   GetPage(
+  name: AppRoutes.driverForgotPassword,
+  page: () => const DriverForgotPasswordView(),
+  binding: DriverForgotPasswordBinding(),
+  transition: Transition.rightToLeft,
+  ),
+  GetPage(
+  name: AppRoutes.driverLocationAccess,
+  page: () => const LocationAccessView(),
+  binding: LocationAccessBinding(),
+  transition: Transition.rightToLeft,
+),
   ];
 }

@@ -34,5 +34,9 @@ class RoleSelectionController extends GetxController {
       // Vendor → Vendor login (OTP + registration flow)
       Get.toNamed(AppRoutes.vendorLogin);
     }
+    else if (selectedRole.value == 'driver') {
+      // Driver → Driver login (OTP + registration flow)
+      Get.toNamed(AppRoutes.driverLogin);
+    }
   }
 }
