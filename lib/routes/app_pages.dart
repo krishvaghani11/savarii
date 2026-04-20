@@ -18,15 +18,34 @@ import 'package:savarii/features/customer/home/bindings/wallet_confirmation_bind
 import 'package:savarii/features/customer/home/bindings/wallet_topups_binding.dart';
 import 'package:savarii/features/customer/home/view/wallet_confirmation_view.dart';
 import 'package:savarii/features/customer/home/view/wallet_topups_view.dart';
+import 'package:savarii/features/driver/binding/driver_documents_binding.dart';
 import 'package:savarii/features/driver/binding/driver_forgot_password_binding.dart';
 import 'package:savarii/features/driver/binding/driver_login_binding.dart';
 import 'package:savarii/features/driver/binding/driver_signup_binding.dart';
+import 'package:savarii/features/driver/binding/driver_support_binding.dart';
+import 'package:savarii/features/driver/binding/edit_driver_profile_binding.dart';
+import 'package:savarii/features/driver/view/driver_documents_view.dart';
 import 'package:savarii/features/driver/view/driver_forgot_password_view.dart';
 import 'package:savarii/features/driver/view/driver_login_view.dart';
 import 'package:savarii/features/driver/view/driver_signup_view.dart';
+import 'package:savarii/features/driver/view/driver_location_access_view.dart';
+import 'package:savarii/features/driver/binding/driver_location_access_binding.dart';
+import 'package:savarii/features/driver/view/driver_home_view.dart';
+import 'package:savarii/features/driver/binding/driver_home_binding.dart';
+import 'package:savarii/features/driver/view/driver_profile_view.dart';
+import 'package:savarii/features/driver/binding/driver_profile_binding.dart';
+import 'package:savarii/features/driver/view/driver_support_view.dart';
+import 'package:savarii/features/driver/view/edit_driver_profile_view.dart';
+import 'package:savarii/features/driver/view/driver_settings_view.dart';
+import 'package:savarii/features/driver/view/driver_main_view.dart';
+import 'package:savarii/features/driver/view/driver_bus_details_view.dart';
+import 'package:savarii/features/driver/binding/driver_main_binding.dart';
 import 'package:savarii/features/vender/bindings/add_driver_binding.dart';
+import 'package:savarii/features/vender/bindings/edit_driver_binding.dart';
 import 'package:savarii/features/vender/bindings/driver_management_binding.dart';
 import 'package:savarii/features/vender/view/add_driver_view.dart';
+import 'package:savarii/features/vender/view/driver_details_view.dart';
+import 'package:savarii/features/vender/view/edit_driver_view.dart';
 import 'package:savarii/features/vender/view/driver_management_view.dart';
 import '../features/customer/home/bindings/cancel_booking_binding.dart';
 import '../features/customer/home/view/cancel_booking_view.dart';
@@ -479,11 +498,22 @@ class AppPages {
       binding: DriverManagementBinding(),
       transition: Transition.rightToLeft,
     ),
-    GetPage(name: AppRoutes.addDriver,
-     page: () => const AddDriverView(),
-     binding: AddDriverBinding(),
-     transition: Transition.rightToLeft,
-    ),
+     GetPage(name: AppRoutes.addDriver,
+      page: () => const AddDriverView(),
+      binding: AddDriverBinding(),
+      transition: Transition.rightToLeft,
+     ),
+     GetPage(
+       name: AppRoutes.driverDetails,
+       page: () => const DriverDetailsView(),
+       transition: Transition.rightToLeft,
+     ),
+     GetPage(
+       name: AppRoutes.editDriver,
+       page: () => const EditDriverView(),
+       binding: EditDriverBinding(),
+       transition: Transition.rightToLeft,
+     ),
 
 
     //driver side routes
@@ -506,8 +536,54 @@ class AppPages {
   ),
   GetPage(
   name: AppRoutes.driverLocationAccess,
-  page: () => const LocationAccessView(),
-  binding: LocationAccessBinding(),
+  page: () => const DriverLocationAccessView(),
+  binding: DriverLocationAccessBinding(),
+  transition: Transition.rightToLeft,
+),
+  GetPage(
+  name: AppRoutes.driverHome,
+  page: () => const DriverHomeView(),
+  binding: DriverHomeBinding(),
+  transition: Transition.rightToLeft,
+),
+  GetPage(
+  name: AppRoutes.driverProfile,
+  page: () => const DriverProfileView(),
+  binding: DriverProfileBinding(),
+  transition: Transition.rightToLeft,
+),
+    GetPage(
+      name: AppRoutes.editDriverProfile,
+      page: () => const EditDriverProfileView(),
+      binding: EditDriverProfileBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.driverSupport,
+      page: () => const DriverSupportView(),
+      binding: DriverSupportBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.driverSettings,
+      page: () => const DriverSettingsView(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.driverMain,
+      page: () => const DriverMainView(),
+      binding: DriverMainBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.driverBusDetails,
+      page: () => const DriverBusDetailsView(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+  name: AppRoutes.driverDocuments,
+  page: () => const DriverDocumentsView(),
+  binding: DriverDocumentsBinding(),
   transition: Transition.rightToLeft,
 ),
   ];

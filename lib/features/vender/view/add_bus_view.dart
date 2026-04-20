@@ -37,7 +37,10 @@ class AddBusView extends GetView<AddBusController> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // 1. BUS DETAILS
-                      _buildSectionHeader(Icons.directions_bus, 'add_bus.bus_details_section'.tr()),
+                      _buildSectionHeader(
+                        Icons.directions_bus,
+                        'add_bus.bus_details_section'.tr(),
+                      ),
                       _buildCardContainer(
                         child: Column(
                           children: [
@@ -69,7 +72,10 @@ class AddBusView extends GetView<AddBusController> {
                       const SizedBox(height: 24),
 
                       // 2. BUS TYPE
-                      _buildSectionHeader(Icons.category, 'add_bus.bus_type_section'.tr()),
+                      _buildSectionHeader(
+                        Icons.category,
+                        'add_bus.bus_type_section'.tr(),
+                      ),
                       _buildCardContainer(
                         child: Obx(
                           () => Wrap(
@@ -84,7 +90,10 @@ class AddBusView extends GetView<AddBusController> {
                       const SizedBox(height: 24),
 
                       // 3. ROUTE & SCHEDULE
-                      _buildSectionHeader(Icons.alt_route, 'add_bus.route_schedule_section'.tr()),
+                      _buildSectionHeader(
+                        Icons.alt_route,
+                        'add_bus.route_schedule_section'.tr(),
+                      ),
                       _buildCardContainer(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -165,8 +174,8 @@ class AddBusView extends GetView<AddBusController> {
                                 children: List.generate(
                                   controller.savedBoardingPoints.length,
                                   (index) => _buildSavedPoint(
-                                      controller.savedBoardingPoints[index],
-                                      () => controller.removeBoardingPoint(index),
+                                    controller.savedBoardingPoints[index],
+                                    () => controller.removeBoardingPoint(index),
                                   ),
                                 ),
                               ),
@@ -206,8 +215,8 @@ class AddBusView extends GetView<AddBusController> {
                                 children: List.generate(
                                   controller.savedDroppingPoints.length,
                                   (index) => _buildSavedPoint(
-                                      controller.savedDroppingPoints[index],
-                                      () => controller.removeDroppingPoint(index),
+                                    controller.savedDroppingPoints[index],
+                                    () => controller.removeDroppingPoint(index),
                                   ),
                                 ),
                               ),
@@ -263,7 +272,75 @@ class AddBusView extends GetView<AddBusController> {
                       ),
                       _buildCardContainer(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Select Driver Dropdown
+                            Text(
+                              'Select a Driver',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.primaryDark,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Obx(() {
+                              if (controller.isDriversLoading.value) {
+                                return const Center(
+                                  child: LinearProgressIndicator(),
+                                );
+                              }
+
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondaryGreyBlue
+                                      .withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: DropdownButton<String>(
+                                  value:
+                                      controller.selectedDriverId.value.isEmpty
+                                      ? null
+                                      : controller.selectedDriverId.value,
+                                  underline: const SizedBox(),
+                                  hint: Text(
+                                    controller.vendorDrivers.isEmpty
+                                        ? 'No drivers found'
+                                        : 'Choose from your fleet',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.secondaryGreyBlue
+                                          .withOpacity(0.6),
+                                    ),
+                                  ),
+                                  isExpanded: true,
+                                  icon: const Icon(
+                                    Icons.arrow_drop_down_circle_outlined,
+                                    color: AppColors.primaryAccent,
+                                    size: 20,
+                                  ),
+                                  items: controller.vendorDrivers.map((driver) {
+                                    return DropdownMenuItem<String>(
+                                      value: driver['id'],
+                                      child: Text(
+                                        '${driver['name']}',
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
+                                              color: AppColors.primaryDark,
+                                            ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) =>
+                                      controller.onDriverSelected(val),
+                                ),
+                              );
+                            }),
+
+                            const SizedBox(height: 20),
+
+                            // Removed Divider from here
                             _buildInputField(
                               'add_bus.driver_name'.tr(),
                               'e.g. John Doe',
@@ -277,6 +354,13 @@ class AddBusView extends GetView<AddBusController> {
                               controller.driverMobileController,
                               keyboardType: TextInputType.phone,
                               validator: controller.validateRequired,
+                            ),
+                            const SizedBox(height: 16),
+                            _buildInputField(
+                              'Email Address',
+                              'e.g. driver@savarii.com',
+                              controller.driverEmailController,
+                              keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 16),
                             _buildInputField(

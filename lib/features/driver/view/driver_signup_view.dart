@@ -60,7 +60,16 @@ class DriverSignupView extends GetView<DriverSignupController> {
                 ),
                 const SizedBox(height: 20),
 
-                // 3. Email Field
+                // 3. Phone Field
+                _buildInputLabel('Phone Number'),
+                _buildInputField(
+                  controller: controller.phoneController,
+                  hintText: '1234567890',
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 20),
+
+                // 4. Email Field
                 _buildInputLabel('Email Address'),
                 _buildInputField(
                   controller: controller.emailController,
@@ -158,8 +167,8 @@ class DriverSignupView extends GetView<DriverSignupController> {
                 const SizedBox(height: 24),
 
                 // 7. Sign Up Button
-                ElevatedButton(
-                  onPressed: controller.signUp,
+                Obx(() => ElevatedButton(
+                  onPressed: controller.isLoading.value ? null : controller.signUp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryAccent,
                     minimumSize: const Size(double.infinity, 56),
@@ -169,18 +178,20 @@ class DriverSignupView extends GetView<DriverSignupController> {
                     elevation: 4,
                     shadowColor: AppColors.primaryAccent.withOpacity(0.4),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Sign Up',
-                        style: AppTextStyles.buttonText.copyWith(fontSize: 16),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, color: AppColors.white, size: 20),
-                    ],
-                  ),
-                ),
+                  child: controller.isLoading.value
+                      ? const CircularProgressIndicator(color: AppColors.white)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Sign Up',
+                              style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward, color: AppColors.white, size: 20),
+                          ],
+                        ),
+                )),
                 const SizedBox(height: 32),
 
                 // 8. Log In Link

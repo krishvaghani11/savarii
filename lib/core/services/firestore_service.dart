@@ -532,4 +532,87 @@ class FirestoreService extends GetxService {
       return 0.0;
     });
   }
+
+  // --- Driver Methods ---
+  Future<String> uploadDriverFile(
+    String vendorId,
+    String driverId,
+    File file,
+    String type,
+  ) async {
+    try {
+      final extension = file.path.split('.').last;
+      final ref = _storage
+          .ref()
+          .child('drivers')
+          .child(vendorId)
+          .child(driverId)
+          .child('$type.$extension');
+      await ref.putFile(file);
+      return await ref.getDownloadURL();
+    } catch (e) {
+      print('Error uploading driver file ($type): $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addDriver(Map<String, dynamic> driverData) async {
+    await _db.collection('drivers').doc(driverData['id']).set(driverData);
+  }
+
+  Stream<List<Map<String, dynamic>>> getVendorDriversStream(String vendorId) {
+    return _db
+        .collection('drivers')
+        .where('vendorId', isEqualTo: vendorId)
+        .snapshots()
+        .map((snapshot) {
+          final allDocs = snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+          return allDocs.where((doc) => doc['status'] != 'REMOVED' && doc['status'] != 'driver deleted').toList();
+        });
+  }
+
+  Future<void> updateDriverStatus(String driverId, String status) async {
+    await _db.collection('drivers').doc(driverId).update({'status': status});
+  }
+
+  Future<void> updateDriverData(String driverId, Map<String, dynamic> data) async {
+    await _db.collection('drivers').doc(driverId).update(data);
+  }
+
+  Future<void> deleteDriver(String driverId) async {
+    await _db.collection('drivers').doc(driverId).delete();
+  }
+
+  // --- Driver Document Sub-collection Methods ---
+
+  /// Saves (or overwrites) a single document record under drivers/{driverUid}/documents/{docId}
+  Future<void> saveDriverDocument(
+    String driverUid,
+    String docId,
+    Map<String, dynamic> data,
+  ) async {
+    await _db
+        .collection('drivers')
+        .doc(driverUid)
+        .collection('documents')
+        .doc(docId)
+        .set(data, SetOptions(merge: true));
+  }
+
+  /// Returns all documents stored in drivers/{driverUid}/documents sub-collection
+  Future<List<Map<String, dynamic>>> getDriverDocuments(String driverUid) async {
+    try {
+      final snapshot = await _db
+          .collection('drivers')
+          .doc(driverUid)
+          .collection('documents')
+          .get();
+      return snapshot.docs
+          .map((doc) => {'id': doc.id, ...doc.data()})
+          .toList();
+    } catch (e) {
+      print('Error fetching driver documents: $e');
+      return [];
+    }
+  }
 }

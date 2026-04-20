@@ -63,6 +63,8 @@ class AuthController extends GetxController {
              Get.offAllNamed(AppRoutes.locationAccess); 
           } else if (userModel.role == 'vendor') {
              Get.offAllNamed(AppRoutes.vendorLocationAccess); 
+          } else if (userModel.role == 'driver') {
+             Get.offAllNamed(AppRoutes.driverLocationAccess);
           }
         } 
         // 2. If app is starting up (cold start from Splash or Role Selection), go directly to the Main Dashboard
@@ -71,6 +73,8 @@ class AuthController extends GetxController {
              Get.offAllNamed(AppRoutes.customerMainLayout); 
           } else if (userModel.role == 'vendor') {
              Get.offAllNamed(AppRoutes.vendorMain); 
+          } else if (userModel.role == 'driver') {
+             Get.offAllNamed(AppRoutes.driverMain);
           }
         }
       } else {
@@ -103,6 +107,5 @@ class AuthController extends GetxController {
     isLoggedIn.value = true;
   }
 }
-
 
 

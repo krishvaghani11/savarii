@@ -140,8 +140,8 @@ class DriverLoginView extends GetView<DriverLoginController> {
                 const SizedBox(height: 24),
 
                 // 6. Continue Button
-                ElevatedButton(
-                  onPressed: controller.login,
+                Obx(() => ElevatedButton(
+                  onPressed: controller.isLoading.value ? null : controller.login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryAccent,
                     minimumSize: const Size(double.infinity, 56),
@@ -151,18 +151,20 @@ class DriverLoginView extends GetView<DriverLoginController> {
                     elevation: 4,
                     shadowColor: AppColors.primaryAccent.withOpacity(0.4),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Continue',
-                        style: AppTextStyles.buttonText.copyWith(fontSize: 16),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, color: AppColors.white, size: 20),
-                    ],
-                  ),
-                ),
+                  child: controller.isLoading.value
+                      ? const CircularProgressIndicator(color: AppColors.white)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Continue',
+                              style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward, color: AppColors.white, size: 20),
+                          ],
+                        ),
+                )),
                 const SizedBox(height: 32),
 
                 // 7. Sign Up Link

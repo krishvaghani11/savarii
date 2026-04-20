@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
@@ -21,6 +23,7 @@ class AddBusController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    fetchVendorDrivers();
     if (Get.arguments != null && Get.arguments['busId'] != null) {
       editBusId = Get.arguments['busId'];
       isEditing.value = true;
@@ -48,6 +51,7 @@ class AddBusController extends GetxController {
         final driver = data['driver'] as Map<String, dynamic>? ?? {};
         driverNameController.text = driver['name'] ?? '';
         driverMobileController.text = driver['mobile'] ?? '';
+        driverEmailController.text = driver['email'] ?? '';
         licenseController.text = driver['licenseNumber'] ?? '';
 
         if (route['boardingPoints'] != null) {
@@ -100,6 +104,7 @@ class AddBusController extends GetxController {
   final TextEditingController priceController = TextEditingController();
   final TextEditingController driverNameController = TextEditingController();
   final TextEditingController driverMobileController = TextEditingController();
+  final TextEditingController driverEmailController = TextEditingController();
   final TextEditingController licenseController = TextEditingController();
 
   // Reactive States
@@ -129,6 +134,76 @@ class AddBusController extends GetxController {
     'Non-AC Seater',
     'Luxury',
   ];
+
+  final RxList<Map<String, dynamic>> vendorDrivers = <Map<String, dynamic>>[].obs;
+  final RxString selectedDriverId = ''.obs;
+  final RxBool isDriversLoading = false.obs;
+
+  StreamSubscription<List<Map<String, dynamic>>>? _driversSubscription;
+
+  void fetchVendorDrivers() {
+    final uid = _auth.uid;
+    if (uid == null) return;
+
+    isDriversLoading.value = true;
+    print("Listening to drivers stream for Vendor: $uid...");
+
+    // Cancel any previous subscription before starting a new one
+    _driversSubscription?.cancel();
+
+    _driversSubscription = FirebaseFirestore.instance
+        .collection('drivers')
+        .where('vendorId', isEqualTo: uid)
+        .snapshots()
+        .map((snapshot) {
+          final allDocs = snapshot.docs
+              .map((doc) => {'id': doc.id, ...doc.data()})
+              .toList();
+          // Filter out deleted drivers (matches driver management screen logic)
+          return allDocs
+              .where((d) =>
+                  d['status'] != 'REMOVED' &&
+                  d['status'] != 'driver deleted')
+              .toList();
+        })
+        .listen(
+          (activeDocs) {
+            vendorDrivers.assignAll(activeDocs);
+            isDriversLoading.value = false;
+            print("AddBus driver stream updated: ${vendorDrivers.length} active drivers.");
+
+            // If the previously selected driver was deleted, clear the selection
+            if (selectedDriverId.value.isNotEmpty &&
+                !vendorDrivers.any((d) => d['id'] == selectedDriverId.value)) {
+              selectedDriverId.value = '';
+              driverNameController.clear();
+              driverMobileController.clear();
+              driverEmailController.clear();
+              licenseController.clear();
+              print("Selected driver was removed — cleared driver fields.");
+            }
+          },
+          onError: (e) {
+            print("Error in AddBus drivers stream: $e");
+            isDriversLoading.value = false;
+          },
+        );
+  }
+
+  void onDriverSelected(String? driverId) {
+    if (driverId == null || driverId.isEmpty) return;
+    
+    selectedDriverId.value = driverId;
+    final driver = vendorDrivers.firstWhereOrNull((d) => d['id'] == driverId);
+    
+    if (driver != null) {
+      print("Selected driver confirmed in controller: ${driver['name']}");
+      driverNameController.text = driver['name'] ?? '';
+      driverMobileController.text = driver['phone'] ?? '';
+      driverEmailController.text = driver['email'] ?? '';
+      licenseController.text = driver['dlNumber'] ?? '';
+    }
+  }
 
   // ─── Validators ────────────────────────────────────────────────────────
 
@@ -374,6 +449,30 @@ class AddBusController extends GetxController {
         return;
       }
 
+      // VALIDATE DRIVER ASSIGNMENT
+      final mobileInfo = driverMobileController.text.trim();
+      final licenseInfo = licenseController.text.trim();
+      
+      final QuerySnapshot driverQuery = await FirebaseFirestore.instance
+          .collection('drivers')
+          .where('vendorId', isEqualTo: uid)
+          .where('phone', isEqualTo: mobileInfo)
+          // Also optionally check license if provided, but phone is usually unique
+          .get();
+
+      String assignedDriverId = '';
+      if (driverQuery.docs.isEmpty) {
+         Get.snackbar(
+           'Driver Not Found', 
+           'No driver matched with this Mobile number in your fleet. Please add the Driver in the Management section first.',
+           snackPosition: SnackPosition.BOTTOM,
+           duration: const Duration(seconds: 4),
+         );
+         isLoading.value = false;
+         return;
+      }
+      assignedDriverId = driverQuery.docs.first.id;
+
       final busData = {
         // BUS DETAILS
         "vendorId": uid,
@@ -398,8 +497,10 @@ class AddBusController extends GetxController {
 
         // DRIVER
         "driver": {
+          "driverId": assignedDriverId,
           "name": driverNameController.text.trim(),
           "mobile": driverMobileController.text.trim(),
+          "email": driverEmailController.text.trim(),
           "licenseNumber": licenseController.text.trim(),
         },
 
@@ -411,27 +512,23 @@ class AddBusController extends GetxController {
       if (isEditing.value && editBusId != null) {
         busData.remove('isActive');
         busData.remove('createdAt');
-        
         await _firestore.updateBusData(editBusId!, busData);
-        Get.snackbar(
-          'Success',
-          'Bus updated successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.shade50,
-          colorText: Colors.green.shade800,
-        );
       } else {
         await _firestore.addBusData(busData);
-        Get.snackbar(
-          'Success',
-          'Bus added successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.shade50,
-          colorText: Colors.green.shade800,
-        );
       }
 
-      Get.offAllNamed(AppRoutes.vendorMain);
+      Get.snackbar(
+        'Success',
+        isEditing.value ? 'Bus updated successfully!' : 'Bus added successfully!',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Get.offAllNamed(AppRoutes.vendorMain);
+      });
     } catch (e) {
       Get.snackbar(
         "Save Failed",
@@ -447,6 +544,7 @@ class AddBusController extends GetxController {
 
   @override
   void onClose() {
+    _driversSubscription?.cancel();
     busNameController.dispose();
     busNumberController.dispose();
     totalSeatsController.dispose();
@@ -455,10 +553,11 @@ class AddBusController extends GetxController {
     priceController.dispose();
     driverNameController.dispose();
     driverMobileController.dispose();
+    driverEmailController.dispose();
     licenseController.dispose();
-    
+
     bpNameController.dispose();
-    dpNameController.dispose(); // NEW
+    dpNameController.dispose();
     rsNameController.dispose();
     rsDurationController.dispose();
     super.onClose();

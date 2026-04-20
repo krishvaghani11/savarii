@@ -1,54 +1,65 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:savarii/core/services/firestore_service.dart';
+import 'package:savarii/features/auth/controllers/auth_controller.dart';
+import 'package:savarii/routes/app_routes.dart';
 
 class DriverManagementController extends GetxController {
+  final FirestoreService _firestoreService = Get.find<FirestoreService>();
+  final AuthController _authController = Get.find<AuthController>();
   
-  // Mock Data matching your UI screenshot
-  final int totalDrivers = 42;
-  final int activeDrivers = 28;
-  final int onTripDrivers = 14;
+  final RxList<Map<String, dynamic>> drivers = <Map<String, dynamic>>[].obs;
+  
+  final RxInt totalDrivers = 0.obs;
+  final RxInt activeDrivers = 0.obs;
+  final RxInt onTripDrivers = 0.obs;
 
-  final RxList<Map<String, dynamic>> drivers = [
-    {
-      'id': 'd1',
-      'name': 'Rajesh Kumar',
-      'status': 'ACTIVE',
-      'phone': '+91 98765 43210',
-      'dl': '1420110012345',
-      // Placeholder image URL - replace with real assets/network images
-      'image': 'https://i.pravatar.cc/150?img=11', 
-    },
-    {
-      'id': 'd2',
-      'name': 'Arun Sharma',
-      'status': 'ON TRIP',
-      'phone': '+91 98765 43211',
-      'dl': '1420110015678',
-      'image': 'https://i.pravatar.cc/150?img=12',
-    },
-    {
-      'id': 'd3',
-      'name': 'Vikram Singh',
-      'status': 'ACTIVE',
-      'phone': '+91 98765 43212',
-      'dl': '1420110019900',
-      'image': 'https://i.pravatar.cc/150?img=13',
-    },
-  ].obs;
+  @override
+  void onInit() {
+    super.onInit();
+    _bindDrivers();
+  }
+
+  void _bindDrivers() {
+    final String vendorId = _authController.uid ?? '';
+    print("Binding drivers for Vendor ID: $vendorId");
+    
+    if (vendorId.isNotEmpty) {
+      // Clear before binding to ensure no stale data
+      drivers.clear();
+      
+      drivers.bindStream(_firestoreService.getVendorDriversStream(vendorId));
+      
+      // Calculate stats whenever drivers list changes
+      ever(drivers, (List<Map<String, dynamic>> driverList) {
+        print("Driver stream updated. Total drivers found: ${driverList.length}");
+        
+        totalDrivers.value = driverList.length;
+        activeDrivers.value = driverList.where((d) => d['status'] == 'ACTIVE' || d['status'] == 'AVAILABLE').length;
+        onTripDrivers.value = driverList.where((d) => d['status'] == 'ON TRIP').length;
+        
+        // Debug: Log names to help user find "Piyush"
+        for (var d in driverList) {
+           print("Driver: ${d['name']} (ID: ${d['id']}, Status: ${d['status']})");
+        }
+      });
+    } else {
+      print("Error: Vendor ID is empty. Cannot bind drivers.");
+    }
+  }
 
   void addDriver() {
     print("Navigating to Add Driver Screen...");
-    // TODO: Create the Add Driver Screen and route to it
-     Get.toNamed('/vendor-add-driver');
+    Get.toNamed('/vendor-add-driver');
   }
 
-  void viewDriverDetails(String id) {
-    print("Viewing details for driver ID: $id");
-    // Get.toNamed('/vendor-driver-details', arguments: {'driverId': id});
+  void viewDriverDetails(Map<String, dynamic> driver) {
+    print("Viewing details for driver ID: ${driver['id']}");
+    Get.toNamed(AppRoutes.driverDetails, arguments: driver);
   }
 
-  void showDriverOptions(String id) {
-    // Action for the 3-dot menu
+  void showDriverOptions(Map<String, dynamic> driver) {
+    final String id = driver['id'];
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(20),
@@ -62,12 +73,30 @@ class DriverManagementController extends GetxController {
             ListTile(
               leading: const Icon(Icons.edit, color: Colors.blue),
               title: const Text('Edit Driver'),
-              onTap: () => Get.back(),
+              onTap: () {
+                Get.back();
+                Get.toNamed(AppRoutes.editDriver, arguments: driver);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
               title: const Text('Remove Driver'),
-              onTap: () => Get.back(),
+              onTap: () async {
+                Get.back();
+                try {
+                  // Perform soft delete by updating status
+                  await _firestoreService.updateDriverStatus(id, 'driver deleted');
+                  Get.snackbar(
+                    'Success', 
+                    'Driver removed successfully',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red.shade50,
+                    colorText: Colors.red.shade900,
+                  );
+                } catch (e) {
+                  Get.snackbar('Error', 'Failed to remove driver: $e');
+                }
+              },
             ),
           ],
         ),

@@ -39,25 +39,16 @@ class DriverProfileView extends GetView<DriverProfileController> {
               const SizedBox(height: 16),
 
               // 2. Name & Join Date
-              Text(
-                controller.driverName,
+              Obx(() => Text(
+                controller.rxDriverName.value,
                 style: AppTextStyles.h1.copyWith(fontSize: 24, color: const Color(0xFF2A2D3E)), // Dark Navy
-              ),
+              )),
               const SizedBox(height: 4),
-              Text(
-                'Driver ID: ${controller.driverId}',
-                style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                controller.joinDate,
-                style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
-              ),
+              Obx(() => Text(
+                controller.rxMobileNumber.value,
+                style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue, fontSize: 14),
+              )),
               const SizedBox(height: 32),
-
-              // 3. Stats Row (Rating, Trips, Earnings)
-              _buildStatsRow(),
-              const SizedBox(height: 24),
 
               // 4. Details Card (Phone, Vehicle, DL)
               _buildDetailsCard(),
@@ -82,11 +73,6 @@ class DriverProfileView extends GetView<DriverProfileController> {
                 onTap: controller.openSupport,
               ),
               const SizedBox(height: 12),
-              _buildMenuTile(
-                icon: Icons.settings_outlined,
-                title: 'Settings',
-                onTap: controller.openSettings,
-              ),
               const SizedBox(height: 32),
 
               // 6. Log Out Button
@@ -125,13 +111,16 @@ class DriverProfileView extends GetView<DriverProfileController> {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.primaryAccent.withOpacity(0.3), width: 2),
           ),
-          child: const CircleAvatar(
+          child: Obx(() => CircleAvatar(
             radius: 50,
-            backgroundColor: Colors.transparent,
-            backgroundImage: NetworkImage(
-              'https://i.pravatar.cc/150?img=11', // Placeholder image matching the mockup vibe
-            ),
-          ),
+            backgroundColor: AppColors.secondaryGreyBlue.withOpacity(0.1),
+            backgroundImage: controller.rxProfileImageUrl.value.isNotEmpty
+                ? NetworkImage(controller.rxProfileImageUrl.value)
+                : null,
+            child: controller.rxProfileImageUrl.value.isEmpty
+                ? const Icon(Icons.person, size: 50, color: AppColors.primaryAccent)
+                : null,
+          )),
         ),
         // Verification Badge
         Positioned(
@@ -155,69 +144,6 @@ class DriverProfileView extends GetView<DriverProfileController> {
     );
   }
 
-  Widget _buildStatsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildStatCard(
-          icon: Icons.star,
-          value: controller.rating,
-          label: 'RATING',
-        ),
-        const SizedBox(width: 12),
-        _buildStatCard(
-          icon: Icons.swap_calls, // Closest match to the route icon
-          value: controller.totalTrips,
-          label: 'TRIPS',
-        ),
-        const SizedBox(width: 12),
-        _buildStatCard(
-          icon: Icons.account_balance_wallet_outlined,
-          value: controller.totalEarnings,
-          label: 'EARNINGS',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({required IconData icon, required String value, required String label}) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.primaryAccent, size: 24),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: AppTextStyles.h2.copyWith(fontSize: 18, color: const Color(0xFF2A2D3E)),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.secondaryGreyBlue,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildDetailsCard() {
     return Container(
@@ -233,27 +159,21 @@ class DriverProfileView extends GetView<DriverProfileController> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          _buildDetailRow(
-            icon: Icons.phone_android,
-            label: 'MOBILE NUMBER',
-            value: controller.mobileNumber,
-          ),
-          const SizedBox(height: 24),
-          _buildDetailRow(
-            icon: Icons.directions_bus_outlined,
-            label: 'VEHICLE DETAILS',
-            value: controller.vehicleDetails,
-          ),
-          const SizedBox(height: 24),
-          _buildDetailRow(
-            icon: Icons.badge_outlined,
-            label: 'DRIVING LICENSE',
-            value: controller.drivingLicense,
-          ),
-        ],
-      ),
+        child: Obx(() => Column(
+          children: [
+            _buildDetailRow(
+              icon: Icons.directions_bus_outlined,
+              label: 'VEHICLE DETAILS',
+              value: controller.rxVehicleDetails.value,
+            ),
+            const SizedBox(height: 24),
+            _buildDetailRow(
+              icon: Icons.badge_outlined,
+              label: 'DRIVING LICENSE',
+              value: controller.rxDrivingLicense.value,
+            ),
+          ],
+        )),
     );
   }
 

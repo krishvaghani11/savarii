@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:savarii/routes/app_routes.dart';
 
 class DriverLocationAccessController extends GetxController {
   
@@ -18,7 +19,7 @@ class DriverLocationAccessController extends GetxController {
     );
 
     // Route to the Driver Dashboard/Home
-    // Get.offAllNamed('/driver-home');
+    Get.offAllNamed(AppRoutes.driverMain);
   }
 
   void skipForNow() {
@@ -27,6 +28,6 @@ class DriverLocationAccessController extends GetxController {
     // User skipped. You might want to show a warning that features will be limited, 
     // or just let them proceed to the dashboard.
     
-    // Get.offAllNamed('/driver-home');
+    Get.offAllNamed(AppRoutes.driverMain);
   }
 }

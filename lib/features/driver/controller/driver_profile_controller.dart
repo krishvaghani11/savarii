@@ -1,20 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:savarii/features/auth/controllers/auth_controller.dart';
+
 class DriverProfileController extends GetxController {
   
-  // Mock Data mapped perfectly from the screenshot
-  final String driverName = "Rajesh Sharma";
-  final String driverId = "SAV-9821";
-  final String joinDate = "Member since July 2021";
-  
-  final String rating = "4.9/5";
-  final String totalTrips = "1.2k";
-  final String totalEarnings = "₹45k";
+  final rxDriverName = "".obs;
+  final rxMobileNumber = "".obs;
+  final rxJoinDate = "".obs;
+  final rxVehicleDetails = "N/A".obs;
+  final rxDrivingLicense = "N/A".obs;
+  final rxProfileImageUrl = "".obs;
 
-  final String mobileNumber = "+91 98765 43210";
-  final String vehicleDetails = "Bharat Benz GJ 01 AA 1234";
-  final String drivingLicense = "DL-20210056789";
+  @override
+  void onInit() {
+    super.onInit();
+    fetchDriverDetails();
+  }
+
+  Future<void> fetchDriverDetails() async {
+    final authController = Get.find<AuthController>();
+    final uid = authController.uid;
+    if (uid == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance.collection('drivers').doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        rxDriverName.value = data['name'] ?? 'Unknown Driver';
+        rxMobileNumber.value = data['phone'] ?? '';
+        rxDrivingLicense.value = data['dlNumber'] ?? data['licenseNumber'] ?? 'N/A';
+        rxProfileImageUrl.value = data['profileImageUrl'] ?? '';
+
+        // Fetch vehicle details by querying the buses collection for this driver's mobile
+        try {
+           final busQuery = await FirebaseFirestore.instance
+               .collection('buses')
+               .where('driver.mobile', isEqualTo: rxMobileNumber.value)
+               .get();
+               
+           if (busQuery.docs.isNotEmpty) {
+               final busData = busQuery.docs.first.data();
+               rxVehicleDetails.value = "${busData['busName'] ?? ''} - ${busData['busNumber'] ?? ''}";
+           } else {
+               rxVehicleDetails.value = "No Bus Assigned";
+           }
+        } catch (busError) {
+           print("Error fetching mapped bus: $busError");
+        }
+      }
+    } catch (e) {
+      print("Error fetching driver profile: $e");
+    }
+  }
 
   void showMoreOptions() {
     print("Opening top right menu...");
@@ -22,17 +61,17 @@ class DriverProfileController extends GetxController {
 
   void editProfile() {
     print("Navigating to Edit Profile...");
-    // Get.toNamed('/driver-edit-profile');
+     Get.toNamed('/edit-driver-profile');
   }
 
   void viewVehicleDocuments() {
     print("Navigating to Vehicle Documents...");
-    // Get.toNamed('/driver-vehicle-documents');
+     Get.toNamed('/driver-documents');
   }
 
   void openSupport() {
     print("Navigating to Support...");
-    // Get.toNamed('/support');
+     Get.toNamed('/driver-support');
   }
 
   void openSettings() {

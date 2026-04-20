@@ -67,6 +67,8 @@ class AppRoutes {
   static const String vendorDriverManagement = '/vendor-driver-management';
   static const String driverManagement = '/vendor-driver-management';
   static const String addDriver = '/vendor-add-driver';
+  static const String driverDetails = '/vendor-driver-details';
+  static const String editDriver = '/vendor-edit-driver';
 
 
 
@@ -75,4 +77,12 @@ class AppRoutes {
   static const String driverSignup = '/driver-signup';
   static const String driverForgotPassword = '/driver-forgot-password';
   static const String driverLocationAccess = '/driver-location-access';
+  static const String driverHome = '/driver-home';
+  static const String driverProfile = '/driver-profile';
+  static const String editDriverProfile = '/edit-driver-profile';
+  static const String driverSupport = '/driver-support';
+  static const String driverSettings = '/driver-settings';
+  static const String driverMain = '/driver-main';
+  static const String driverBusDetails = '/driver-bus-details';
+  static const String driverDocuments = '/driver-documents';
 }

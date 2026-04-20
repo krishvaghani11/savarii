@@ -5,8 +5,8 @@ import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/features/driver/controller/driver_location_access_controller.dart';
 
 
-class LocationAccessView extends GetView<DriverLocationAccessController> {
-  const LocationAccessView({super.key});
+class DriverLocationAccessView extends GetView<DriverLocationAccessController> {
+  const DriverLocationAccessView({super.key});
 
   @override
   Widget build(BuildContext context) {

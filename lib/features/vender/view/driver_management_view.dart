@@ -68,29 +68,29 @@ class DriverManagementView extends GetView<DriverManagementController> {
               const SizedBox(height: 24),
 
               // 3. Stats Cards
-              _buildStatCard(
+              Obx(() => _buildStatCard(
                 title: 'TOTAL DRIVERS',
                 value: controller.totalDrivers.toString(),
                 icon: Icons.people_alt_outlined,
                 iconColor: AppColors.primaryAccent,
                 bgColor: AppColors.primaryAccent.withOpacity(0.1),
-              ),
+              )),
               const SizedBox(height: 12),
-              _buildStatCard(
+              Obx(() => _buildStatCard(
                 title: 'ACTIVE NOW',
                 value: controller.activeDrivers.toString(),
                 icon: Icons.check_circle_outline,
                 iconColor: Colors.green.shade600,
                 bgColor: Colors.green.shade50,
-              ),
+              )),
               const SizedBox(height: 12),
-              _buildStatCard(
+              Obx(() => _buildStatCard(
                 title: 'ON TRIP',
                 value: controller.onTripDrivers.toString(),
                 icon: Icons.local_shipping_outlined,
                 iconColor: Colors.blue.shade600,
                 bgColor: Colors.blue.shade50,
-              ),
+              )),
               const SizedBox(height: 32),
 
               // 4. Drivers List
@@ -162,9 +162,17 @@ class DriverManagementView extends GetView<DriverManagementController> {
   }
 
   Widget _buildDriverCard(Map<String, dynamic> driver) {
-    bool isActive = driver['status'] == 'ACTIVE';
-    Color statusColor = isActive ? Colors.green.shade600 : Colors.blue.shade600;
-    Color statusBgColor = isActive ? Colors.green.shade50 : Colors.blue.shade50;
+    String status = driver['status'] ?? 'AVAILABLE';
+    bool isAvailable = status == 'AVAILABLE' || status == 'ACTIVE';
+    bool isOnTrip = status == 'ON TRIP';
+    
+    Color statusColor = isAvailable 
+        ? Colors.green.shade600 
+        : (isOnTrip ? Colors.orange.shade600 : Colors.blue.shade600);
+        
+    Color statusBgColor = isAvailable 
+        ? Colors.green.shade50 
+        : (isOnTrip ? Colors.orange.shade50 : Colors.blue.shade50);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -188,18 +196,25 @@ class DriverManagementView extends GetView<DriverManagementController> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  driver['image'],
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 60,
-                    height: 60,
-                    color: AppColors.secondaryGreyBlue.withOpacity(0.1),
-                    child: const Icon(Icons.person, color: AppColors.secondaryGreyBlue),
-                  ),
-                ),
+                child: (driver['profileImage'] != null && driver['profileImage'].toString().isNotEmpty)
+                  ? Image.network(
+                      driver['profileImage'],
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 60,
+                        height: 60,
+                        color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                        child: const Icon(Icons.person, color: AppColors.secondaryGreyBlue),
+                      ),
+                    )
+                  : Container(
+                      width: 60,
+                      height: 60,
+                      color: AppColors.secondaryGreyBlue.withOpacity(0.1),
+                      child: const Icon(Icons.person, color: AppColors.secondaryGreyBlue),
+                    ),
               ),
               const SizedBox(height: 12),
               Container(
@@ -223,7 +238,7 @@ class DriverManagementView extends GetView<DriverManagementController> {
                   children: [
                     Expanded(
                       child: Text(
-                        driver['name'],
+                        driver['name'] ?? 'Unknown',
                         style: AppTextStyles.h3.copyWith(fontSize: 16),
                       ),
                     ),
@@ -234,7 +249,7 @@ class DriverManagementView extends GetView<DriverManagementController> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        driver['status'],
+                        driver['status'] ?? 'INACTIVE',
                         style: AppTextStyles.caption.copyWith(
                           color: statusColor,
                           fontWeight: FontWeight.bold,
@@ -251,7 +266,7 @@ class DriverManagementView extends GetView<DriverManagementController> {
                     const Icon(Icons.phone_outlined, size: 14, color: AppColors.secondaryGreyBlue),
                     const SizedBox(width: 6),
                     Text(
-                      driver['phone'],
+                      driver['phone'] ?? 'N/A',
                       style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue),
                     ),
                   ],
@@ -267,7 +282,7 @@ class DriverManagementView extends GetView<DriverManagementController> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'DL-\n${driver['dl']}',
+                        'DL-\n${driver['dlNumber'] ?? 'N/A'}',
                         style: AppTextStyles.caption.copyWith(color: AppColors.secondaryGreyBlue, height: 1.2),
                       ),
                     ),
@@ -283,12 +298,12 @@ class DriverManagementView extends GetView<DriverManagementController> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: () => controller.showDriverOptions(driver['id']),
+                onTap: () => controller.showDriverOptions(driver),
                 child: const Icon(Icons.more_vert, color: AppColors.primaryDark),
               ),
               const SizedBox(height: 32),
               GestureDetector(
-                onTap: () => controller.viewDriverDetails(driver['id']),
+                onTap: () => controller.viewDriverDetails(driver),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
