@@ -139,8 +139,8 @@ class DriverForgotPasswordView extends GetView<DriverForgotPasswordController> {
                   const SizedBox(height: 32),
 
                   // 4. Confirm Button
-                  ElevatedButton(
-                    onPressed: controller.submitResetRequest,
+                  Obx(() => ElevatedButton(
+                    onPressed: controller.isLoading.value ? null : controller.submitResetRequest,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryAccent,
                       minimumSize: const Size(double.infinity, 54),
@@ -150,18 +150,24 @@ class DriverForgotPasswordView extends GetView<DriverForgotPasswordController> {
                       elevation: 2,
                       shadowColor: AppColors.primaryAccent.withOpacity(0.4),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Confirm',
-                          style: AppTextStyles.buttonText.copyWith(fontSize: 16),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward, color: AppColors.white, size: 18),
-                      ],
-                    ),
-                  ),
+                    child: controller.isLoading.value
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Send Reset Link',
+                                style: AppTextStyles.buttonText.copyWith(fontSize: 16),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward, color: AppColors.white, size: 18),
+                            ],
+                          ),
+                  )),
                   const SizedBox(height: 32),
 
                   // 5. Back to Login Link

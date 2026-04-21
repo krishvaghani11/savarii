@@ -1,1 +1,25 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"savarii-96869","appId":"1:1057909747567:android:6570ff5efba52e2702429a","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"savarii-96869","configurations":{"android":"1:1057909747567:android:6570ff5efba52e2702429a"}}}}}}
+{
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "savarii-96869",
+          "appId": "1:1057909747567:android:6570ff5efba52e2702429a",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "savarii-96869",
+          "configurations": {
+            "android": "1:1057909747567:android:6570ff5efba52e2702429a"
+          }
+        }
+      }
+    }
+  }
+}
