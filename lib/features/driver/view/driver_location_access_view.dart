@@ -26,42 +26,43 @@ class DriverLocationAccessView extends GetView<DriverLocationAccessController> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(flex: 1),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 24),
 
-              // 1. Map & Bus Graphic (Native Flutter Recreation)
-              _buildLocationGraphic(),
-              
-              const Spacer(flex: 1),
+                // 1. Map & Bus Graphic (Native Flutter Recreation)
+                _buildLocationGraphic(),
+                
+                const SizedBox(height: 40),
 
-              // 2. Titles & Description
-              Text(
-                'Enable Location\nTracking',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.h1.copyWith(
-                  fontSize: 28,
-                  color: const Color(0xFF2A2D3E), // Dark Navy
-                  height: 1.2,
+                // 2. Titles & Description
+                Text(
+                  'Enable Location\nTracking',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.h1.copyWith(
+                    fontSize: 28,
+                    color: const Color(0xFF2A2D3E), // Dark Navy
+                    height: 1.2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'To receive bus assignments, provide\nreal-time updates to passengers, and\ntrack your route, please enable location\naccess.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.secondaryGreyBlue,
-                  height: 1.5,
+                const SizedBox(height: 16),
+                Text(
+                  'To receive bus assignments, provide\nreal-time updates to passengers, and\ntrack your route, please enable location\naccess.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.secondaryGreyBlue,
+                    height: 1.5,
+                  ),
                 ),
-              ),
-              
-              const Spacer(flex: 2),
+                
+                const SizedBox(height: 48),
 
-              // 3. Allow Button
-              ElevatedButton(
+                // 3. Allow Button
+                ElevatedButton(
                 onPressed: controller.allowLocationAccess,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryAccent,
@@ -97,7 +98,7 @@ class DriverLocationAccessView extends GetView<DriverLocationAccessController> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   // --- Native Flutter Graphic Recreation ---

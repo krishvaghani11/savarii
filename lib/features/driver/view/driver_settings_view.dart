@@ -98,7 +98,7 @@ class DriverSettingsView extends GetView<DriverSettingsController> {
         secondary: Icon(icon, color: AppColors.primaryAccent),
         value: value == true ? controller.isNotificationsEnabled.value : controller.isDarkThemeEnabled.value, // Dummy linkage for example
         onChanged: onChanged,
-        activeColor: AppColors.primaryAccent,
+        activeThumbColor: AppColors.primaryAccent,
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
       )),
     );

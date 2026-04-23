@@ -1,13 +1,19 @@
 import 'package:get/get.dart';
+import 'package:savarii/core/services/location_service.dart';
 import 'package:savarii/routes/app_routes.dart';
 
 class LocationAccessController extends GetxController {
-  void requestLocationAccess() {
-    // TODO: Add geolocator/permission logic later
-    print("Requesting location permissions...");
+  final LocationService _locationService = Get.find<LocationService>();
 
-    // For now, simulate success and navigate to the Customer Home Screen
-    // Get.offAllNamed(AppRoutes.customerHome);
+  Future<void> requestLocationAccess() async {
+    final position = await _locationService.checkAndRequestPermissions();
+
+    if (position != null) {
+      // Permission granted and location fetched.
+      print("Location fetched: ${position.latitude}, ${position.longitude}");
+      // Proceed to the main layout for Customer
+      Get.offAllNamed(AppRoutes.customerMainLayout);
+    }
   }
 
   void skipForNow() {

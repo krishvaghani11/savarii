@@ -1,33 +1,27 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:savarii/core/services/location_service.dart';
 import 'package:savarii/routes/app_routes.dart';
 
 class DriverLocationAccessController extends GetxController {
+  final LocationService _locationService = Get.find<LocationService>();
   
-  void allowLocationAccess() {
-    print("Requesting Location Permissions...");
+  Future<void> allowLocationAccess() async {
+    final position = await _locationService.checkAndRequestPermissions();
     
-    // TODO: Implement actual permission request logic here using a package like 'permission_handler' or 'geolocator'
-    // For now, simulate success and navigate to the Driver Home Screen
-    
-    Get.snackbar(
-      'Permission Granted',
-      'Location tracking is now enabled.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade50,
-      colorText: Colors.green.shade800,
-    );
+    if (position != null) {
+      Get.snackbar(
+        'Permission Granted',
+        'Location tracking is now enabled.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
 
-    // Route to the Driver Dashboard/Home
-    Get.offAllNamed(AppRoutes.driverMain);
+      // Route to the Driver Dashboard/Home
+      Get.offAllNamed(AppRoutes.driverMain);
+    }
   }
 
   void skipForNow() {
     print("Skipping Location Access...");
-    
-    // User skipped. You might want to show a warning that features will be limited, 
-    // or just let them proceed to the dashboard.
-    
     Get.offAllNamed(AppRoutes.driverMain);
   }
 }

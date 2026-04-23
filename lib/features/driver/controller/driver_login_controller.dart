@@ -37,8 +37,8 @@ class DriverLoginController extends GetxController {
         final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
         if (doc.exists && doc.data()!['role'] == 'driver') {
           // Success
-          final AuthController _authController = Get.find();
-          _authController.selectedRole.value = 'driver';
+          final AuthController authController = Get.find();
+          authController.selectedRole.value = 'driver';
 
           Get.snackbar(
             'Success',

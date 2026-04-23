@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:savarii/features/auth/controllers/auth_controller.dart';
+import 'package:savarii/core/services/driver_tracking_service.dart';
 
 class DriverHomeController extends GetxController {
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthController _authController = Get.find<AuthController>();
+  final DriverTrackingService _trackingService = Get.find<DriverTrackingService>();
 
   // Driver Details State
   final RxString rxDriverName = "Loading...".obs;
@@ -79,7 +81,9 @@ class DriverHomeController extends GetxController {
           // Bus mapping confirmed
           hasBusAssigned.value = true;
           
-          final busData = snapshot.docs.first.data();
+          final busDoc = snapshot.docs.first;
+          final busData = busDoc.data();
+          busData['id'] = busDoc.id; // Inject ID for tracking
           activeBusData = busData;
           rxBusName.value = busData['busName'] ?? 'Unknown Bus';
           rxBusNumber.value = busData['busNumber'] ?? 'N/A';
@@ -101,6 +105,11 @@ class DriverHomeController extends GetxController {
 
           // Fetch last trip info for this driver
           _fetchLastTrip(driverMobile);
+
+          // If the driver is already ON TRIP from a previous session, start tracking immediately
+          if (isOnline.value) {
+            _trackingService.startTracking(busDoc.id);
+          }
         } else {
           // No bus mapped to mobile!
            hasBusAssigned.value = false;
@@ -188,21 +197,23 @@ class DriverHomeController extends GetxController {
     }
 
     try {
-      // Switch the visual immediately for smooth UI feedback
       isOnline.value = !isOnline.value;
       
       final String targetStatus = isOnline.value ? 'ON TRIP' : 'ACTIVE';
 
-      // Enforce the driver status locally in Firestore so the generic Vendor driver system captures it
       await _firestore.collection('drivers').doc(uid).update({'status': targetStatus});
 
       if (isOnline.value) {
+        if (activeBusData != null && activeBusData!['id'] != null) {
+          _trackingService.startTracking(activeBusData!['id']);
+        }
         Get.snackbar(
           'Shift Started',
           'You are now online and your bus is active.',
           snackPosition: SnackPosition.TOP,
         );
       } else {
+        _trackingService.stopTracking();
         Get.snackbar(
           'Shift Ended',
           'You are now offline.',

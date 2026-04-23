@@ -61,11 +61,6 @@ class BookParcelController extends GetxController {
   ];
   final RxString selectedParcelType = 'Documents'.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    // Fields are now empty by default for production use.
-  }
 
   void selectParcelType(String? type) {
     if (type != null) {

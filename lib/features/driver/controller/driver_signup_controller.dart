@@ -152,8 +152,8 @@ class DriverSignupController extends GetxController {
             .update({'driver.driverId': uid});
       }
 
-      final AuthController _authController = Get.find();
-      _authController.selectedRole.value = 'driver';
+      final AuthController authController = Get.find();
+      authController.selectedRole.value = 'driver';
 
       Get.snackbar(
         'Success',

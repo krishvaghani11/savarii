@@ -290,6 +290,12 @@ class PaymentDetailsController extends GetxController {
       'busName': busName,
       'createdAt': DateTime.now().toIso8601String(),
       'bookingId': pnr,
+      // trip_id is set to empty string at booking time.
+      // The vendor/driver side will update this field when a trip is created
+      // and assign the bus to a trip. The customer uses this to track the bus.
+      'trip_id': '',
+      // status field: 'active' until the trip is completed or cancelled
+      'status': 'active',
       'passengerName': passengers.isNotEmpty
           ? passengers.first['name']
           : _authService.currentUser?.displayName ?? 'Customer',

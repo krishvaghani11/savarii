@@ -500,33 +500,57 @@ class BookingsView extends GetView<BookingsController> {
           // Action buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                // Download Button (for both)
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () => isParcel ? controller.downloadParcel(item) : controller.downloadTicket(item),
-                    icon: const Icon(Icons.download, color: AppColors.primaryAccent, size: 17),
-                    label: Text(
-                      isParcel ? 'Invoice' : 'Ticket',
-                      style: AppTextStyles.buttonText.copyWith(color: AppColors.primaryAccent, fontSize: 13),
+            child: isParcel
+                // ── Parcel: Download + Cancel ──────────────────────────────
+                ? Row(children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => controller.downloadParcel(item),
+                        icon: const Icon(Icons.download, color: AppColors.primaryAccent, size: 17),
+                        label: Text('Invoice',
+                            style: AppTextStyles.buttonText.copyWith(color: AppColors.primaryAccent, fontSize: 13)),
+                      ),
                     ),
-                  ),
-                ),
-                const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFF4F4F4)),
-                // Cancel Button
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () => isParcel ? controller.goToCancelParcel(item) : controller.cancelBooking(item),
-                    icon: const Icon(Icons.close, color: Color(0xFFE82E59), size: 17),
-                    label: Text(
-                      'Cancel',
-                      style: AppTextStyles.buttonText.copyWith(color: const Color(0xFFE82E59), fontSize: 13),
+                    const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFF4F4F4)),
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => controller.goToCancelParcel(item),
+                        icon: const Icon(Icons.close, color: Color(0xFFE82E59), size: 17),
+                        label: Text('Cancel',
+                            style: AppTextStyles.buttonText.copyWith(color: const Color(0xFFE82E59), fontSize: 13)),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
+                  ])
+                // ── Bus Ticket: Download + Track Bus + Cancel ──────────────
+                : Row(children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => controller.downloadTicket(item),
+                        icon: const Icon(Icons.download, color: AppColors.primaryAccent, size: 17),
+                        label: Text('Ticket',
+                            style: AppTextStyles.buttonText.copyWith(color: AppColors.primaryAccent, fontSize: 13)),
+                      ),
+                    ),
+                    const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFF4F4F4)),
+                    // 🚌 Track Bus button — only for bus tickets
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => controller.trackBus(item),
+                        icon: const Icon(Icons.location_on_rounded, color: Color(0xFF1976D2), size: 17),
+                        label: Text('Track Bus',
+                            style: AppTextStyles.buttonText.copyWith(color: const Color(0xFF1976D2), fontSize: 13)),
+                      ),
+                    ),
+                    const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFF4F4F4)),
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => controller.cancelBooking(item),
+                        icon: const Icon(Icons.close, color: Color(0xFFE82E59), size: 17),
+                        label: Text('Cancel',
+                            style: AppTextStyles.buttonText.copyWith(color: const Color(0xFFE82E59), fontSize: 13)),
+                      ),
+                    ),
+                  ]),
           ),
         ],
       ),

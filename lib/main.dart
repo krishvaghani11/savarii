@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/services/firestore_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/location_service.dart';
 import 'features/auth/controllers/auth_controller.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
@@ -31,6 +32,7 @@ void main() async {
   // disposed by GetX during navigation.
   Get.put<FirestoreService>(FirestoreService(), permanent: true);
   Get.put<AuthController>(AuthController(), permanent: true);
+  Get.put<LocationService>(LocationService(), permanent: true);
 
   runApp(
     EasyLocalization(

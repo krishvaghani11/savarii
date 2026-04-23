@@ -224,6 +224,27 @@ class BookingsController extends GetxController {
     });
   }
 
+  /// Navigate to the live bus tracking screen.
+  /// Uses busId if trip_id is not explicitly assigned.
+  void trackBus(Map<String, dynamic> ticket) {
+    final rawTripId = ticket['trip_id']?.toString() ?? '';
+    final tripId = rawTripId.isNotEmpty ? rawTripId : (ticket['busId']?.toString() ?? '');
+    if (tripId.isEmpty) {
+      Get.snackbar(
+        'Tracking Unavailable',
+        'Live tracking will be available once the vendor assigns your bus to a trip.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFFFF3CD),
+        colorText: const Color(0xFF856404),
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+      return;
+    }
+    Get.toNamed(AppRoutes.trackBus, arguments: {'trip_id': tripId});
+  }
+
   void goToCancelParcel(Map<String, dynamic> parcel) {
     Get.toNamed(AppRoutes.cancelParcel, arguments: {
       'parcelId': parcel['id'] ?? '',

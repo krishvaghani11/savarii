@@ -6,7 +6,7 @@ class BusSearchService extends GetxService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // Cache for locations to avoid repeated Firestore calls
-  Map<String, String> _locationCache = {};
+  final Map<String, String> _locationCache = {};
 
   /// Fetch location name by ID from Firestore with caching
   Future<String?> getLocationName(String locationId) async {
