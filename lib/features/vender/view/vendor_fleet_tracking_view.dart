@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
-import 'package:savarii/core/constants/app_assets.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/core/utils/locale_utils.dart';
@@ -38,86 +38,27 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: controller.openOptions,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryAccent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.filter_list,
-                  color: AppColors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [
           // 1. Zoomable Map Background
           Positioned.fill(
-            child: InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Image.asset(
-                AppAssets.locationMapImage2,
-                // Ensure you have your map image in AppAssets
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: const Color(0xFFE8ECEF),
-                  child: const Center(
-                    child: Icon(Icons.map, size: 100, color: Colors.grey),
-                  ),
+            child: Obx(
+              () => GoogleMap(
+                onMapCreated: controller.onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: controller.busPosition.value,
+                  zoom: 15.0,
                 ),
-              ),
-            ),
-          ),
-
-          // 2. Search Bar Overlay
-          Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: controller.searchController,
-                decoration: InputDecoration(
-                  hintText: 'tracking.search_hint'.tr(),
-                  hintStyle: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.secondaryGreyBlue,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: AppColors.secondaryGreyBlue,
-                  ),
-                  suffixIcon: const Icon(
-                    Icons.mic,
-                    color: AppColors.secondaryGreyBlue,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                ),
+                markers: controller.markers,
+                myLocationEnabled: false,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                compassEnabled: true,
+                mapToolbarEnabled: false,
+                trafficEnabled: false,
+                buildingsEnabled: true,
+                mapType: MapType.normal,
               ),
             ),
           ),
@@ -125,46 +66,10 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
           // 3. Map Controls (Right Side)
           Positioned(
             right: 16,
-            top: 180, // Positioned above the bottom sheet
+            top: 16, // Positioned at the top right
             child: Column(
               children: [
                 _buildFloatingButton(Icons.my_location, controller.recenterMap),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add,
-                          color: AppColors.primaryDark,
-                        ),
-                        onPressed: controller.zoomIn,
-                      ),
-                      Container(
-                        height: 1,
-                        width: 30,
-                        color: Colors.grey.shade300,
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.remove,
-                          color: AppColors.primaryDark,
-                        ),
-                        onPressed: controller.zoomOut,
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
@@ -211,24 +116,18 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
-                                  child: _buildFilterChip(
-                                    'tracking.all_active'.tr(),
-                                    'All Active',
-                                  ),
+                                  child: _buildFilterChip('Active', 'Active'),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: _buildFilterChip(
-                                    'tracking.delayed'.tr(),
-                                    'Delayed',
+                                    'Is Running',
+                                    'Is Running',
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: _buildFilterChip(
-                                    'tracking.in_transit'.tr(),
-                                    'In Transit',
-                                  ),
+                                  child: _buildFilterChip('Offline', 'Offline'),
                                 ),
                               ],
                             ),
@@ -239,12 +138,14 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
 
                     // Scrollable List of Buses
                     Expanded(
-                      child: ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        itemCount: controller.fleet.length,
-                        itemBuilder: (context, index) =>
-                            _buildBusCard(context, controller.fleet[index]),
+                      child: Obx(
+                        () => ListView.builder(
+                          controller: scrollController,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          itemCount: controller.fleet.length,
+                          itemBuilder: (context, index) =>
+                              _buildBusCard(context, controller.fleet[index]),
+                        ),
                       ),
                     ),
                   ],
@@ -309,119 +210,146 @@ class VendorFleetTrackingView extends GetView<VendorFleetTrackingController> {
   }
 
   Widget _buildBusCard(BuildContext context, FleetBusModel bus) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.secondaryGreyBlue.withOpacity(0.15),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Icon Container
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: bus.isDelayed
-                  ? Colors.orange.withOpacity(0.1)
-                  : AppColors.primaryAccent.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              bus.isDelayed
-                  ? Icons.warning_amber_rounded
-                  : Icons.directions_bus,
-              color: bus.isDelayed ? Colors.orange : AppColors.primaryAccent,
+    return Obx(
+      () => GestureDetector(
+        onTap: () => controller.selectBus(bus.id),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: controller.selectedBusId.value == bus.id
+                ? AppColors.primaryAccent.withOpacity(0.05)
+                : AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: controller.selectedBusId.value == bus.id
+                  ? AppColors.primaryAccent
+                  : AppColors.secondaryGreyBlue.withOpacity(0.15),
+              width: controller.selectedBusId.value == bus.id ? 2 : 1,
             ),
           ),
-          const SizedBox(width: 16),
+          child: Row(
+            children: [
+              // Icon Container
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: bus.isDelayed
+                      ? Colors.orange.withOpacity(0.1)
+                      : AppColors.primaryAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  bus.isDelayed
+                      ? Icons.warning_amber_rounded
+                      : Icons.directions_bus,
+                  color: bus.isDelayed
+                      ? Colors.orange
+                      : AppColors.primaryAccent,
+                ),
+              ),
+              const SizedBox(width: 16),
 
-          // Bus Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+              // Bus Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            bus.busNumber,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: bus.isDelayed
+                                ? Colors.orange.withOpacity(0.1)
+                                : const Color(0xFFE8F8F0),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            bus.status,
+                            style: AppTextStyles.caption.copyWith(
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                              color: bus.isDelayed
+                                  ? Colors.orange.shade800
+                                  : const Color(0xFF00A65A),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      bus.id,
-                      style: AppTextStyles.bodyLarge.copyWith(
+                      bus.driverName,
+                      style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: bus.isDelayed
-                            ? Colors.orange.withOpacity(0.1)
-                            : const Color(0xFFE8F8F0),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        bus.status,
-                        style: AppTextStyles.caption.copyWith(
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                          color: bus.isDelayed
-                              ? Colors.orange.shade800
-                              : const Color(0xFF00A65A),
-                        ),
+                    const SizedBox(height: 2),
+                    Text(
+                      bus.driverPhone,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.secondaryGreyBlue,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${"tracking.next_stop".tr()}: ${bus.nextStop}',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.secondaryGreyBlue,
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
 
-          // Speed Info
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+              // Speed Info
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    LocaleUtils.formatNumber(context, bus.speed),
-                    style: AppTextStyles.h2.copyWith(fontSize: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        LocaleUtils.formatNumber(context, bus.speed),
+                        style: AppTextStyles.h2.copyWith(
+                          fontSize: 20,
+                          height: 1.0,
+                        ),
+                      ),
+                      Text(
+                        'tracking.speed_unit'.tr(),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.secondaryGreyBlue,
+                          fontSize: 10,
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 2),
                   Text(
-                    'tracking.speed_unit'.tr(),
+                    bus.condition,
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.secondaryGreyBlue,
-                      fontSize: 10,
+                      fontSize: 8,
+                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 2),
-              Text(
-                bus.condition,
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.secondaryGreyBlue,
-                  fontSize: 8,
-                  letterSpacing: 0.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
@@ -161,6 +162,17 @@ class VendorHomeController extends GetxController {
 
   void logout() {
     print("Logging out Vendor...");
-    _auth.logout(); // Explicitly terminate the session through AuthController
+    Get.defaultDialog(
+      title: "Log Out",
+      middleText: "Are you sure you want to log out of your account?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+      onConfirm: () {
+        Get.back(); // close dialog
+        _auth.logout(); // Explicitly terminate the session through AuthController
+      },
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/services/auth_services.dart';
 import 'package:savarii/core/services/firestore_service.dart';
@@ -72,10 +73,21 @@ class ProfileController extends GetxController {
 
   void logOut() {
     print("Logging out...");
-    if (Get.isRegistered<AuthController>()) {
-      Get.find<AuthController>().logout();
-    } else {
-      Get.offAllNamed('/role-selection');
-    }
+    Get.defaultDialog(
+      title: "Log Out",
+      middleText: "Are you sure you want to log out of your account?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+      onConfirm: () {
+        Get.back(); // close dialog
+        if (Get.isRegistered<AuthController>()) {
+          Get.find<AuthController>().logout();
+        } else {
+          Get.offAllNamed('/role-selection');
+        }
+      },
+    );
   }
 }

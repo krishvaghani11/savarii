@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:savarii/features/auth/controllers/auth_controller.dart';
 
@@ -60,10 +61,21 @@ class SettingsController extends GetxController {
 
   void logout() {
     print("Initiating Logout...");
-    if (Get.isRegistered<AuthController>()) {
-      Get.find<AuthController>().logout();
-    } else {
-      Get.offAllNamed('/role-selection');
-    }
+    Get.defaultDialog(
+      title: "Log Out",
+      middleText: "Are you sure you want to log out of your account?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+      onConfirm: () {
+        Get.back(); // close dialog
+        if (Get.isRegistered<AuthController>()) {
+          Get.find<AuthController>().logout();
+        } else {
+          Get.offAllNamed('/role-selection');
+        }
+      },
+    );
   }
 }

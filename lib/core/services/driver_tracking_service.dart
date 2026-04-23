@@ -107,6 +107,9 @@ class DriverTrackingService extends GetxService {
       _positionStreamSubscription!.cancel();
       _positionStreamSubscription = null;
       debugPrint('DriverTrackingService: Stopped tracking for bus $_activeBusId');
+      if (_activeBusId != null) {
+        _rtdbService.clearLiveLocation(_activeBusId!);
+      }
       _activeBusId = null;
     }
   }

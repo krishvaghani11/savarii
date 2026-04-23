@@ -193,10 +193,21 @@ class CustomerHomeController extends GetxController {
   void logout() {
     closeSidebar();
     print("Logging out user...");
-    if (Get.isRegistered<AuthController>()) {
-      Get.find<AuthController>().logout();
-    } else {
-      Get.offAllNamed('/role-selection');
-    }
+    Get.defaultDialog(
+      title: "Log Out",
+      middleText: "Are you sure you want to log out of your account?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+      onConfirm: () {
+        Get.back(); // close dialog
+        if (Get.isRegistered<AuthController>()) {
+          Get.find<AuthController>().logout();
+        } else {
+          Get.offAllNamed('/role-selection');
+        }
+      },
+    );
   }
 }

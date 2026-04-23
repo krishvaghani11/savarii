@@ -245,6 +245,25 @@ class BookingsController extends GetxController {
     Get.toNamed(AppRoutes.trackBus, arguments: {'trip_id': tripId});
   }
 
+  void trackParcelBus(Map<String, dynamic> parcel) {
+    final rawTripId = parcel['trip_id']?.toString() ?? '';
+    final tripId = rawTripId.isNotEmpty ? rawTripId : (parcel['busId']?.toString() ?? '');
+    if (tripId.isEmpty) {
+      Get.snackbar(
+        'Tracking Unavailable',
+        'Live tracking will be available once your parcel is assigned to a trip/bus.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFFFF3CD),
+        colorText: const Color(0xFF856404),
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+      return;
+    }
+    Get.toNamed(AppRoutes.trackBus, arguments: {'trip_id': tripId});
+  }
+
   void goToCancelParcel(Map<String, dynamic> parcel) {
     Get.toNamed(AppRoutes.cancelParcel, arguments: {
       'parcelId': parcel['id'] ?? '',

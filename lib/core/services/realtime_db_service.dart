@@ -35,6 +35,16 @@ class RealtimeDbService extends GetxService {
     }
   }
 
+  /// Removes the live location of the bus from Realtime Database.
+  Future<void> clearLiveLocation(String busId) async {
+    try {
+      final ref = _rtdb.ref('live_tracking/$busId');
+      await ref.remove();
+    } catch (e) {
+      debugPrint('RealtimeDbService: Error clearing location for $busId: $e');
+    }
+  }
+
   // ── Firestore Trip Details ──────────────────────────────────────────────────
 
 

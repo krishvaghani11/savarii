@@ -501,7 +501,7 @@ class BookingsView extends GetView<BookingsController> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: isParcel
-                // ── Parcel: Download + Cancel ──────────────────────────────
+                // ── Parcel: Download + Track Bus + Cancel ──────────────────────────────
                 ? Row(children: [
                     Expanded(
                       child: TextButton.icon(
@@ -509,6 +509,16 @@ class BookingsView extends GetView<BookingsController> {
                         icon: const Icon(Icons.download, color: AppColors.primaryAccent, size: 17),
                         label: Text('Invoice',
                             style: AppTextStyles.buttonText.copyWith(color: AppColors.primaryAccent, fontSize: 13)),
+                      ),
+                    ),
+                    const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFF4F4F4)),
+                    // 📦 Track Bus button — for parcel buses
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => controller.trackParcelBus(item),
+                        icon: const Icon(Icons.location_on_rounded, color: Color(0xFF1976D2), size: 17),
+                        label: Text('Track Bus',
+                            style: AppTextStyles.buttonText.copyWith(color: const Color(0xFF1976D2), fontSize: 13)),
                       ),
                     ),
                     const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFF4F4F4)),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:savarii/routes/app_routes.dart';
@@ -99,11 +100,22 @@ class VendorProfileController extends GetxController {
 
   void logout() {
     print("Logging out...");
-    Get.snackbar(
-      'Logged Out',
-      'You have been successfully logged out.',
-      snackPosition: SnackPosition.BOTTOM,
+    Get.defaultDialog(
+      title: "Log Out",
+      middleText: "Are you sure you want to log out of your account?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+      onConfirm: () {
+        Get.back(); // close dialog
+        Get.snackbar(
+          'Logged Out',
+          'You have been successfully logged out.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        _auth.logout(); // Explicitly terminate the session completely
+      },
     );
-    _auth.logout(); // Explicitly terminate the session completely
   }
 }
