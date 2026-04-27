@@ -31,7 +31,7 @@ class PrivacySettingsController extends GetxController {
     Get.snackbar(
       'Request Sent',
       'A copy of your data will be emailed to you shortly.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 

@@ -112,7 +112,7 @@ class VendorProfileController extends GetxController {
         Get.snackbar(
           'Logged Out',
           'You have been successfully logged out.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         _auth.logout(); // Explicitly terminate the session completely
       },

@@ -32,7 +32,7 @@ class CancelParcelController extends GetxController {
       Get.snackbar(
         'Validation Error',
         'The phone number provided does not match our records.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.orange.shade100,
       );
       return;
@@ -45,14 +45,14 @@ class CancelParcelController extends GetxController {
       Get.snackbar(
         'Success',
         'Parcel booking #$trackingId has been cancelled.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade100,
       );
     } catch (e) {
       Get.snackbar(
         'Error',
         'Failed to cancel parcel: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade100,
       );
     } finally {

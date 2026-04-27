@@ -83,7 +83,7 @@ class AuthController extends GetxController {
         Get.snackbar(
           'Profile Not Found',
           'Your account data is missing. Please register again or contact support.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         await logout(); // Sign out to prevent getting stuck
       }

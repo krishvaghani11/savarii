@@ -628,7 +628,8 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
                 onPressed: hasSelection
                     ? controller.proceedToPay
                     : () =>
-                          Get.snackbar('Notice', 'Please select a seat first.'),
+                          Get.snackbar('Notice', 'Please select a seat first.',
+                              snackPosition: SnackPosition.TOP),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: hasSelection
                       ? AppColors.primaryAccent

@@ -92,7 +92,7 @@ class VendorRazorpayController extends GetxController {
       Get.snackbar(
         'Error',
         'Unable to open payment gateway. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade800,
       );
@@ -167,7 +167,7 @@ class VendorRazorpayController extends GetxController {
       Get.snackbar(
         'Error',
         'Payment succeeded but failed to save ticket: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.orange.shade100,
         colorText: Colors.orange.shade900,
       );
@@ -180,7 +180,7 @@ class VendorRazorpayController extends GetxController {
     Get.snackbar(
       'Payment Failed',
       response.message ?? 'Something went wrong. Please try again.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.red.shade100,
       colorText: Colors.red.shade800,
     );
@@ -192,7 +192,7 @@ class VendorRazorpayController extends GetxController {
     Get.snackbar(
       'External Wallet',
       'Payment via ${response.walletName}. Please complete the payment.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 

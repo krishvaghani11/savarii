@@ -57,7 +57,7 @@ class VendorLanguageController extends GetxController {
     Get.snackbar(
       'language.updated_title'.tr(),
       'language.updated_msg'.tr(),
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade800,
       duration: const Duration(seconds: 2),

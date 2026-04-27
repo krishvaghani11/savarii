@@ -53,7 +53,7 @@ class VendorEditProfileController extends GetxController {
         selectedImage.value = File(image.path);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to pick image: $e', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Error', 'Failed to pick image: $e', snackPosition: SnackPosition.TOP);
     }
   }
 
@@ -93,7 +93,7 @@ class VendorEditProfileController extends GetxController {
         Get.snackbar(
           'Profile Updated',
           'Your information has been successfully saved.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green.shade50,
           colorText: Colors.green.shade800,
         );
@@ -103,7 +103,7 @@ class VendorEditProfileController extends GetxController {
         Get.snackbar(
           'Error',
           'Failed to update profile: $e',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red.shade50,
           colorText: Colors.red.shade800,
         );

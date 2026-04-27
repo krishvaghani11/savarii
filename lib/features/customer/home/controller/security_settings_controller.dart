@@ -27,7 +27,7 @@ class SecuritySettingsController extends GetxController {
     Get.snackbar(
       'Session Terminated',
       'You have been logged out of $deviceName.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.black87,
       colorText: Colors.white,
     );

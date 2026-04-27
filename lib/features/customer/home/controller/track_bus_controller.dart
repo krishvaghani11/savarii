@@ -309,7 +309,7 @@ class TrackBusController extends GetxController {
     final phone = driverPhone.value;
     if (phone.isEmpty) {
       Get.snackbar('No Contact', 'Driver phone number not available.',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
       return;
     }
     final uri = Uri(scheme: 'tel', path: phone);
@@ -317,7 +317,7 @@ class TrackBusController extends GetxController {
       await launchUrl(uri);
     } else {
       Get.snackbar('Error', 'Cannot open phone dialer.',
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.TOP);
     }
   }
 

@@ -26,7 +26,7 @@ class VendorLoginController extends GetxController {
         Get.snackbar(
           "Invalid Email",
           "Please enter a valid email address.",
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         return;
       }
@@ -34,7 +34,7 @@ class VendorLoginController extends GetxController {
         Get.snackbar(
           "Missing Password",
           "Please enter your password.",
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         return;
       }
@@ -53,7 +53,7 @@ class VendorLoginController extends GetxController {
       Get.snackbar(
         "Login Failed",
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     } finally {
       isLoading.value = false;

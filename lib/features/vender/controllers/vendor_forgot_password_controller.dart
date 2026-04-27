@@ -20,7 +20,7 @@ class VendorForgotPasswordController extends GetxController {
       Get.snackbar(
         'Invalid Email',
         'Please enter a valid email address.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.orange.shade50,
         colorText: Colors.orange.shade800,
         icon: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
@@ -41,7 +41,7 @@ class VendorForgotPasswordController extends GetxController {
       Get.snackbar(
         'Check Your Inbox',
         result.message,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade800,
         duration: const Duration(seconds: 6),
@@ -53,7 +53,7 @@ class VendorForgotPasswordController extends GetxController {
       Get.snackbar(
         'Error',
         result.message,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
         icon: const Icon(Icons.error_outline, color: Colors.red),

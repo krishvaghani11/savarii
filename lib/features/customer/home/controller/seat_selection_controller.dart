@@ -145,7 +145,8 @@ class SeatSelectionController extends GetxController {
         // Limit to 6 seats per booking
         selectedSeats.add(seatId);
       } else {
-        Get.snackbar('Limit Reached', 'You can only select up to 6 seats.');
+        Get.snackbar('Limit Reached', 'You can only select up to 6 seats.',
+            snackPosition: SnackPosition.TOP);
       }
     }
   }

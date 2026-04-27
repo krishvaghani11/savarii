@@ -89,7 +89,7 @@ class DriverManagementController extends GetxController {
                   Get.snackbar(
                     'Success', 
                     'Driver removed successfully',
-                    snackPosition: SnackPosition.BOTTOM,
+                    snackPosition: SnackPosition.TOP,
                     backgroundColor: Colors.red.shade50,
                     colorText: Colors.red.shade900,
                   );

@@ -88,7 +88,7 @@ class VendorTravelsDetailController extends GetxController {
     Get.snackbar(
       '$label Copied',
       '$text has been copied to your clipboard.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.black87,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),

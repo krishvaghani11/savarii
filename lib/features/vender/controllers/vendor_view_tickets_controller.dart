@@ -282,7 +282,7 @@ class VendorViewTicketsController extends GetxController {
     Get.snackbar(
       'Share',
       'Opening share dialog for $ticketId',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 }

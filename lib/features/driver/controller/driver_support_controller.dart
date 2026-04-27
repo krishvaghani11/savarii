@@ -14,7 +14,7 @@ class DriverSupportController extends GetxController {
     Get.snackbar(
       'Calling Support',
       'Connecting you to the 24/7 help desk...',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.blue.shade50,
       colorText: Colors.blue.shade800,
     );

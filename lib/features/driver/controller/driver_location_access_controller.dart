@@ -12,7 +12,7 @@ class DriverLocationAccessController extends GetxController {
       Get.snackbar(
         'Permission Granted',
         'Location tracking is now enabled.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
 
       // Route to the Driver Dashboard/Home

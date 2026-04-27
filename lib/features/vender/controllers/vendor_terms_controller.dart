@@ -7,7 +7,7 @@ class VendorTermsController extends GetxController {
     Get.snackbar(
       'Terms Accepted',
       'Thank you for accepting the Savarii Vendor terms.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade800,
     );

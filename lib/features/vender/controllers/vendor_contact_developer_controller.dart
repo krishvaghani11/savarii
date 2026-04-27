@@ -14,7 +14,7 @@ class VendorContactDeveloperController extends GetxController {
     Get.snackbar(
       'Email Support',
       'Redirecting to your email client...',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
     // TODO: Implement url_launcher to open mailto:$supportEmail
   }
@@ -24,7 +24,7 @@ class VendorContactDeveloperController extends GetxController {
     Get.snackbar(
       'WhatsApp Live Chat',
       'Redirecting to WhatsApp...',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: const Color(0xFF25D366).withOpacity(0.1),
       // WhatsApp green tint
       colorText: const Color(0xFF075E54),
@@ -39,7 +39,7 @@ class VendorContactDeveloperController extends GetxController {
       Get.snackbar(
         'Message Sent',
         'Our support team will get back to you shortly.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade800,
       );

@@ -113,7 +113,7 @@ class VendorAddTravelsController extends GetxController {
       Get.snackbar(
         "Incomplete",
         "Please enter a route before adding.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }
@@ -162,11 +162,11 @@ class VendorAddTravelsController extends GetxController {
         Get.snackbar(
           "Image Selected",
           "Image successfully attached.",
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to pick image: $e', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Error', 'Failed to pick image: $e', snackPosition: SnackPosition.TOP);
     }
   }
 
@@ -177,7 +177,7 @@ class VendorAddTravelsController extends GetxController {
         Get.snackbar(
           'Missing Details',
           'Please select a business type and state.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         return;
       }
@@ -186,7 +186,7 @@ class VendorAddTravelsController extends GetxController {
         Get.snackbar(
           'Missing Details',
           'Please select the established date.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         return;
       }
@@ -195,7 +195,7 @@ class VendorAddTravelsController extends GetxController {
         Get.snackbar(
           'Missing Details',
           'Please add at least one primary route.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         return;
       }
@@ -245,7 +245,7 @@ class VendorAddTravelsController extends GetxController {
         Get.snackbar(
           'Success',
           'travels detail update successfully',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green.shade50,
           colorText: Colors.green.shade800,
         );

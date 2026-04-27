@@ -32,7 +32,7 @@ class ReviewTripController extends GetxController {
     Get.snackbar(
       'Thank You!',
       'Your review has been successfully submitted.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade800,
     );

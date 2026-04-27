@@ -188,15 +188,15 @@ class CustomerAddPassengerController extends GetxController {
 
   void proceedToPay() {
     if (addedPassengers.isEmpty) {
-      Get.snackbar('Add Passengers', 'Please add at least one passenger.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Add Passengers', 'Please add at least one passenger.', snackPosition: SnackPosition.TOP);
       return;
     }
     if (addedPassengers.length != selectedSeats.length) {
-      Get.snackbar('Passengers Details', 'Please add exactly ${selectedSeats.length} passenger details to proceed.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Passengers Details', 'Please add exactly ${selectedSeats.length} passenger details to proceed.', snackPosition: SnackPosition.TOP);
       return;
     }
     if (!contactFormKey.currentState!.validate()) {
-      Get.snackbar('Contact Details', 'Please provide valid contact details to receive your ticket.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Contact Details', 'Please provide valid contact details to receive your ticket.', snackPosition: SnackPosition.TOP);
       return;
     }
     

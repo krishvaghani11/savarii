@@ -30,7 +30,7 @@ class ParcelConfirmationController extends GetxController {
     Get.snackbar(
       'Copied',
       'Tracking ID copied to clipboard.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.black87,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),

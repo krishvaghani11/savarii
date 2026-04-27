@@ -43,7 +43,7 @@ class DriverLoginController extends GetxController {
           Get.snackbar(
             'Success',
             'Logged in successfully',
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green.shade50,
             colorText: Colors.green.shade800,
           );
@@ -55,20 +55,20 @@ class DriverLoginController extends GetxController {
           Get.snackbar(
             'Login Failed',
             'You are not registered as a driver.',
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
           );
         }
       } on FirebaseAuthException catch (e) {
         Get.snackbar(
              'Login Failed',
              e.message ?? 'Authentication error',
-             snackPosition: SnackPosition.BOTTOM,
+             snackPosition: SnackPosition.TOP,
         );
       } catch (e) {
         Get.snackbar(
              'Login Failed',
              e.toString(),
-             snackPosition: SnackPosition.BOTTOM,
+             snackPosition: SnackPosition.TOP,
         );
       } finally {
         isLoading.value = false;

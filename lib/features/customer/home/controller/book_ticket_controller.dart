@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -36,17 +37,32 @@ class BookTicketController extends GetxController {
   // 4. Recent Searches
   final RxList<RecentSearchModel> recentSearches = <RecentSearchModel>[].obs;
 
+  // Debounce timers to avoid hitting the API on every keystroke
+  Timer? _fromDebounce;
+  Timer? _toDebounce;
+
+  // Guard: prevents the listener from re-fetching when we set text programmatically
+  bool _isSelecting = false;
+
   @override
   void onInit() {
     super.onInit();
     loadRecentSearches();
 
-    // Listeners for autocomplete
+    // Debounced listeners for autocomplete
     fromController.addListener(() {
-      _fetchCitySuggestions(fromController.text, isFrom: true);
+      if (_isSelecting) return;
+      _fromDebounce?.cancel();
+      _fromDebounce = Timer(const Duration(milliseconds: 400), () {
+        _fetchCitySuggestions(fromController.text, isFrom: true);
+      });
     });
     toController.addListener(() {
-      _fetchCitySuggestions(toController.text, isFrom: false);
+      if (_isSelecting) return;
+      _toDebounce?.cancel();
+      _toDebounce = Timer(const Duration(milliseconds: 400), () {
+        _fetchCitySuggestions(toController.text, isFrom: false);
+      });
     });
   }
 
@@ -65,7 +81,9 @@ class BookTicketController extends GetxController {
 
     try {
       // Fetch city suggestions from geolocation service (only cities)
-      final citySuggestions = await CityGeolocationService.fetchCitySuggestions(query);
+      final citySuggestions = await CityGeolocationService.fetchCitySuggestions(
+        query,
+      );
 
       final suggestions = citySuggestions.map((cs) {
         return CitySuggestionModel(
@@ -98,23 +116,25 @@ class BookTicketController extends GetxController {
   }
 
   void selectLocation(CitySuggestionModel location, {required bool isFrom}) {
+    // Set guard so the listener doesn't trigger a new API call
+    _isSelecting = true;
     if (isFrom) {
       selectedFrom.value = location;
-      fromController.text = location.city; // Show only city name
+      fromController.text = location.city;
       filteredFrom.clear();
-      // Also update To suggestions to remove this city
       if (filteredTo.isNotEmpty) {
         filteredTo.removeWhere((s) => s.city == location.city);
       }
     } else {
       selectedTo.value = location;
-      toController.text = location.city; // Show only city name
+      toController.text = location.city;
       filteredTo.clear();
-      // Also update From suggestions to remove this city
       if (filteredFrom.isNotEmpty) {
         filteredFrom.removeWhere((s) => s.city == location.city);
       }
     }
+    // Release guard after this frame so normal typing works again
+    Future.microtask(() => _isSelecting = false);
   }
 
   // Swap locations logic
@@ -211,7 +231,7 @@ class BookTicketController extends GetxController {
       Get.snackbar(
         'Error',
         'Please select valid From and To cities',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -222,7 +242,7 @@ class BookTicketController extends GetxController {
       Get.snackbar(
         'Error',
         'From and To cities cannot be the same',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -239,7 +259,11 @@ class BookTicketController extends GetxController {
     );
 
     // Remove duplicates and add to recent searches
-    recentSearches.removeWhere((s) => s.fromId == selectedFrom.value!.city && s.toId == selectedTo.value!.city);
+    recentSearches.removeWhere(
+      (s) =>
+          s.fromId == selectedFrom.value!.city &&
+          s.toId == selectedTo.value!.city,
+    );
     recentSearches.insert(0, newSearch);
 
     // Keep only last 5
@@ -266,5 +290,14 @@ class BookTicketController extends GetxController {
       'recent_searches',
       recentSearches.map((s) => jsonEncode(s.toJson())).toList(),
     );
+  }
+
+  @override
+  void onClose() {
+    _fromDebounce?.cancel();
+    _toDebounce?.cancel();
+    fromController.dispose();
+    toController.dispose();
+    super.onClose();
   }
 }

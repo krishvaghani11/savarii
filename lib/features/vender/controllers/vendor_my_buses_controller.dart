@@ -103,7 +103,7 @@ class VendorMyBusesController extends GetxController {
       Get.snackbar(
         'Status Updated',
         '${bus.name} is now ${newValue ? 'Active' : 'Inactive'}.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade800,
         duration: const Duration(seconds: 2),
@@ -113,7 +113,7 @@ class VendorMyBusesController extends GetxController {
       Get.snackbar(
         'Update Failed',
         'Could not update status. Try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );

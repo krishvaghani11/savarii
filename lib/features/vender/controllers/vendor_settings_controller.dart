@@ -61,7 +61,7 @@ class VendorSettingsController extends GetxController {
         Get.snackbar(
           'Account Deactivated',
           'Your request is being processed.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
       },
     );

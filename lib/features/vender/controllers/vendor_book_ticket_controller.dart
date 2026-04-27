@@ -262,7 +262,7 @@ class VendorBookTicketController extends GetxController {
       Get.snackbar(
         'Select a Seat',
         'Please select at least one seat to continue.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -271,7 +271,7 @@ class VendorBookTicketController extends GetxController {
       Get.snackbar(
         'Select Route',
         'Please select a bus/route before continuing.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }

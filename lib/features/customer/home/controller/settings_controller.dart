@@ -39,7 +39,7 @@ class SettingsController extends GetxController {
     Get.snackbar(
       'Cache Cleared',
       'App cache has been successfully freed up.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 

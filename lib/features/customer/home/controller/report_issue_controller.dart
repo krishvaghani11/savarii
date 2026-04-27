@@ -35,7 +35,7 @@ class ReportIssueController extends GetxController {
       Get.snackbar(
         'Missing Details',
         'Please select a category and provide a description.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -49,7 +49,7 @@ class ReportIssueController extends GetxController {
     Get.snackbar(
       'Report Submitted',
       'We have received your report and our support team will look into it.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade800,
     );

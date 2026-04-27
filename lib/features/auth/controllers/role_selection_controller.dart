@@ -18,7 +18,7 @@ class RoleSelectionController extends GetxController {
       Get.snackbar(
         'Select a Role',
         'Please select whether you are a Customer or a Vendor to continue.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }

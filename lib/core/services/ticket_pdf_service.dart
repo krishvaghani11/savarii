@@ -504,7 +504,7 @@ class TicketPdfService {
     Get.snackbar(
       '✅ $title',
       msg,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       duration: const Duration(seconds: 4),
       backgroundColor: const Color(0xFFE8F8F0),
       colorText: const Color(0xFF00A65A),
@@ -995,7 +995,7 @@ class TicketPdfService {
     Get.snackbar(
       '❌ Download Failed',
       msg,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: const Color(0xFFFFEBEB),
       colorText: const Color(0xFFE82E59),
       margin: const EdgeInsets.all(16),

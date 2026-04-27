@@ -175,7 +175,7 @@ class EditDriverProfileController extends GetxController {
       Get.snackbar(
         'Update Failed',
         'We encountered an error. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );

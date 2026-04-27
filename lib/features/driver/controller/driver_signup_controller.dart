@@ -56,7 +56,7 @@ class DriverSignupController extends GetxController {
         Get.snackbar(
           'Invalid Email',
           'Please enter a valid email address.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         isLoading.value = false;
         return;
@@ -67,7 +67,7 @@ class DriverSignupController extends GetxController {
         Get.snackbar(
           'Weak Password',
           'Password must be at least 6 characters long.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         isLoading.value = false;
         return;
@@ -78,7 +78,7 @@ class DriverSignupController extends GetxController {
         Get.snackbar(
           'Password Mismatch',
           'Passwords do not match.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         isLoading.value = false;
         return;
@@ -96,7 +96,7 @@ class DriverSignupController extends GetxController {
         Get.snackbar(
           'Registration Denied',
           'Your vendor has not pre-registered this Phone and Email. Please contact your vendor.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 4),
         );
         isLoading.value = false;
@@ -158,7 +158,7 @@ class DriverSignupController extends GetxController {
       Get.snackbar(
         'Success',
         'Profile Claimed & Signup Completed!',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade800,
       );
@@ -169,7 +169,7 @@ class DriverSignupController extends GetxController {
       Get.snackbar(
         'Signup Failed',
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       print('Error during driver signup: $e');
     } finally {

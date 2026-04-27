@@ -84,7 +84,7 @@ class EditProfileController extends GetxController {
         Get.snackbar(
           'Profile Updated',
           'Data successfully updated!',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
@@ -93,7 +93,7 @@ class EditProfileController extends GetxController {
         Get.snackbar(
           'Error',
           'Failed to update profile. Please try again.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -160,7 +160,7 @@ class EditProfileController extends GetxController {
         Get.snackbar(
           'Image Uploaded',
           'Your profile picture was successfully updated!',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
@@ -170,7 +170,7 @@ class EditProfileController extends GetxController {
       Get.snackbar(
         'Upload Failed',
         'There was an error uploading your picture.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

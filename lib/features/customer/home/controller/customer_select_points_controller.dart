@@ -60,7 +60,7 @@ class CustomerSelectPointsController extends GetxController {
       Get.snackbar(
         'Missing Boarding Point',
         'Please select a boarding location to continue.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -69,7 +69,7 @@ class CustomerSelectPointsController extends GetxController {
       Get.snackbar(
         'Missing Dropping Point',
         'Please select a dropping location to continue.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }

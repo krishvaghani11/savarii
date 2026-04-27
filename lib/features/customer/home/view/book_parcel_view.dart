@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:savarii/core/services/city_geolocation_service.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/features/customer/home/controller/book_parcel_controller.dart';
@@ -500,98 +501,11 @@ class BookParcelView extends GetView<BookParcelController> {
     required String hint,
     required IconData icon,
   }) {
-    return Autocomplete<String>(
-      optionsBuilder: (TextEditingValue textEditingValue) async {
-        if (textEditingValue.text.isEmpty) {
-          return const Iterable<String>.empty();
-        }
-        // Fetch suggestions and map to city name string
-        final suggestions = await this.controller.getCitySuggestions(textEditingValue.text);
-        return suggestions.map((s) => s.city).toList();
-      },
-      onSelected: (String selection) {
-        controller.text = selection;
-      },
-      fieldViewBuilder: (
-        BuildContext context,
-        TextEditingController fieldTextEditingController,
-        FocusNode fieldFocusNode,
-        VoidCallback onFieldSubmitted,
-      ) {
-        // Sync the passed controller with the field's controller
-        fieldTextEditingController.text = controller.text;
-        fieldTextEditingController.addListener(() {
-          controller.text = fieldTextEditingController.text;
-        });
-
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF7F8FA),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(icon, color: AppColors.secondaryGreyBlue, size: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextFormField(
-                  controller: fieldTextEditingController,
-                  focusNode: fieldFocusNode,
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryDark),
-                  decoration: InputDecoration(
-                    hintText: hint,
-                    hintStyle: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.secondaryGreyBlue.withOpacity(0.6),
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  onFieldSubmitted: (String value) {
-                    onFieldSubmitted();
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-      optionsViewBuilder: (
-        BuildContext context,
-        AutocompleteOnSelected<String> onSelected,
-        Iterable<String> options,
-      ) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 4.0,
-            borderRadius: BorderRadius.circular(12),
-            color: AppColors.white,
-            child: SizedBox(
-              height: 200.0,
-              width: MediaQuery.of(context).size.width - 80, // Approximate width
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8.0),
-                itemCount: options.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final String option = options.elementAt(index);
-                  return GestureDetector(
-                    onTap: () {
-                      onSelected(option);
-                    },
-                    child: ListTile(
-                      title: Text(option, style: AppTextStyles.bodyMedium),
-                      leading: const Icon(Icons.location_city, color: AppColors.primaryAccent, size: 20),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        );
-      },
+    return _CityAutocompleteField(
+      externalController: controller,
+      hint: hint,
+      icon: icon,
+      onGetSuggestions: this.controller.getCitySuggestions,
     );
   }
 
@@ -669,6 +583,153 @@ class BookParcelView extends GetView<BookParcelController> {
                 ),
         );
       }),
+    );
+  }
+}
+
+// Dedicated StatefulWidget for city autocomplete — creates the internal
+// controller once (in initState) to prevent field resets and duplicate
+// listener accumulation on every parent rebuild.
+class _CityAutocompleteField extends StatefulWidget {
+  final TextEditingController externalController;
+  final String hint;
+  final IconData icon;
+  final Future<List<CitySuggestion>> Function(String query) onGetSuggestions;
+
+  const _CityAutocompleteField({
+    required this.externalController,
+    required this.hint,
+    required this.icon,
+    required this.onGetSuggestions,
+  });
+
+  @override
+  State<_CityAutocompleteField> createState() => _CityAutocompleteFieldState();
+}
+
+class _CityAutocompleteFieldState extends State<_CityAutocompleteField> {
+  late TextEditingController _internalController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Create the internal controller once with the current external value
+    _internalController = TextEditingController(text: widget.externalController.text);
+
+    // Keep external controller up-to-date when user types
+    _internalController.addListener(() {
+      if (widget.externalController.text != _internalController.text) {
+        widget.externalController.text = _internalController.text;
+      }
+    });
+
+    // Keep internal controller up-to-date when external is set programmatically
+    widget.externalController.addListener(_onExternalChanged);
+  }
+
+  void _onExternalChanged() {
+    if (_internalController.text != widget.externalController.text) {
+      _internalController.text = widget.externalController.text;
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.externalController.removeListener(_onExternalChanged);
+    _internalController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) async {
+        final query = textEditingValue.text.trim();
+        if (query.isEmpty) return const Iterable<String>.empty();
+        final suggestions = await widget.onGetSuggestions(query);
+        return suggestions.map((s) => s.city).toList();
+      },
+      onSelected: (String selection) {
+        _internalController.text = selection;
+        widget.externalController.text = selection;
+      },
+      fieldViewBuilder: (
+        BuildContext context,
+        TextEditingController fieldTextEditingController,
+        FocusNode fieldFocusNode,
+        VoidCallback onFieldSubmitted,
+      ) {
+        // Mirror text into the Autocomplete's own controller without resetting cursor
+        if (fieldTextEditingController.text != _internalController.text) {
+          fieldTextEditingController.text = _internalController.text;
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F8FA),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(widget.icon, color: AppColors.secondaryGreyBlue, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: fieldTextEditingController,
+                  focusNode: fieldFocusNode,
+                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryDark),
+                  decoration: InputDecoration(
+                    hintText: widget.hint,
+                    hintStyle: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onFieldSubmitted: (_) => onFieldSubmitted(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      optionsViewBuilder: (
+        BuildContext context,
+        AutocompleteOnSelected<String> onSelected,
+        Iterable<String> options,
+      ) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.white,
+            child: SizedBox(
+              height: 200.0,
+              width: MediaQuery.of(context).size.width - 80,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final String option = options.elementAt(index);
+                  return ListTile(
+                    leading: const Icon(
+                      Icons.location_city,
+                      color: AppColors.primaryAccent,
+                      size: 20,
+                    ),
+                    title: Text(option, style: AppTextStyles.bodyMedium),
+                    onTap: () => onSelected(option),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

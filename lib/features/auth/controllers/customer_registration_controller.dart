@@ -45,7 +45,7 @@ class CustomerRegistrationController extends GetxController {
       Get.snackbar(
         "Missing Name",
         "Please enter your full name.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -53,7 +53,7 @@ class CustomerRegistrationController extends GetxController {
       Get.snackbar(
         "Invalid Email",
         "Please enter a valid email address.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -61,7 +61,7 @@ class CustomerRegistrationController extends GetxController {
       Get.snackbar(
         "Weak Password",
         "Password must be at least 6 characters.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -69,7 +69,7 @@ class CustomerRegistrationController extends GetxController {
       Get.snackbar(
         "Mismatch",
         "Passwords do not match.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -96,7 +96,7 @@ class CustomerRegistrationController extends GetxController {
       Get.snackbar(
         "Registration Failed",
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     } finally {
       isLoading.value = false;

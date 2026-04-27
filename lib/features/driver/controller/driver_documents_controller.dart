@@ -127,7 +127,7 @@ class DriverDocumentsController extends GetxController {
       Get.snackbar(
         'Cannot Open Files',
         'Unable to open the file picker. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );
@@ -144,7 +144,7 @@ class DriverDocumentsController extends GetxController {
       Get.snackbar(
         'Invalid File Type',
         'Only PDF and JPEG files are allowed.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.orange.shade50,
         colorText: Colors.orange.shade900,
         duration: const Duration(seconds: 3),
@@ -158,7 +158,7 @@ class DriverDocumentsController extends GetxController {
       Get.snackbar(
         'File Too Large',
         'Maximum allowed size is 1 MB. Please compress the file and try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
         duration: const Duration(seconds: 4),
@@ -214,7 +214,7 @@ class DriverDocumentsController extends GetxController {
       Get.snackbar(
         'Document Successfully Completed',
         '$docTitle has been uploaded and is pending verification.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade800,
         duration: const Duration(seconds: 4),
@@ -225,7 +225,7 @@ class DriverDocumentsController extends GetxController {
       Get.snackbar(
         'Upload Failed',
         'Could not upload $docTitle. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );
@@ -247,7 +247,7 @@ class DriverDocumentsController extends GetxController {
       Get.snackbar(
         'Cannot Open',
         'Unable to open the document. Please try again later.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }

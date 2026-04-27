@@ -203,7 +203,7 @@ class BookParcelController extends GetxController {
       Get.snackbar(
         'Success', 
         'Resident details added successfully.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }
@@ -221,19 +221,19 @@ class BookParcelController extends GetxController {
     final dropCity = dropController.text.trim();
 
     if (pickupCity.isEmpty || dropCity.isEmpty) {
-      Get.snackbar('Locations Required', 'Please enter both pickup and drop locations.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Locations Required', 'Please enter both pickup and drop locations.', snackPosition: SnackPosition.TOP);
       return;
     }
 
     final weightText = weightController.text.trim();
     if (weightText.isEmpty) {
-      Get.snackbar('Weight Required', 'Please specify the weight of the parcel.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Weight Required', 'Please specify the weight of the parcel.', snackPosition: SnackPosition.TOP);
       return;
     }
 
     final double weight = double.tryParse(weightText) ?? -1;
     if (weight <= 0) {
-      Get.snackbar('Invalid Weight', 'Please enter a valid weight in kg.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Invalid Weight', 'Please enter a valid weight in kg.', snackPosition: SnackPosition.TOP);
       return;
     }
 
@@ -284,7 +284,7 @@ class BookParcelController extends GetxController {
         Get.snackbar(
           'No Bus Found', 
           'We currently have no buses running between $pickupCity and $dropCity capable of handling parcels.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         return;
       }

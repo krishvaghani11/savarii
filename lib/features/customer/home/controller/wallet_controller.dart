@@ -84,7 +84,7 @@ class WalletController extends GetxController {
         Get.snackbar(
           'Index Required',
           'Please create a Firestore composite index. Check the debug console for the link.',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 6),
         );
       },
@@ -275,7 +275,7 @@ class WalletController extends GetxController {
       Get.snackbar(
         'Success',
         'Money fully credited in wallet',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade100,
         colorText: Colors.green.shade800,
       );

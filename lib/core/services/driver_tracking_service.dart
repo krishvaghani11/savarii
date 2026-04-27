@@ -1,21 +1,45 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/services/realtime_db_service.dart';
-import 'package:savarii/models/live_tracking_model.dart';
+import 'package:savarii/core/services/background_location_task.dart';
 
 class DriverTrackingService extends GetxService {
   final RealtimeDbService _rtdbService = Get.find<RealtimeDbService>();
   
-  StreamSubscription<Position>? _positionStreamSubscription;
-  Timer? _heartbeatTimer;
   String? _activeBusId;
+  final FlutterBackgroundService _backgroundService = FlutterBackgroundService();
+
+  @override
+  void onInit() {
+    super.onInit();
+    _initializeBackgroundService();
+  }
+
+  Future<void> _initializeBackgroundService() async {
+    await _backgroundService.configure(
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart,
+        autoStart: false,
+        isForegroundMode: true,
+        notificationChannelId: 'my_foreground',
+        initialNotificationTitle: 'Driver Tracking',
+        initialNotificationContent: 'Initializing',
+        foregroundServiceNotificationId: 888,
+      ),
+      iosConfiguration: IosConfiguration(
+        autoStart: false,
+        onForeground: onStart,
+      ),
+    );
+  }
   
   /// Start listening to location updates and pushing them to RTDB for the given busId
   Future<void> startTracking(String busId) async {
     // If already tracking this bus, do nothing
-    if (_activeBusId == busId && _positionStreamSubscription != null) {
+    if (_activeBusId == busId) {
       return;
     }
     
@@ -39,77 +63,19 @@ class DriverTrackingService extends GetxService {
     stopTracking();
     
     _activeBusId = busId;
-    debugPrint('DriverTrackingService: Started tracking for bus $busId');
+    debugPrint('DriverTrackingService: Started tracking for bus $busId via background service');
     
-    // Configure location stream settings for driving (accuracy and update distance)
-    const LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 10, // Minimum distance (in meters) before an update is generated
-    );
-
-    // Fetch initial position immediately so tracking starts even if not moving
-    try {
-      Position initialPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      _updateLocation(initialPosition);
-    } catch (e) {
-      debugPrint('DriverTrackingService: Failed to get initial position: $e');
-    }
-
-    _positionStreamSubscription = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      (Position position) {
-        _updateLocation(position);
-      },
-      onError: (e) {
-        debugPrint('DriverTrackingService: Location stream error: $e');
-      },
-    );
-
-    // Setup a heartbeat timer to broadcast the location every 5 seconds, 
-    // ensuring the customer app doesn't mark it as stale if the bus is stopped at a traffic light
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
-      if (_activeBusId != null) {
-        try {
-          Position currentPos = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
-          );
-          _updateLocation(currentPos);
-        } catch (e) {
-          debugPrint('DriverTrackingService: Heartbeat location failed: $e');
-        }
-      }
-    });
-  }
-
-  void _updateLocation(Position position) {
-    if (_activeBusId == null) return;
-    
-    final trackingModel = LiveTrackingModel(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      heading: position.heading,
-      speed: position.speed * 3.6, // m/s to km/h
-      updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-    );
-
-    _rtdbService.updateLiveLocation(_activeBusId!, trackingModel);
+    await _backgroundService.startService();
+    _backgroundService.invoke('setBusId', {'busId': busId});
   }
 
   /// Stop tracking and writing to RTDB
   void stopTracking() {
-    _heartbeatTimer?.cancel();
-    _heartbeatTimer = null;
+    debugPrint('DriverTrackingService: Stopped tracking for bus $_activeBusId');
+    _backgroundService.invoke('stopService');
     
-    if (_positionStreamSubscription != null) {
-      _positionStreamSubscription!.cancel();
-      _positionStreamSubscription = null;
-      debugPrint('DriverTrackingService: Stopped tracking for bus $_activeBusId');
-      if (_activeBusId != null) {
-        _rtdbService.clearLiveLocation(_activeBusId!);
-      }
+    if (_activeBusId != null) {
+      _rtdbService.clearLiveLocation(_activeBusId!);
       _activeBusId = null;
     }
   }

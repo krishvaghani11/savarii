@@ -112,7 +112,7 @@ class ParcelPaymentController extends GetxController {
     Get.snackbar(
       'Calling Driver',
       'Initiating call to $driverName...',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 
@@ -170,7 +170,7 @@ class ParcelPaymentController extends GetxController {
       Get.snackbar(
         'Insufficient Balance',
         'Insufficient balance in wallet, please top up wallet, and try again',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade800,
         duration: const Duration(seconds: 4),
@@ -234,7 +234,7 @@ class ParcelPaymentController extends GetxController {
       Get.snackbar(
         '✅ Payment Successful',
         '₹${totalAmount.value.toStringAsFixed(2)} deducted from your Savarii Wallet',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade100,
         colorText: Colors.green.shade800,
       );
@@ -247,7 +247,7 @@ class ParcelPaymentController extends GetxController {
       Get.snackbar(
         'Error',
         msg,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade800,
       );
@@ -278,7 +278,7 @@ class ParcelPaymentController extends GetxController {
       Get.snackbar(
         'Error',
         'Unable to open payment gateway. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade800,
       );
@@ -320,7 +320,7 @@ class ParcelPaymentController extends GetxController {
       Get.snackbar(
         'Error',
         'Payment succeeded but failed to save parcel: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.orange.shade100,
         colorText: Colors.orange.shade900,
       );
@@ -333,7 +333,7 @@ class ParcelPaymentController extends GetxController {
     Get.snackbar(
       'Payment Failed',
       response.message ?? 'Something went wrong. Please try again.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.red.shade100,
       colorText: Colors.red.shade800,
     );
@@ -343,7 +343,7 @@ class ParcelPaymentController extends GetxController {
     Get.snackbar(
       'External Wallet',
       'Payment via ${response.walletName}. Please complete the payment.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 

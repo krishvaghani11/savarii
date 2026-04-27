@@ -87,7 +87,7 @@ class CancelBookingController extends GetxController {
       Get.snackbar(
         '✅ Booking Cancelled',
         'Your booking has been successfully cancelled.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade600,
         colorText: Colors.white,
         borderRadius: 16,
@@ -111,7 +111,7 @@ class CancelBookingController extends GetxController {
     Get.snackbar(
       'Cancellation Failed',
       message,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.red.shade50,
       colorText: Colors.red.shade800,
       duration: const Duration(seconds: 4),

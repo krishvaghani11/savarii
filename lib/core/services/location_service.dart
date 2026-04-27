@@ -19,7 +19,7 @@ class LocationService extends GetxService {
         'Please enable location services in your device settings.',
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade900,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return null;
     }
@@ -36,7 +36,7 @@ class LocationService extends GetxService {
           'Location permissions are required to provide this feature.',
           backgroundColor: Colors.orange.shade50,
           colorText: Colors.orange.shade900,
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
         );
         return null;
       }
@@ -49,7 +49,7 @@ class LocationService extends GetxService {
         'Location permissions are permanently denied. Please enable them in your app settings.',
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade900,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         mainButton: TextButton(
           onPressed: () => Geolocator.openAppSettings(),
           child: const Text('Settings'),
@@ -70,7 +70,7 @@ class LocationService extends GetxService {
         'Could not fetch your current location. Please try again.',
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade900,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return null;
     }

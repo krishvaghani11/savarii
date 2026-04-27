@@ -9,7 +9,7 @@ class VendorHelpCenterController extends GetxController {
     Get.snackbar(
       'Category Selected',
       'Loading articles for $categoryName...',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 
@@ -18,7 +18,7 @@ class VendorHelpCenterController extends GetxController {
     Get.snackbar(
       'Opening Article',
       articleTitle,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 

@@ -20,7 +20,8 @@ class CustomerHomeController extends GetxController {
   final RxDouble walletBalance = 0.0.obs;
   StreamSubscription? _walletSubscription;
 
-  final RxList<Map<String, dynamic>> activeTickets = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> activeTickets =
+      <Map<String, dynamic>>[].obs;
   StreamSubscription? _ticketSubscription;
   StreamSubscription? _profileSubscription;
 
@@ -35,22 +36,26 @@ class CustomerHomeController extends GetxController {
   void _initWalletStream() {
     final customerId = _authService.currentUser?.uid;
     if (customerId != null) {
-      _walletSubscription = _firestoreService.streamWalletBalance(customerId).listen((balance) {
-        walletBalance.value = balance;
-      });
+      _walletSubscription = _firestoreService
+          .streamWalletBalance(customerId)
+          .listen((balance) {
+            walletBalance.value = balance;
+          });
     }
   }
 
   void _fetchProfileData() {
     final customerId = _authService.currentUser?.uid;
     if (customerId != null) {
-      _profileSubscription = _firestoreService.getCustomerProfileStream(customerId).listen((data) {
-        if (data != null) {
-          userName.value = data['name'] ?? 'Savarii User';
-          phoneNumber.value = data['phone'] ?? '';
-          profileImageUrl.value = data['profileImageUrl'] ?? '';
-        }
-      });
+      _profileSubscription = _firestoreService
+          .getCustomerProfileStream(customerId)
+          .listen((data) {
+            if (data != null) {
+              userName.value = data['name'] ?? 'Savarii User';
+              phoneNumber.value = data['phone'] ?? '';
+              profileImageUrl.value = data['profileImageUrl'] ?? '';
+            }
+          });
     }
   }
 
@@ -68,37 +73,43 @@ class CustomerHomeController extends GetxController {
       _ticketSubscription = _firestoreService
           .getCustomerTicketsStream(customerId)
           .listen((tickets) {
-        if (tickets.isEmpty) {
-          activeTickets.clear();
-          return;
-        }
+            if (tickets.isEmpty) {
+              activeTickets.clear();
+              return;
+            }
 
-        // Filter and find closest upcoming ticket
-        final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-        
-        List<Map<String, dynamic>> upcomingTickets = tickets.where((ticket) {
-          // Exclude cancelled tickets
-          final status = (ticket['status'] ?? '').toString().toLowerCase();
-          if (status == 'cancelled') return false;
+            // Filter and find closest upcoming ticket
+            final today = DateTime(
+              DateTime.now().year,
+              DateTime.now().month,
+              DateTime.now().day,
+            );
 
-          final journeyDateStr = ticket['journeyDate']?.toString() ?? '';
-          final parsedDate = _parseDate(journeyDateStr);
-          if (parsedDate != null) {
-            return !parsedDate.isBefore(today); // >= today
-          }
-          return false; // exclude if unparseable
-        }).toList();
+            List<Map<String, dynamic>> upcomingTickets = tickets.where((
+              ticket,
+            ) {
+              // Exclude cancelled tickets
+              final status = (ticket['status'] ?? '').toString().toLowerCase();
+              if (status == 'cancelled') return false;
 
-        // Sort by date (closest first)
-        upcomingTickets.sort((a, b) {
-          final dateA = _parseDate(a['journeyDate'].toString());
-          final dateB = _parseDate(b['journeyDate'].toString());
-          if (dateA != null && dateB != null) return dateA.compareTo(dateB);
-          return 0;
-        });
+              final journeyDateStr = ticket['journeyDate']?.toString() ?? '';
+              final parsedDate = _parseDate(journeyDateStr);
+              if (parsedDate != null) {
+                return !parsedDate.isBefore(today); // >= today
+              }
+              return false; // exclude if unparseable
+            }).toList();
 
-        activeTickets.assignAll(upcomingTickets);
-      });
+            // Sort by date (closest first)
+            upcomingTickets.sort((a, b) {
+              final dateA = _parseDate(a['journeyDate'].toString());
+              final dateB = _parseDate(b['journeyDate'].toString());
+              if (dateA != null && dateB != null) return dateA.compareTo(dateB);
+              return 0;
+            });
+
+            activeTickets.assignAll(upcomingTickets);
+          });
     }
   }
 
@@ -120,8 +131,6 @@ class CustomerHomeController extends GetxController {
     }
     return null;
   }
-
-
 
   // --- Sidebar Logic ---
   void openSidebar() {

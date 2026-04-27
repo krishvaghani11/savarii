@@ -19,7 +19,7 @@ class LanguageController extends GetxController {
     Get.snackbar(
       'Language Updated',
       'Your preferred language has been set successfully.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
   }
 }

@@ -228,7 +228,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         'Incomplete Details',
         'Please enter both the boarding point name and time before adding.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -275,7 +275,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         'Incomplete Details',
         'Please enter both the dropping point name and time before adding.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -323,7 +323,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         'Incomplete Details',
         'Please enter the rest stop name and duration before adding.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -388,7 +388,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         "Incomplete Form",
         "Please fill in all required fields highlighted in red.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 3),
       );
       return;
@@ -399,7 +399,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         "Time Required",
         "Please select both departure & arrival time.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -408,7 +408,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         "Boarding Point Required",
         "Please add at least one boarding point.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -417,7 +417,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         "Dropping Point Required",
         "Please add at least one dropping point.",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
@@ -443,7 +443,7 @@ class AddBusController extends GetxController {
         Get.snackbar(
           "Session Expired",
           "Please login again to add a bus.",
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 4),
         );
         return;
@@ -465,7 +465,7 @@ class AddBusController extends GetxController {
          Get.snackbar(
            'Driver Not Found', 
            'No driver matched with this Mobile number in your fleet. Please add the Driver in the Management section first.',
-           snackPosition: SnackPosition.BOTTOM,
+           snackPosition: SnackPosition.TOP,
            duration: const Duration(seconds: 4),
          );
          isLoading.value = false;
@@ -533,7 +533,7 @@ class AddBusController extends GetxController {
       Get.snackbar(
         "Save Failed",
         e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );

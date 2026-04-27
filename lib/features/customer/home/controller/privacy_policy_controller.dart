@@ -6,7 +6,7 @@ class PrivacyPolicyController extends GetxController {
     Get.snackbar(
       'Email Support',
       'Redirecting to your email client...',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
     );
     // TODO: Implement url_launcher to open mailto:privacy@savarii.com
   }

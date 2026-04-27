@@ -111,7 +111,7 @@ class VendorRegistrationController extends GetxController {
       Get.snackbar(
         "Success",
         "Account created successfully!",
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
 
       // AuthController will handle routing automatically

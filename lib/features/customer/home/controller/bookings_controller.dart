@@ -200,7 +200,7 @@ class BookingsController extends GetxController {
       Get.snackbar(
         'Booking Cancelled',
         'Your booking has been cancelled successfully.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: const Color(0xFFE82E59),
         colorText: Colors.white,
       );
@@ -209,7 +209,7 @@ class BookingsController extends GetxController {
       Get.snackbar(
         'Error',
         'Failed to cancel booking. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -233,7 +233,7 @@ class BookingsController extends GetxController {
       Get.snackbar(
         'Tracking Unavailable',
         'Live tracking will be available once the vendor assigns your bus to a trip.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: const Color(0xFFFFF3CD),
         colorText: const Color(0xFF856404),
         duration: const Duration(seconds: 4),
@@ -252,7 +252,7 @@ class BookingsController extends GetxController {
       Get.snackbar(
         'Tracking Unavailable',
         'Live tracking will be available once your parcel is assigned to a trip/bus.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: const Color(0xFFFFF3CD),
         colorText: const Color(0xFF856404),
         duration: const Duration(seconds: 4),
