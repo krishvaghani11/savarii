@@ -25,7 +25,8 @@ class BookParcelController extends GetxController {
 
   // Receiver Contact Information Controllers
   final TextEditingController receiverNameController = TextEditingController();
-  final TextEditingController receiverMobileController = TextEditingController();
+  final TextEditingController receiverMobileController =
+      TextEditingController();
 
   // Extra Details
   final TextEditingController notesController = TextEditingController();
@@ -61,7 +62,6 @@ class BookParcelController extends GetxController {
   ];
   final RxString selectedParcelType = 'Documents'.obs;
 
-
   void selectParcelType(String? type) {
     if (type != null) {
       selectedParcelType.value = type;
@@ -69,9 +69,12 @@ class BookParcelController extends GetxController {
   }
 
   // --- Bottom Sheet Logic ---
-  void openResidentSheet({required bool isPickup, required BuildContext context}) {
+  void openResidentSheet({
+    required bool isPickup,
+    required BuildContext context,
+  }) {
     isEditingPickupResident = isPickup;
-    
+
     // Clear the form fields before opening
     flatNoController.clear();
     societyController.clear();
@@ -85,10 +88,15 @@ class BookParcelController extends GetxController {
         padding: const EdgeInsets.all(24.0),
         decoration: const BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
         ),
         child: Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: SingleChildScrollView(
             child: Form(
               key: sheetFormKey,
@@ -98,37 +106,71 @@ class BookParcelController extends GetxController {
                 children: [
                   Center(
                     child: Container(
-                      width: 40, height: 5, margin: const EdgeInsets.only(bottom: 24),
-                      decoration: BoxDecoration(color: AppColors.secondaryGreyBlue.withOpacity(0.3), borderRadius: BorderRadius.circular(10)),
+                      width: 40,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryGreyBlue.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                   Text(
                     isPickup ? 'Add Pickup Resident' : 'Add Drop Resident',
-                    style: AppTextStyles.h2
+                    style: AppTextStyles.h2,
                   ),
                   const SizedBox(height: 24),
 
                   Row(
                     children: [
-                      Expanded(child: _buildSheetInput('Flat / House No.', 'e.g., A-102', flatNoController)),
+                      Expanded(
+                        child: _buildSheetInput(
+                          'Flat / House No.',
+                          'e.g., A-102',
+                          flatNoController,
+                        ),
+                      ),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildSheetInput('Pincode', '000000', pincodeController, isNumber: true)),
+                      Expanded(
+                        child: _buildSheetInput(
+                          'Pincode',
+                          '000000',
+                          pincodeController,
+                          isNumber: true,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
-                  _buildSheetInput('Society / Apartment / Village', 'Enter society or village name', societyController),
+
+                  _buildSheetInput(
+                    'Society / Apartment / Village',
+                    'Enter society or village name',
+                    societyController,
+                  ),
                   const SizedBox(height: 16),
-                  
+
                   Row(
                     children: [
-                      Expanded(child: _buildSheetInput('City', 'Enter city', cityController)),
+                      Expanded(
+                        child: _buildSheetInput(
+                          'City',
+                          'Enter city',
+                          cityController,
+                        ),
+                      ),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildSheetInput('District', 'Enter district', districtController)),
+                      Expanded(
+                        child: _buildSheetInput(
+                          'District',
+                          'Enter district',
+                          districtController,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildSheetInput('State', 'Enter state', stateController),
                   const SizedBox(height: 32),
 
@@ -137,10 +179,15 @@ class BookParcelController extends GetxController {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryAccent,
                       minimumSize: const Size(double.infinity, 54),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('Confirm Resident Details', style: AppTextStyles.buttonText),
+                    child: Text(
+                      'Confirm Resident Details',
+                      style: AppTextStyles.buttonText,
+                    ),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -154,11 +201,23 @@ class BookParcelController extends GetxController {
     );
   }
 
-  Widget _buildSheetInput(String label, String hint, TextEditingController ctrl, {bool isNumber = false}) {
+  Widget _buildSheetInput(
+    String label,
+    String hint,
+    TextEditingController ctrl, {
+    bool isNumber = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.primaryDark, fontWeight: FontWeight.bold, fontSize: 10)),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.primaryDark,
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
@@ -172,9 +231,14 @@ class BookParcelController extends GetxController {
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.secondaryGreyBlue.withOpacity(0.6)),
+              hintStyle: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.secondaryGreyBlue.withOpacity(0.6),
+              ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
           ),
         ),
@@ -198,10 +262,10 @@ class BookParcelController extends GetxController {
       } else {
         dropResidentDetails.value = detailsMap;
       }
-      
+
       Get.back(); // Close the bottom sheet
       Get.snackbar(
-        'Success', 
+        'Success',
         'Resident details added successfully.',
         snackPosition: SnackPosition.TOP,
       );
@@ -221,19 +285,31 @@ class BookParcelController extends GetxController {
     final dropCity = dropController.text.trim();
 
     if (pickupCity.isEmpty || dropCity.isEmpty) {
-      Get.snackbar('Locations Required', 'Please enter both pickup and drop locations.', snackPosition: SnackPosition.TOP);
+      Get.snackbar(
+        'Locations Required',
+        'Please enter both pickup and drop locations.',
+        snackPosition: SnackPosition.TOP,
+      );
       return;
     }
 
     final weightText = weightController.text.trim();
     if (weightText.isEmpty) {
-      Get.snackbar('Weight Required', 'Please specify the weight of the parcel.', snackPosition: SnackPosition.TOP);
+      Get.snackbar(
+        'Weight Required',
+        'Please specify the weight of the parcel.',
+        snackPosition: SnackPosition.TOP,
+      );
       return;
     }
 
     final double weight = double.tryParse(weightText) ?? -1;
     if (weight <= 0) {
-      Get.snackbar('Invalid Weight', 'Please enter a valid weight in kg.', snackPosition: SnackPosition.TOP);
+      Get.snackbar(
+        'Invalid Weight',
+        'Please enter a valid weight in kg.',
+        snackPosition: SnackPosition.TOP,
+      );
       return;
     }
 
@@ -242,7 +318,7 @@ class BookParcelController extends GetxController {
     isLoading.value = true;
     try {
       final buses = await _firestoreService.getActiveBuses();
-      
+
       BusModel? matchedBus;
       String estimatedPickupTime = '--:--';
       String estimatedDropoffTime = '--:--';
@@ -250,15 +326,21 @@ class BookParcelController extends GetxController {
       for (final bus in buses) {
         String pickupLower = pickupCity.toLowerCase();
         String dropLower = dropCity.toLowerCase();
-        
+
         // Find boarding point match
-        final boardingMatch = bus.boardingPoints.firstWhere((p) => p.toLowerCase().contains(pickupLower), orElse: () => '');
+        final boardingMatch = bus.boardingPoints.firstWhere(
+          (p) => p.toLowerCase().contains(pickupLower),
+          orElse: () => '',
+        );
         // Find dropping point match
-        final droppingMatch = bus.droppingPoints.firstWhere((p) => p.toLowerCase().contains(dropLower), orElse: () => '');
+        final droppingMatch = bus.droppingPoints.firstWhere(
+          (p) => p.toLowerCase().contains(dropLower),
+          orElse: () => '',
+        );
 
         if (boardingMatch.isNotEmpty && droppingMatch.isNotEmpty) {
           matchedBus = bus;
-          
+
           // Improved time extraction logic
           if (boardingMatch.contains('-')) {
             estimatedPickupTime = boardingMatch.split('-').last.trim();
@@ -275,14 +357,14 @@ class BookParcelController extends GetxController {
           if (estimatedDropoffTime == '--:--' || estimatedDropoffTime.isEmpty) {
             estimatedDropoffTime = bus.arrivalTime;
           }
-          
+
           break; // Use first matching bus
         }
       }
 
       if (matchedBus == null) {
         Get.snackbar(
-          'No Bus Found', 
+          'No Bus Found',
           'We currently have no buses running between $pickupCity and $dropCity capable of handling parcels.',
           snackPosition: SnackPosition.TOP,
         );
@@ -313,7 +395,8 @@ class BookParcelController extends GetxController {
         'busId': matchedBus.id,
         'busName': matchedBus.busName,
         'busNumber': busNumber,
-        'vendorId': matchedBus.vendorId, // Needs to be captured for Vendor rendering
+        'vendorId':
+            matchedBus.vendorId, // Needs to be captured for Vendor rendering
         'driverName': matchedBus.driverName,
         'driverPhone': matchedBus.driverPhone,
         'estimatedPickupTime': estimatedPickupTime,
@@ -325,9 +408,11 @@ class BookParcelController extends GetxController {
 
       print("Continuing to Review step...");
       Get.toNamed('/parcel-payment', arguments: routePayload);
-
     } catch (e) {
-      Get.snackbar('Error', 'Failed to search for available routes. Please try again.');
+      Get.snackbar(
+        'Error',
+        'Failed to search for available routes. Please try again.',
+      );
     } finally {
       isLoading.value = false;
     }
@@ -344,7 +429,7 @@ class BookParcelController extends GetxController {
     receiverNameController.dispose();
     receiverMobileController.dispose();
     notesController.dispose();
-    
+
     // Bottom sheet controllers
     flatNoController.dispose();
     societyController.dispose();
@@ -352,7 +437,7 @@ class BookParcelController extends GetxController {
     districtController.dispose();
     pincodeController.dispose();
     stateController.dispose();
-    
+
     super.onClose();
   }
 }

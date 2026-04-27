@@ -5,65 +5,111 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class CitySuggestion {
   final String city;
   final String country;
+  final String state;
   final String fullName; // e.g., "Surat, Gujarat, India"
   final String placeId;
+  final double lat;
+  final double lng;
 
   CitySuggestion({
     required this.city,
     required this.country,
+    this.state = '',
     required this.fullName,
     required this.placeId,
+    this.lat = 0.0,
+    this.lng = 0.0,
   });
 }
 
 class CityGeolocationService {
   static String get googleApiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+  
+  // Cache for storing previous queries to minimize API calls
+  static final Map<String, List<CitySuggestion>> _cache = {};
 
-  /// Fetch city suggestions from Google Places API
-  /// Returns only city-level results, not detailed addresses
+  /// Fetch city suggestions from OpenStreetMap Photon API
+  /// Returns city-level results
   static Future<List<CitySuggestion>> fetchCitySuggestions(String query) async {
-    if (query.isEmpty) {
+    if (query.trim().isEmpty) {
       return [];
     }
 
-    try {
-      // Use Google Places Autocomplete with (cities) type filter
-      final url =
-          'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&types=(cities)&key=$googleApiKey';
+    final normalizedQuery = query.trim().toLowerCase();
 
-      final response = await http.get(Uri.parse(url));
+    // 1. Check Cache
+    if (_cache.containsKey(normalizedQuery)) {
+      return _cache[normalizedQuery]!;
+    }
+
+    try {
+      // 2. Use Photon API (Free, based on OSM Nominatim data)
+      final url = 'https://photon.komoot.io/api/?q=${Uri.encodeComponent(query)}&limit=15';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'User-Agent': 'SavariiApp/1.0',
+          'Accept': 'application/json',
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final predictions = data['predictions'] as List<dynamic>? ?? [];
+        final features = data['features'] as List<dynamic>? ?? [];
 
-        final suggestions = predictions.map((p) {
-          final description = p['description'] as String? ?? '';
-          final placeId = p['place_id'] as String? ?? '';
+        final List<CitySuggestion> suggestions = [];
+        final uniqueCheck = <String>{};
 
-          // Extract city name from description
-          // Format is usually: "City, State/Province, Country"
-          final parts = description.split(',').map((s) => s.trim()).toList();
-          final city = parts.isNotEmpty ? parts[0] : description;
-          final country = parts.length > 1 ? parts.last : '';
+        for (var f in features) {
+          final properties = f['properties'] as Map<String, dynamic>? ?? {};
+          final geometry = f['geometry'] as Map<String, dynamic>? ?? {};
+          
+          final key = properties['osm_key'] as String? ?? '';
+          
+          // Filter to populate primarily places/boundaries
+          if (key != 'place' && key != 'boundary' && key != 'highway') continue;
 
-          return CitySuggestion(
-            city: city,
-            country: country,
-            fullName: description,
-            placeId: placeId,
-          );
-        }).toList();
+          final name = properties['name'] as String? ?? properties['city'] as String? ?? '';
+          if (name.isEmpty) continue;
 
-        // Remove duplicates based on city name
-        final uniqueSuggestions = <String, CitySuggestion>{};
-        for (var suggestion in suggestions) {
-          uniqueSuggestions[suggestion.city.toLowerCase()] = suggestion;
+          final state = properties['state'] as String? ?? '';
+          final country = properties['country'] as String? ?? '';
+          
+          final lat = (geometry['coordinates'] as List<dynamic>?)?[1] as double? ?? 0.0;
+          final lng = (geometry['coordinates'] as List<dynamic>?)?[0] as double? ?? 0.0;
+          
+          final placeId = (properties['osm_id']?.toString()) ?? '${lat}_$lng';
+
+          // Build full name correctly avoiding duplicates like "Surat, Surat, India"
+          List<String> parts = [name];
+          if (state.isNotEmpty && state != name) parts.add(state);
+          if (country.isNotEmpty && country != name && country != state) parts.add(country);
+          
+          final fullName = parts.join(', ');
+
+          // Deduplication key based on normalized name + state + country
+          final dedupKey = '$name, $state, $country'.toLowerCase();
+
+          if (!uniqueCheck.contains(dedupKey)) {
+            uniqueCheck.add(dedupKey);
+            suggestions.add(CitySuggestion(
+              city: name,
+              country: country,
+              state: state,
+              fullName: fullName,
+              placeId: placeId,
+              lat: lat,
+              lng: lng,
+            ));
+          }
         }
 
-        return uniqueSuggestions.values.toList();
+        // 3. Save to cache before returning
+        _cache[normalizedQuery] = suggestions;
+        return suggestions;
       } else {
-        print('Error fetching city suggestions: ${response.statusCode}');
+        print('Error fetching city suggestions from Photon: ${response.statusCode}');
         return [];
       }
     } catch (e) {
@@ -72,23 +118,9 @@ class CityGeolocationService {
     }
   }
 
-  /// Get detailed city information using Google Places Details API
+  /// Get detailed city information (Currently a stub as Photon returns lat/lng directly)
   static Future<Map<String, dynamic>?> getCityDetails(String placeId) async {
-    try {
-      final url =
-          'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$googleApiKey';
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final result = data['result'] as Map<String, dynamic>? ?? {};
-        return result;
-      }
-      return null;
-    } catch (e) {
-      print('Error in getCityDetails: $e');
-      return null;
-    }
+    // Left for backwards compatibility if needed, but we don't need Google API details anymore
+    return null;
   }
 }

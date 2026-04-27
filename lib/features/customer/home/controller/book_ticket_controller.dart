@@ -10,11 +10,15 @@ class CitySuggestionModel {
   final String city;
   final String fullName;
   final String placeId;
+  final double lat;
+  final double lng;
 
   CitySuggestionModel({
     required this.city,
     required this.fullName,
     required this.placeId,
+    this.lat = 0.0,
+    this.lng = 0.0,
   });
 }
 
@@ -90,6 +94,8 @@ class BookTicketController extends GetxController {
           city: cs.city,
           fullName: cs.fullName,
           placeId: cs.placeId,
+          lat: cs.lat,
+          lng: cs.lng,
         );
       }).toList();
 
