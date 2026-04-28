@@ -15,6 +15,12 @@ class DriverTrackingService extends GetxService {
   final FlutterBackgroundService _backgroundService =
       FlutterBackgroundService();
 
+  /// True if there is an active GPS tracking session.
+  bool get isTracking => _activeBusId != null;
+
+  /// The bus currently being tracked, or null if not tracking.
+  String? get activeBusId => _activeBusId;
+
   @override
   void onInit() {
     super.onInit();

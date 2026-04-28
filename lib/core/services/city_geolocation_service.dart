@@ -86,8 +86,9 @@ class CityGeolocationService {
           // Build full name correctly avoiding duplicates like "Surat, Surat, India"
           List<String> parts = [name];
           if (state.isNotEmpty && state != name) parts.add(state);
-          if (country.isNotEmpty && country != name && country != state)
+          if (country.isNotEmpty && country != name && country != state) {
             parts.add(country);
+          }
 
           final fullName = parts.join(', ');
 

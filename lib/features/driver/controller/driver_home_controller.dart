@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:savarii/core/services/location_service.dart';
 import 'package:savarii/features/auth/controllers/auth_controller.dart';
 import 'package:savarii/core/services/driver_tracking_service.dart';
 
@@ -43,6 +46,39 @@ class DriverHomeController extends GetxController {
   void onInit() {
     super.onInit();
     _bindDriverAndBus();
+    // Check location permission after the first frame is drawn.
+    // Drivers MUST have location — dialog is non-dismissable.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkLocationPermission());
+  }
+
+  /// Silently checks location permission status.
+  /// Shows a non-dismissable compact dialog for drivers — they need GPS to work.
+  Future<void> _checkLocationPermission() async {
+    final locationService = Get.find<LocationService>();
+
+    // If GPS is off, prompt to enable it.
+    final gpsEnabled = await locationService.isGpsEnabled();
+    if (!gpsEnabled) {
+      await locationService.showLocationPermissionDialog(
+        isDeniedForever: false,
+        isDriverRole: true,
+      );
+      return;
+    }
+
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.deniedForever) {
+      await locationService.showLocationPermissionDialog(
+        isDeniedForever: true,
+        isDriverRole: true,
+      );
+    } else if (permission == LocationPermission.denied) {
+      await locationService.showLocationPermissionDialog(
+        isDeniedForever: false,
+        isDriverRole: true,
+      );
+    }
+    // If whileInUse or always — do nothing, location is fine.
   }
 
   Future<void> _bindDriverAndBus() async {

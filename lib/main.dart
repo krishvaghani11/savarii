@@ -8,6 +8,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/services/firestore_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/location_service.dart';
+import 'core/services/realtime_db_service.dart';
+import 'core/services/driver_tracking_service.dart';
 import 'features/auth/controllers/auth_controller.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
@@ -31,6 +33,8 @@ void main() async {
   // Register core services as permanent singletons so they are NEVER
   // disposed by GetX during navigation.
   Get.put<FirestoreService>(FirestoreService(), permanent: true);
+  Get.put<RealtimeDbService>(RealtimeDbService(), permanent: true);
+  Get.put<DriverTrackingService>(DriverTrackingService(), permanent: true);
   Get.put<AuthController>(AuthController(), permanent: true);
   Get.put<LocationService>(LocationService(), permanent: true);
 
