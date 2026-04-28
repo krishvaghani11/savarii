@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:savarii/core/services/realtime_db_service.dart';
@@ -19,14 +21,32 @@ class DriverTrackingService extends GetxService {
   }
 
   Future<void> _initializeBackgroundService() async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'my_foreground', // id
+      'Driver Tracking Service', // title
+      description: 'This channel is used for tracking driver location in background.', // description
+      importance: Importance.low, // importance must be at low or higher level
+    );
+
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    if (Platform.isAndroid) {
+      // Create the channel on the device (if a channel with an id already exists, it will be updated)
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
+    }
+
     await _backgroundService.configure(
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
         autoStart: false,
         isForegroundMode: true,
         notificationChannelId: 'my_foreground',
-        initialNotificationTitle: 'Driver Tracking',
-        initialNotificationContent: 'Initializing',
+        initialNotificationTitle: 'Savarii Driver Active',
+        initialNotificationContent: 'Tracking location in background',
         foregroundServiceNotificationId: 888,
       ),
       iosConfiguration: IosConfiguration(
@@ -66,6 +86,10 @@ class DriverTrackingService extends GetxService {
     debugPrint('DriverTrackingService: Started tracking for bus $busId via background service');
     
     await _backgroundService.startService();
+    // Give the background isolate enough time to run Firebase.initializeApp()
+    // and register its event listeners before we invoke 'setBusId'.
+    // Firebase init alone can take 1–2 s on a cold start.
+    await Future.delayed(const Duration(milliseconds: 2500));
     _backgroundService.invoke('setBusId', {'busId': busId});
   }
 
