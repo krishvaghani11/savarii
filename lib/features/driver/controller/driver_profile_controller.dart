@@ -80,7 +80,6 @@ class DriverProfileController extends GetxController {
   }
 
   void logOut() {
-    print("Logging out...");
     Get.defaultDialog(
       title: "Log Out",
       middleText: "Are you sure you want to log out of your account?",
@@ -89,8 +88,12 @@ class DriverProfileController extends GetxController {
       confirmTextColor: Colors.white,
       buttonColor: Colors.redAccent,
       onConfirm: () {
-        // Clear session and navigate to Role Selection/Login
-        Get.offAllNamed('/role-selection');
+        Get.back(); 
+        if (Get.isRegistered<AuthController>()) {
+          Get.find<AuthController>().logout();
+        } else {
+          Get.offAllNamed('/role-selection');
+        }
       },
     );
   }

@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geolocator_android/geolocator_android.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:savarii/firebase_options.dart';
@@ -27,6 +26,10 @@ void onStart(ServiceInstance service) async {
       return;
     }
   }
+
+  // Signal to the main isolate that we are fully initialized and ready
+  // to receive events. This replaces the unreliable fixed delay.
+  service.invoke('ready', {});
 
   StreamSubscription<Position>? positionStream;
 
@@ -75,18 +78,19 @@ void onStart(ServiceInstance service) async {
             distanceFilter: 0,
           );
 
-    positionStream = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen((Position position) {
-      FirebaseDatabase.instance.ref('live_tracking/$busId').update({
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-        'heading': position.heading,
-        'speed': position.speed * 3.6,
-        'updatedAt': DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      });
-      debugPrint("Background: location update sent for $busId");
-    });
+    positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) {
+            FirebaseDatabase.instance.ref('live_tracking/$busId').update({
+              'latitude': position.latitude,
+              'longitude': position.longitude,
+              'heading': position.heading,
+              'speed': position.speed * 3.6,
+              'updatedAt': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+            });
+            debugPrint("Background: location update sent for $busId");
+          },
+        );
 
     debugPrint("Background: GPS stream started for $busId");
   });

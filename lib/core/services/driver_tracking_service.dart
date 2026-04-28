@@ -10,9 +10,10 @@ import 'package:savarii/core/services/background_location_task.dart';
 
 class DriverTrackingService extends GetxService {
   final RealtimeDbService _rtdbService = Get.find<RealtimeDbService>();
-  
+
   String? _activeBusId;
-  final FlutterBackgroundService _backgroundService = FlutterBackgroundService();
+  final FlutterBackgroundService _backgroundService =
+      FlutterBackgroundService();
 
   @override
   void onInit() {
@@ -24,7 +25,8 @@ class DriverTrackingService extends GetxService {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'my_foreground', // id
       'Driver Tracking Service', // title
-      description: 'This channel is used for tracking driver location in background.', // description
+      description:
+          'This channel is used for tracking driver location in background.', // description
       importance: Importance.low, // importance must be at low or higher level
     );
 
@@ -35,7 +37,8 @@ class DriverTrackingService extends GetxService {
       // Create the channel on the device (if a channel with an id already exists, it will be updated)
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.createNotificationChannel(channel);
     }
 
@@ -55,14 +58,14 @@ class DriverTrackingService extends GetxService {
       ),
     );
   }
-  
+
   /// Start listening to location updates and pushing them to RTDB for the given busId
   Future<void> startTracking(String busId) async {
     // If already tracking this bus, do nothing
     if (_activeBusId == busId) {
       return;
     }
-    
+
     // Check permissions before starting
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -74,22 +77,35 @@ class DriverTrackingService extends GetxService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       debugPrint('DriverTrackingService: Location permissions are denied.');
       return;
     }
 
     // Stop any existing stream
     stopTracking();
-    
+
     _activeBusId = busId;
-    debugPrint('DriverTrackingService: Started tracking for bus $busId via background service');
-    
+    debugPrint(
+      'DriverTrackingService: Started tracking for bus $busId via background service',
+    );
+
     await _backgroundService.startService();
-    // Give the background isolate enough time to run Firebase.initializeApp()
-    // and register its event listeners before we invoke 'setBusId'.
-    // Firebase init alone can take 1–2 s on a cold start.
-    await Future.delayed(const Duration(milliseconds: 2500));
+
+    // Wait for the background isolate to signal it finished Firebase init.
+    // This is a proper handshake — no blind delay needed.
+    // Timeout after 10 s in case something goes wrong in the isolate.
+    try {
+      await _backgroundService
+          .on('ready')
+          .first
+          .timeout(const Duration(seconds: 10));
+      debugPrint('DriverTrackingService: background isolate is ready.');
+    } catch (_) {
+      debugPrint('DriverTrackingService: ready timeout — sending setBusId anyway.');
+    }
+
     _backgroundService.invoke('setBusId', {'busId': busId});
   }
 
@@ -97,7 +113,7 @@ class DriverTrackingService extends GetxService {
   void stopTracking() {
     debugPrint('DriverTrackingService: Stopped tracking for bus $_activeBusId');
     _backgroundService.invoke('stopService');
-    
+
     if (_activeBusId != null) {
       _rtdbService.clearLiveLocation(_activeBusId!);
       _activeBusId = null;

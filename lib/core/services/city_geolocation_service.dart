@@ -24,7 +24,7 @@ class CitySuggestion {
 
 class CityGeolocationService {
   static String get googleApiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
-  
+
   // Cache for storing previous queries to minimize API calls
   static final Map<String, List<CitySuggestion>> _cache = {};
 
@@ -37,21 +37,18 @@ class CityGeolocationService {
 
     final normalizedQuery = query.trim().toLowerCase();
 
-    // 1. Check Cache
     if (_cache.containsKey(normalizedQuery)) {
       return _cache[normalizedQuery]!;
     }
 
     try {
-      // 2. Use Photon API (Free, based on OSM Nominatim data)
-      final url = 'https://photon.komoot.io/api/?q=${Uri.encodeComponent(query)}&limit=15';
+      // 2.  Photon API (Free, based on OSM Nominatim data)
+      final url =
+          'https://photon.komoot.io/api/?q=${Uri.encodeComponent(query)}&limit=15';
 
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'User-Agent': 'SavariiApp/1.0',
-          'Accept': 'application/json',
-        },
+        headers: {'User-Agent': 'SavariiApp/1.0', 'Accept': 'application/json'},
       );
 
       if (response.statusCode == 200) {
@@ -64,28 +61,34 @@ class CityGeolocationService {
         for (var f in features) {
           final properties = f['properties'] as Map<String, dynamic>? ?? {};
           final geometry = f['geometry'] as Map<String, dynamic>? ?? {};
-          
+
           final key = properties['osm_key'] as String? ?? '';
-          
+
           // Filter to populate primarily places/boundaries
           if (key != 'place' && key != 'boundary' && key != 'highway') continue;
 
-          final name = properties['name'] as String? ?? properties['city'] as String? ?? '';
+          final name =
+              properties['name'] as String? ??
+              properties['city'] as String? ??
+              '';
           if (name.isEmpty) continue;
 
           final state = properties['state'] as String? ?? '';
           final country = properties['country'] as String? ?? '';
-          
-          final lat = (geometry['coordinates'] as List<dynamic>?)?[1] as double? ?? 0.0;
-          final lng = (geometry['coordinates'] as List<dynamic>?)?[0] as double? ?? 0.0;
-          
+
+          final lat =
+              (geometry['coordinates'] as List<dynamic>?)?[1] as double? ?? 0.0;
+          final lng =
+              (geometry['coordinates'] as List<dynamic>?)?[0] as double? ?? 0.0;
+
           final placeId = (properties['osm_id']?.toString()) ?? '${lat}_$lng';
 
           // Build full name correctly avoiding duplicates like "Surat, Surat, India"
           List<String> parts = [name];
           if (state.isNotEmpty && state != name) parts.add(state);
-          if (country.isNotEmpty && country != name && country != state) parts.add(country);
-          
+          if (country.isNotEmpty && country != name && country != state)
+            parts.add(country);
+
           final fullName = parts.join(', ');
 
           // Deduplication key based on normalized name + state + country
@@ -93,15 +96,17 @@ class CityGeolocationService {
 
           if (!uniqueCheck.contains(dedupKey)) {
             uniqueCheck.add(dedupKey);
-            suggestions.add(CitySuggestion(
-              city: name,
-              country: country,
-              state: state,
-              fullName: fullName,
-              placeId: placeId,
-              lat: lat,
-              lng: lng,
-            ));
+            suggestions.add(
+              CitySuggestion(
+                city: name,
+                country: country,
+                state: state,
+                fullName: fullName,
+                placeId: placeId,
+                lat: lat,
+                lng: lng,
+              ),
+            );
           }
         }
 
@@ -109,7 +114,9 @@ class CityGeolocationService {
         _cache[normalizedQuery] = suggestions;
         return suggestions;
       } else {
-        print('Error fetching city suggestions from Photon: ${response.statusCode}');
+        print(
+          'Error fetching city suggestions from Photon: ${response.statusCode}',
+        );
         return [];
       }
     } catch (e) {
