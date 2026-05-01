@@ -6,6 +6,7 @@ import '../../../core/services/auth_services.dart';
 import '../../../core/services/driver_tracking_service.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../models/user_model.dart';
 import '../../../routes/app_routes.dart';
 
@@ -33,71 +34,72 @@ class AuthController extends GetxController {
   }
 
   Future<void> _handleAuthChanged(User? user) async {
+    debugPrint('AuthController: Auth state changed. User: ${user?.uid}');
     if (user == null) {
       uid = null;
       isLoggedIn.value = false;
       currentUserProfile.value = null;
-      // Navigate to role selection if they are on a protected route.
-      // Wrapped in addPostFrameCallback so this is safe even on the very first
-      // auth-state emission that fires before GetMaterialApp builds its navigator.
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final route = Get.currentRoute;
+        debugPrint('AuthController: No user, current route: $route');
+        // ONLY navigate if we are NOT on the splash screen. 
+        // SplashController will handle the initial routing from splash.
         if (route != AppRoutes.splash &&
             route != AppRoutes.roleSelection &&
             !route.contains('login') &&
             !route.contains('registration') &&
             !route.contains('register')) {
-          Get.offAllNamed(AppRoutes.roleSelection);
+          _safeNavigate(AppRoutes.roleSelection);
         }
       });
     } else {
       uid = user.uid;
       isLoggedIn.value = true;
+      debugPrint('AuthController: User logged in, fetching role...');
       await _fetchRoleAndNavigate(user.uid);
     }
   }
 
   Future<void> _fetchRoleAndNavigate(String userId) async {
     try {
+      debugPrint('AuthController: Fetching profile for $userId');
       final userModel = await _firestoreService.getUserProfile(userId);
+
       if (userModel != null) {
+        debugPrint('AuthController: Profile found. Role: ${userModel.role}');
         currentUserProfile.value = userModel;
         selectedRole.value = userModel.role;
 
-        // Check location permission BEFORE deciding navigation target.
-        // This runs async here (outside postFrameCallback) so the result
-        // is available when we decide which route to push.
+        NotificationService.to.saveFcmToken(userId, userModel.role);
+
         final locationService = Get.find<LocationService>();
         final alreadyGranted = await locationService.hasPermission();
+        debugPrint(
+            'AuthController: Location permission granted: $alreadyGranted');
 
-        // All navigation wrapped in addPostFrameCallback so it is safe even
-        // when this runs before GetMaterialApp finishes building its navigator.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
           final currentRoute = Get.currentRoute;
+          debugPrint(
+              'AuthController: Profile ready. Current route: $currentRoute');
 
-          // 1. Coming from login / registration → smart routing
+          // 1. If we are on login/registration, move them forward immediately.
           if (currentRoute.contains('login') ||
               currentRoute.contains('registration')) {
             if (alreadyGranted) {
-              // Permission already granted — go straight to Home, no screen.
               _navigateToHome(userModel.role);
             } else {
-              // First time or revoked — show the full location onboarding screen.
               _navigateToLocationScreen(userModel.role);
             }
           }
-          // 2. Cold start (Splash / Role Selection / empty route) → Main Dashboard
-          else if (currentRoute == AppRoutes.splash ||
-              currentRoute == '' ||
-              currentRoute == AppRoutes.roleSelection) {
-            _navigateToHome(userModel.role);
-          }
+          // 2. If we are on Splash, DO NOTHING. 
+          // SplashController is watching our 'isLoggedIn' and 'currentUserProfile' 
+          // and will navigate when its timer is done.
+
         });
       } else {
-        // User is authenticated in Firebase but missing Firestore profile
         debugPrint(
-          'Error: User document does not exist in Firestore for uid: $userId',
-        );
+            'AuthController: Error - User document does not exist for uid: $userId');
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.snackbar(
             'Profile Not Found',
@@ -108,30 +110,64 @@ class AuthController extends GetxController {
         await logout();
       }
     } catch (e) {
-      debugPrint('Error fetching role: $e');
+      debugPrint('AuthController: Exception in _fetchRoleAndNavigate: $e');
+      // If we are stuck on splash and an error occurs, fallback to role selection
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (Get.currentRoute == AppRoutes.splash) {
+          _safeNavigate(AppRoutes.roleSelection);
+        }
+      });
+    }
+  }
+
+  /// Safely navigate by ensuring the GetX navigator is ready.
+  /// If not ready, it retries in the next frame.
+  void _safeNavigate(String route,
+      {Map<String, dynamic>? arguments, bool offAll = true}) {
+    if (Get.key.currentState == null) {
+      debugPrint(
+          'AuthController: Navigator not ready yet, retrying navigation to $route in next frame...');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _safeNavigate(route, arguments: arguments, offAll: offAll);
+      });
+      return;
+    }
+
+    if (offAll) {
+      Get.offAllNamed(route, arguments: arguments);
+    } else {
+      Get.toNamed(route, arguments: arguments);
     }
   }
 
   /// Navigate to the appropriate Home screen based on role.
   void _navigateToHome(String role) {
+    String route;
     if (role == 'customer') {
-      Get.offAllNamed(AppRoutes.customerMainLayout);
+      route = AppRoutes.customerMainLayout;
     } else if (role == 'vendor') {
-      Get.offAllNamed(AppRoutes.vendorMain);
+      route = AppRoutes.vendorMain;
     } else if (role == 'driver') {
-      Get.offAllNamed(AppRoutes.driverMain);
+      route = AppRoutes.driverMain;
+    } else {
+      return;
     }
+    _safeNavigate(route);
   }
 
   /// Navigate to the full Location Access onboarding screen based on role.
   void _navigateToLocationScreen(String role) {
+    String route;
     if (role == 'customer') {
-      Get.offAllNamed(AppRoutes.locationAccess);
+      route = AppRoutes.locationAccess;
     } else if (role == 'vendor') {
-      Get.offAllNamed(AppRoutes.vendorLocationAccess);
+      route = AppRoutes.vendorLocationAccess;
     } else if (role == 'driver') {
-      Get.offAllNamed(AppRoutes.driverLocationAccess);
+      route = AppRoutes.driverLocationAccess;
+    } else {
+      return;
     }
+    _safeNavigate(route);
   }
 
   /// Ends an active driver trip before signing out:
@@ -170,6 +206,12 @@ class AuthController extends GetxController {
     selectedRole.value = '';
     currentUserProfile.value = null;
 
+    // 1. Remove FCM token from Firestore so the user doesn't receive
+    //    notifications on this device after logging out.
+    if (uid != null && role.isNotEmpty) {
+      await NotificationService.to.removeFcmToken(uid!, role);
+    }
+
     // Run driver-specific cleanup (non-blocking — errors are swallowed inside).
     if (role == 'driver' && driverId != null) {
       await _cleanupDriverSession(driverId);
@@ -180,7 +222,7 @@ class AuthController extends GetxController {
     // Navigate only after sign-out is complete so the auth-state stream
     // change doesn't race with this explicit navigation.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.offAllNamed(AppRoutes.roleSelection);
+      _safeNavigate(AppRoutes.roleSelection);
     });
   }
 

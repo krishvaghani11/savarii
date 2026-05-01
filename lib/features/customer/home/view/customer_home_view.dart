@@ -151,15 +151,25 @@ class CustomerHomeView extends GetView<CustomerHomeController> {
         // Notification Bell
         IconButton(
           onPressed: controller.goToNotifications,
-          icon: const Badge(
-            backgroundColor: AppColors.primaryAccent,
-            smallSize: 10,
-            child: Icon(
+          icon: Obx(() {
+            final count = controller.unreadNotificationsCount;
+            if (count > 0) {
+              return Badge(
+                backgroundColor: AppColors.primaryAccent,
+                label: Text(count > 99 ? '99+' : count.toString()),
+                child: const Icon(
+                  Icons.notifications_none_outlined,
+                  color: AppColors.primaryDark,
+                  size: 28,
+                ),
+              );
+            }
+            return const Icon(
               Icons.notifications_none_outlined,
               color: AppColors.primaryDark,
               size: 28,
-            ),
-          ),
+            );
+          }),
         ),
       ],
     );

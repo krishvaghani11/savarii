@@ -4,6 +4,7 @@ import 'package:savarii/features/customer/home/controller/customer_home_controll
 import 'package:savarii/features/customer/home/controller/main_layout_controller.dart';
 import 'package:savarii/features/customer/home/controller/profile_controller.dart';
 import 'package:savarii/features/customer/home/controller/wallet_controller.dart';
+import 'package:savarii/features/customer/home/controller/customer_notifications_controller.dart';
 
 class MainLayoutBinding extends Bindings {
   @override
@@ -16,5 +17,6 @@ class MainLayoutBinding extends Bindings {
     Get.lazyPut<ProfileController>(() => ProfileController());
     Get.lazyPut<BookingsController>(() => BookingsController());
     Get.lazyPut<WalletController>(() => WalletController());
+    Get.lazyPut<CustomerNotificationsController>(() => CustomerNotificationsController());
   }
 }

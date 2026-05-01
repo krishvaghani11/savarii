@@ -3,6 +3,12 @@
     "source": "functions",
     "runtime": "nodejs20"
   },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
   "flutter": {
     "platforms": {
       "android": {

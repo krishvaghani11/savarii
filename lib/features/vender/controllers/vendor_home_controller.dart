@@ -142,8 +142,10 @@ class VendorHomeController extends GetxController {
     }
   }
 
-  void openNotifications() => print("Opening notifications...");
-
+  void openNotifications() {
+    print("Opening notifications...");
+    Get.toNamed('/vendor-notifications');
+  }
   // Dashboard Actions
   void addBusAndRoute() {
     print("Navigating to Add Bus...");

@@ -25,6 +25,8 @@ import 'package:savarii/features/driver/binding/driver_signup_binding.dart';
 import 'package:savarii/features/driver/binding/driver_support_binding.dart';
 import 'package:savarii/features/driver/binding/edit_driver_profile_binding.dart';
 import 'package:savarii/features/driver/view/driver_documents_view.dart';
+import 'package:savarii/features/driver/view/driver_notifications_view.dart';
+import 'package:savarii/features/driver/binding/driver_notifications_binding.dart';
 import 'package:savarii/features/driver/view/driver_forgot_password_view.dart';
 import 'package:savarii/features/driver/view/driver_login_view.dart';
 import 'package:savarii/features/driver/view/driver_signup_view.dart';
@@ -97,6 +99,7 @@ import 'package:savarii/features/customer/home/view/settings_view.dart';
 import 'package:savarii/features/customer/home/view/terms_conditions_view.dart';
 import 'package:savarii/features/customer/home/view/track_bus_view.dart';
 import 'package:savarii/features/customer/home/view/wallet_view.dart';
+import 'package:savarii/features/customer/home/view/customer_notifications_view.dart';
 import 'package:savarii/features/splash/view/splash_view.dart';
 import 'package:savarii/features/vender/bindings/add_bus_binding.dart';
 import 'package:savarii/features/vender/bindings/vendor_add_travels_binding.dart';
@@ -142,6 +145,8 @@ import 'package:savarii/features/vender/view/vendor_razorpay_view.dart';
 import 'package:savarii/features/vender/bindings/vendor_razorpay_binding.dart';
 import '../features/splash/bindings/splash_binding.dart';
 import '../features/auth/bindings/role_selection_binding.dart';
+import 'package:savarii/features/vender/view/vendor_notifications_view.dart';
+import 'package:savarii/features/vender/bindings/vendor_notifications_binding.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -347,11 +352,11 @@ class AppPages {
       binding: WalletConfirmationBinding(),
       transition: Transition.fadeIn, 
     ),
-
-
-
-
-
+    GetPage(
+      name: AppRoutes.customerNotifications,
+      page: () => const CustomerNotificationsView(),
+      transition: Transition.rightToLeft,
+    ),
 
     // vendor side routes
     GetPage(
@@ -514,6 +519,12 @@ class AppPages {
        binding: EditDriverBinding(),
        transition: Transition.rightToLeft,
      ),
+     GetPage(
+       name: AppRoutes.vendorNotifications,
+       page: () => const VendorNotificationsView(),
+       binding: VendorNotificationsBinding(),
+       transition: Transition.rightToLeft,
+     ),
 
 
     //driver side routes
@@ -581,10 +592,16 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-  name: AppRoutes.driverDocuments,
-  page: () => const DriverDocumentsView(),
-  binding: DriverDocumentsBinding(),
-  transition: Transition.rightToLeft,
-),
+      name: AppRoutes.driverDocuments,
+      page: () => const DriverDocumentsView(),
+      binding: DriverDocumentsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.driverNotifications,
+      page: () => const DriverNotificationsView(),
+      binding: DriverNotificationsBinding(),
+      transition: Transition.rightToLeft,
+    ),
   ];
 }

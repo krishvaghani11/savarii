@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:savarii/models/user_model.dart';
@@ -216,9 +217,18 @@ class FirestoreService extends GetxService {
   /// Returns the doc data including Firestore document ID as 'id', or null if not found.
   Future<Map<String, dynamic>?> getTicketByPnr(String pnr) async {
     try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return null;
+
       final snapshot = await _db
           .collection('tickets')
           .where('bookingId', isEqualTo: pnr.trim())
+          .where(
+            Filter.or(
+              Filter('customerId', isEqualTo: uid),
+              Filter('vendorId', isEqualTo: uid),
+            ),
+          )
           .limit(1)
           .get();
       if (snapshot.docs.isEmpty) return null;
@@ -286,6 +296,112 @@ class FirestoreService extends GetxService {
               .map((doc) => {'id': doc.id, ...doc.data()})
               .toList(),
         );
+  }
+
+  // --- Notifications Methods ---
+  Stream<List<Map<String, dynamic>>> getCustomerNotificationsStream(String userId) {
+    return _db
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .where('role', isEqualTo: 'customer')
+        .snapshots()
+        .map((snapshot) {
+          final docs = snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+          // Sort by createdAt descending
+          docs.sort((a, b) {
+            final aDate = (a['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
+            final bDate = (b['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
+            return bDate.compareTo(aDate);
+          });
+          return docs;
+        });
+  }
+
+  Future<void> markNotificationAsRead(String notificationId) async {
+    await _db.collection('notifications').doc(notificationId).update({
+      'readStatus': true,
+    });
+  }
+
+  Future<void> markAllNotificationsAsRead(String userId) async {
+    final snapshot = await _db
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .where('role', isEqualTo: 'customer')
+        .where('readStatus', isEqualTo: false)
+        .get();
+
+    final batch = _db.batch();
+    for (var doc in snapshot.docs) {
+      batch.update(doc.reference, {'readStatus': true});
+    }
+    await batch.commit();
+  }
+
+  Stream<List<Map<String, dynamic>>> getVendorNotificationsStream(String userId) {
+    return _db
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .where('role', isEqualTo: 'vendor')
+        .snapshots()
+        .map((snapshot) {
+          final docs = snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+          // Sort by createdAt descending
+          docs.sort((a, b) {
+            final aDate = (a['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
+            final bDate = (b['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
+            return bDate.compareTo(aDate);
+          });
+          return docs;
+        });
+  }
+
+  Future<void> markAllVendorNotificationsAsRead(String userId) async {
+    final snapshot = await _db
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .where('role', isEqualTo: 'vendor')
+        .where('readStatus', isEqualTo: false)
+        .get();
+
+    final batch = _db.batch();
+    for (var doc in snapshot.docs) {
+      batch.update(doc.reference, {'readStatus': true});
+    }
+    await batch.commit();
+  }
+
+  Stream<List<Map<String, dynamic>>> getDriverNotificationsStream(String userId) {
+    return _db
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .where('role', isEqualTo: 'driver')
+        .snapshots()
+        .map((snapshot) {
+          final docs = snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+          // Sort by createdAt descending
+          docs.sort((a, b) {
+            final aDate = (a['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
+            final bDate = (b['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
+            return bDate.compareTo(aDate);
+          });
+          return docs;
+        });
+  }
+
+  Future<void> markAllDriverNotificationsAsRead(String userId) async {
+    final snapshot = await _db
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .where('role', isEqualTo: 'driver')
+        .where('readStatus', isEqualTo: false)
+        .get();
+
+    final batch = _db.batch();
+    for (var doc in snapshot.docs) {
+      batch.update(doc.reference, {'readStatus': true});
+    }
+    await batch.commit();
   }
 
   Stream<List<Map<String, dynamic>>> getCustomerParcelsStream(

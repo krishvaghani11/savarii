@@ -38,6 +38,7 @@ class AppRoutes {
   static const String cancelParcel = '/cancel-parcel';
   static const String walletTopups = '/wallet-topups';
   static const String walletConfirmation = '/wallet-confirmation';
+  static const String customerNotifications = '/customer-notifications';
 
   //vendor side routes
   static const String vendorRegistration = '/vendor-registration';
@@ -69,6 +70,7 @@ class AppRoutes {
   static const String addDriver = '/vendor-add-driver';
   static const String driverDetails = '/vendor-driver-details';
   static const String editDriver = '/vendor-edit-driver';
+  static const String vendorNotifications = '/vendor-notifications';
 
 
 
@@ -85,4 +87,5 @@ class AppRoutes {
   static const String driverMain = '/driver-main';
   static const String driverBusDetails = '/driver-bus-details';
   static const String driverDocuments = '/driver-documents';
+  static const String driverNotifications = '/driver-notifications';
 }

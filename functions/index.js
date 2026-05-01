@@ -1,20 +1,14 @@
 /**
- * Savarii — Forgot Password Cloud Function
+ * Savarii Cloud Functions — index.js
  *
- * POST /forgotPassword
- * Body: { email: string, role: "customer" | "vendor" | "driver" }
- *
- * Security:
- *  - Rate limited: 5 requests per IP per 15 minutes
- *  - Never reveals whether an email is registered (prevents user enumeration)
- *  - All secrets loaded from environment variables (never hardcoded)
- *  - Input sanitized and validated server-side
- *
- * Flow:
- *  1. Validate email format + role
- *  2. Generate reset link via Firebase Admin SDK (generatePasswordResetLink)
- *  3. Send branded HTML email via Resend from support@savarii.co.in
- *  4. Always return the same generic success message
+ * Exports:
+ *   forgotPassword       — HTTP: password reset email via Resend
+ *   onBookingCreated     — Firestore: booking_confirmed + new_booking_received
+ *   onBookingStatusChanged — Firestore: cancellation, payment, refund events
+ *   onDriverAssigned     — Firestore: driver_assigned to all roles
+ *   onLiveTrackingUpdate — RTDB: bus_arriving_soon + drop_point_approaching
+ *   onDriverStatusChanged — Firestore: driver_offline_alert
+ *   onUnexpectedLongStop — Scheduled (5 min): unexpected_long_stop
  */
 
 "use strict";
@@ -27,6 +21,22 @@ const { buildResetEmailHtml } = require("./emailTemplate");
 
 // Initialise Firebase Admin (uses the service account automatically in Cloud Functions)
 admin.initializeApp();
+
+// ── Notification triggers ─────────────────────────────────────────────────────
+const bookingTriggers = require("./bookingTriggers");
+const trackingTriggers = require("./trackingTriggers");
+
+// Booking lifecycle
+exports.onBookingCreated = bookingTriggers.onBookingCreated;
+exports.onBookingStatusChanged = bookingTriggers.onBookingStatusChanged;
+exports.onDriverAssigned = bookingTriggers.onDriverAssigned;
+exports.onBusStatusChanged = bookingTriggers.onBusStatusChanged;
+exports.onTripReminders = bookingTriggers.onTripReminders;
+
+// Live tracking
+exports.onLiveTrackingUpdate = trackingTriggers.onLiveTrackingUpdate;
+exports.onDriverStatusChanged = trackingTriggers.onDriverStatusChanged;
+exports.onFleetHealthCheck = trackingTriggers.onFleetHealthCheck;
 
 // CORS — accept requests from any origin (Flutter mobile clients)
 const corsHandler = cors({ origin: true });

@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 import 'package:savarii/core/services/realtime_db_service.dart';
 import 'package:savarii/core/services/background_location_task.dart';
 
-class DriverTrackingService extends GetxService {
+class DriverTrackingService extends GetxService with WidgetsBindingObserver {
   final RealtimeDbService _rtdbService = Get.find<RealtimeDbService>();
 
   String? _activeBusId;
@@ -24,7 +24,23 @@ class DriverTrackingService extends GetxService {
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     _initializeBackgroundService();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_activeBusId == null) return; // Only toggle if tracking is active
+
+    if (state == AppLifecycleState.resumed) {
+      // App is in foreground, set service to background mode to hide notification
+      _backgroundService.invoke('setAsBackground');
+      debugPrint('DriverTrackingService: App resumed, hiding notification');
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.hidden) {
+      // App is in background, set service to foreground mode to show notification and keep alive
+      _backgroundService.invoke('setAsForeground');
+      debugPrint('DriverTrackingService: App in background, showing notification');
+    }
   }
 
   Future<void> _initializeBackgroundService() async {
@@ -52,7 +68,7 @@ class DriverTrackingService extends GetxService {
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
         autoStart: false,
-        isForegroundMode: true,
+        isForegroundMode: false, // Start as background mode (hidden) since app is open
         notificationChannelId: 'my_foreground',
         initialNotificationTitle: 'Savarii Driver Active',
         initialNotificationContent: 'Tracking location in background',
@@ -128,6 +144,7 @@ class DriverTrackingService extends GetxService {
 
   @override
   void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     stopTracking();
     super.onClose();
   }

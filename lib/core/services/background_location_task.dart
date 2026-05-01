@@ -27,6 +27,17 @@ void onStart(ServiceInstance service) async {
     }
   }
 
+  // Handle Android specific foreground/background toggling
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
   // Signal to the main isolate that we are fully initialized and ready
   // to receive events. This replaces the unreliable fixed delay.
   service.invoke('ready', {});

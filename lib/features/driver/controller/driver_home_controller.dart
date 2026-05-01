@@ -269,6 +269,10 @@ class DriverHomeController extends GetxController {
     }
   }
 
+  void openNotifications() {
+    Get.toNamed('/driver-notifications');
+  }
+
   void goToProfile() {
     // Deprecated explicitly running routing to Profile directly now that
     // it functions via an Indexed Stack via main_layout navigation!

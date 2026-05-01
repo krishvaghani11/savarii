@@ -51,6 +51,11 @@
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:foregroundServiceType="location" />
+
+        <!-- FCM: route incoming messages to our high-importance channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="savarii_notifications" />
     </application>
 
     <queries>

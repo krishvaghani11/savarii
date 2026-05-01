@@ -30,6 +30,26 @@ class DriverHomeView extends GetView<DriverHomeController> {
                       letterSpacing: 0.5,
                     ),
                   ),
+                  IconButton(
+                    icon: Stack(
+                      children: [
+                        const Icon(Icons.notifications, color: AppColors.primaryAccent),
+                        Positioned(
+                          right: 2,
+                          top: 2,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    onPressed: controller.openNotifications,
+                  ),
                 ],
               ),
             ),

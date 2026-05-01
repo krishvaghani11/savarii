@@ -6,6 +6,7 @@ import 'package:savarii/core/services/auth_services.dart';
 import 'package:savarii/core/services/firestore_service.dart';
 import 'package:savarii/core/services/location_service.dart';
 import 'package:savarii/features/auth/controllers/auth_controller.dart';
+import 'package:savarii/features/customer/home/controller/customer_notifications_controller.dart';
 import 'package:savarii/features/customer/home/controller/main_layout_controller.dart';
 
 class CustomerHomeController extends GetxController {
@@ -26,6 +27,14 @@ class CustomerHomeController extends GetxController {
       <Map<String, dynamic>>[].obs;
   StreamSubscription? _ticketSubscription;
   StreamSubscription? _profileSubscription;
+
+  // Notifications
+  int get unreadNotificationsCount {
+    if (Get.isRegistered<CustomerNotificationsController>()) {
+      return Get.find<CustomerNotificationsController>().unreadNotificationsCount;
+    }
+    return 0;
+  }
 
   @override
   void onInit() {
@@ -169,7 +178,7 @@ class CustomerHomeController extends GetxController {
   // --- Dashboard Quick Actions ---
   void goToNotifications() {
     print("Navigating to Notifications Screen...");
-    // Get.toNamed('/notifications');
+    Get.toNamed('/customer-notifications');
   }
 
   void goToBookTicket() {

@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "live_tracking": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$busId": {
+        ".indexOn": ["timestamp"]
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}
