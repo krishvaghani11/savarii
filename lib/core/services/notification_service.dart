@@ -34,13 +34,15 @@ class NotificationService extends GetxService {
   // savarii_critical      → high importance, max priority (FCM critical types)
   // savarii_notifications → default importance (all other FCM messages)
   //
-  static const _kCriticalChannelId   = 'savarii_critical';
+  static const _kCriticalChannelId = 'savarii_critical';
   static const _kCriticalChannelName = 'Savarii Critical Alerts';
-  static const _kCriticalChannelDesc = 'Time-sensitive alerts: boarding, cancellations, and driver events.';
+  static const _kCriticalChannelDesc =
+      'Time-sensitive alerts: boarding, cancellations, and driver events.';
 
-  static const _kChannelId   = 'savarii_notifications';
+  static const _kChannelId = 'savarii_notifications';
   static const _kChannelName = 'Savarii Alerts';
-  static const _kChannelDesc = 'Booking updates, trip info, and general alerts.';
+  static const _kChannelDesc =
+      'Booking updates, trip info, and general alerts.';
 
   // ── Public observable — unread badge count (future in-app centre) ─────────
   final RxInt unreadCount = 0.obs;
@@ -57,8 +59,8 @@ class NotificationService extends GetxService {
     _listenForeground();
     await _handleTerminatedTap();
     _listenBackgroundTap();
-    _listenTokenRefresh();        // Global refresh listener — runs for whole session
-    await _syncTokenOnStartup();  // Catches users who were already logged in
+    _listenTokenRefresh(); // Global refresh listener — runs for whole session
+    await _syncTokenOnStartup(); // Catches users who were already logged in
     return this;
   }
 
@@ -70,26 +72,32 @@ class NotificationService extends GetxService {
     if (!Platform.isAndroid) return;
 
     final impl = _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     // Critical / high-importance channel
-    await impl?.createNotificationChannel(const AndroidNotificationChannel(
-      _kCriticalChannelId,
-      _kCriticalChannelName,
-      description: _kCriticalChannelDesc,
-      importance: Importance.max,
-      playSound: true,
-      enableVibration: true,
-    ));
+    await impl?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _kCriticalChannelId,
+        _kCriticalChannelName,
+        description: _kCriticalChannelDesc,
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      ),
+    );
 
     // General channel
-    await impl?.createNotificationChannel(const AndroidNotificationChannel(
-      _kChannelId,
-      _kChannelName,
-      description: _kChannelDesc,
-      importance: Importance.high,
-      playSound: true,
-    ));
+    await impl?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _kChannelId,
+        _kChannelName,
+        description: _kChannelDesc,
+        importance: Importance.high,
+        playSound: true,
+      ),
+    );
 
     debugPrint('NotificationService: Android channels created.');
   }
@@ -107,7 +115,10 @@ class NotificationService extends GetxService {
     );
 
     await _localNotifications.initialize(
-      settings: const InitializationSettings(android: androidInit, iOS: iosInit),
+      settings: const InitializationSettings(
+        android: androidInit,
+        iOS: iosInit,
+      ),
       onDidReceiveNotificationResponse: _onLocalNotificationTap,
     );
 
@@ -135,7 +146,9 @@ class NotificationService extends GetxService {
       final status = await Permission.notification.status;
       if (!status.isGranted) {
         final result = await Permission.notification.request();
-        debugPrint('NotificationService: Android 13 POST_NOTIFICATIONS = $result');
+        debugPrint(
+          'NotificationService: Android 13 POST_NOTIFICATIONS = $result',
+        );
       }
     }
   }
@@ -181,7 +194,9 @@ class NotificationService extends GetxService {
   /// remains active for the full app session even without a fresh login.
   void _listenTokenRefresh() {
     _fcm.onTokenRefresh.listen((newToken) async {
-      debugPrint('NotificationService: Token refreshed by FCM — updating Firestore.');
+      debugPrint(
+        'NotificationService: Token refreshed by FCM — updating Firestore.',
+      );
       final user = fb_auth.FirebaseAuth.instance.currentUser;
       if (user == null) return;
       final role = await _getRoleForUid(user.uid);
@@ -231,19 +246,82 @@ class NotificationService extends GetxService {
     required String token,
   }) async {
     final collection = _collectionForRole(role);
-    await _db.collection(collection).doc(uid).set(
-      {'fcmToken': token, 'tokenUpdatedAt': FieldValue.serverTimestamp()},
-      SetOptions(merge: true),
-    );
+    await _db.collection(collection).doc(uid).set({
+      'fcmToken': token,
+      'tokenUpdatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
     debugPrint('NotificationService: Token saved to $collection/$uid');
   }
 
   static String _collectionForRole(String role) {
     switch (role) {
-      case 'vendor': return 'vendors';
-      case 'driver': return 'drivers';
+      case 'vendor':
+        return 'vendors';
+      case 'driver':
+        return 'drivers';
       case 'customer':
-      default:       return 'users';
+      default:
+        return 'users';
+    }
+  }
+
+  /// Show local notifications for missed alerts that occurred while offline.
+  Future<void> showMissedNotifications(String uid, String role) async {
+    try {
+      final twentyFourHoursAgo = DateTime.now().subtract(
+        const Duration(hours: 24),
+      );
+
+      final querySnapshot = await _db
+          .collection('notifications')
+          .where('userId', isEqualTo: uid)
+          .where('readStatus', isEqualTo: false)
+          .where(
+            'createdAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(twentyFourHoursAgo),
+          )
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final type = data['type'] as String? ?? '';
+        final title = data['title'] as String? ?? 'New Notification';
+        final body = data['body'] as String? ?? '';
+
+        final isCritical = _criticalTypes.contains(type);
+        final channelId = isCritical ? _kCriticalChannelId : _kChannelId;
+        final channelName = isCritical ? _kCriticalChannelName : _kChannelName;
+        final channelDesc = isCritical ? _kCriticalChannelDesc : _kChannelDesc;
+        final priority = isCritical ? Priority.max : Priority.high;
+        final importance = isCritical ? Importance.max : Importance.high;
+
+        final androidDetails = AndroidNotificationDetails(
+          channelId,
+          channelName,
+          channelDescription: channelDesc,
+          importance: importance,
+          priority: priority,
+          icon: '@mipmap/ic_launcher',
+          playSound: true,
+        );
+
+        await _localNotifications.show(
+          id: doc.id.hashCode,
+          title: title,
+          body: body,
+          notificationDetails: NotificationDetails(
+            android: androidDetails,
+            iOS: const DarwinNotificationDetails(
+              interruptionLevel: InterruptionLevel.timeSensitive,
+            ),
+          ),
+          payload: type,
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        'NotificationService: Error showing missed notifications - $e',
+      );
     }
   }
 
@@ -261,20 +339,41 @@ class NotificationService extends GetxService {
   /// Display a local notification for a foreground FCM message.
   /// Routes critical types to the high-importance channel automatically.
   Future<void> _showLocalNotification(RemoteMessage message) async {
+    // 1. Validate Login State
+    final authCtrl = Get.isRegistered<AuthController>()
+        ? Get.find<AuthController>()
+        : null;
+    if (authCtrl == null || !authCtrl.isLoggedIn.value) {
+      debugPrint(
+        'NotificationService: User is not logged in. Suppressing notification.',
+      );
+      return;
+    }
+
+    // 2. Validate Role Match
+    final targetRole = message.data['targetRole'];
+    if (targetRole != null && targetRole != authCtrl.selectedRole.value) {
+      debugPrint(
+        'NotificationService: Target role ($targetRole) does not match active role. Suppressing notification.',
+      );
+      return;
+    }
+
     final notification = message.notification;
     if (notification == null) return;
 
     final type = message.data['type'] ?? '';
     final isCritical = _criticalTypes.contains(type);
 
-    final channelId   = isCritical ? _kCriticalChannelId   : _kChannelId;
+    final channelId = isCritical ? _kCriticalChannelId : _kChannelId;
     final channelName = isCritical ? _kCriticalChannelName : _kChannelName;
     final channelDesc = isCritical ? _kCriticalChannelDesc : _kChannelDesc;
-    final priority    = isCritical ? Priority.max          : Priority.high;
-    final importance  = isCritical ? Importance.max        : Importance.high;
+    final priority = isCritical ? Priority.max : Priority.high;
+    final importance = isCritical ? Importance.max : Importance.high;
 
     final androidDetails = AndroidNotificationDetails(
-      channelId, channelName,
+      channelId,
+      channelName,
       channelDescription: channelDesc,
       importance: importance,
       priority: priority,
@@ -345,8 +444,8 @@ class NotificationService extends GetxService {
 
     final args = <String, dynamic>{};
     if (data['bookingId'] != null) args['bookingId'] = data['bookingId'];
-    if (data['busId']     != null) args['busId']     = data['busId'];
-    if (data['ticketId']  != null) args['ticketId']  = data['ticketId'];
+    if (data['busId'] != null) args['busId'] = data['busId'];
+    if (data['ticketId'] != null) args['ticketId'] = data['ticketId'];
 
     Get.toNamed(route, arguments: args.isNotEmpty ? args : null);
   }
@@ -372,5 +471,7 @@ class NotificationService extends GetxService {
     'trip_cancelled_by_vendor',
     'vehicle_breakdown_alert',
     'bus_reached_boarding_point',
+    'new_booking_received',
+    'booking_cancellation_alert',
   };
 }

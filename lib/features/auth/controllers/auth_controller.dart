@@ -22,6 +22,11 @@ class AuthController extends GetxController {
   var isLoading = false.obs;
   var isLoggedIn = false.obs;
 
+  /// Set to true by registration controllers BEFORE creating the Firebase Auth
+  /// account. This prevents [_handleAuthChanged] from running the profile-fetch
+  /// auto-route while Firestore writes are still in progress.
+  var isRegistering = false.obs;
+
   String? uid;
   final Rx<User?> firebaseUser = Rx<User?>(null);
   final Rx<UserModel?> currentUserProfile = Rx<UserModel?>(null);
@@ -56,6 +61,14 @@ class AuthController extends GetxController {
     } else {
       uid = user.uid;
       isLoggedIn.value = true;
+
+      // Skip auto-routing if a registration flow is managing navigation itself.
+      if (isRegistering.value) {
+        debugPrint(
+            'AuthController: Skipping auto-route — registration in progress.');
+        return;
+      }
+
       debugPrint('AuthController: User logged in, fetching role...');
       await _fetchRoleAndNavigate(user.uid);
     }
@@ -72,6 +85,7 @@ class AuthController extends GetxController {
         selectedRole.value = userModel.role;
 
         NotificationService.to.saveFcmToken(userId, userModel.role);
+        NotificationService.to.showMissedNotifications(userId, userModel.role);
 
         final locationService = Get.find<LocationService>();
         final alreadyGranted = await locationService.hasPermission();
@@ -170,6 +184,38 @@ class AuthController extends GetxController {
     _safeNavigate(route);
   }
 
+  /// Called by registration controllers after ALL Firestore writes are done.
+  /// Sets the in-memory profile so the app can route without an extra read.
+  Future<void> navigateAfterRegistration(String newUid, String role) async {
+    isRegistering.value = false;
+
+    // Populate in-memory profile so downstream code (FCM, routing) works
+    // immediately without waiting for another Firestore fetch.
+    currentUserProfile.value = UserModel(
+      uid: newUid,
+      email: FirebaseAuth.instance.currentUser?.email ?? '',
+      role: role,
+      createdAt: DateTime.now(),
+    );
+    selectedRole.value = role;
+    isLoggedIn.value = true;
+
+    NotificationService.to.saveFcmToken(newUid, role);
+
+    final locationService = Get.find<LocationService>();
+    final alreadyGranted = await locationService.hasPermission();
+    debugPrint(
+        'AuthController: navigateAfterRegistration — location granted: $alreadyGranted');
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (alreadyGranted) {
+        _navigateToHome(role);
+      } else {
+        _navigateToLocationScreen(role);
+      }
+    });
+  }
+
   /// Ends an active driver trip before signing out:
   /// - Resets the driver Firestore status to 'ACTIVE'
   /// - Stops the background GPS service and clears the RTDB live-location node
@@ -195,7 +241,7 @@ class AuthController extends GetxController {
 
   Future<void> logout() async {
     // If the logged-out user is a driver, end their trip cleanly first.
-    final driverId = uid;
+    final oldUid = uid;
     final role = selectedRole.value;
 
     // Clear all in-memory session state BEFORE signing out so that any
@@ -208,13 +254,13 @@ class AuthController extends GetxController {
 
     // 1. Remove FCM token from Firestore so the user doesn't receive
     //    notifications on this device after logging out.
-    if (uid != null && role.isNotEmpty) {
-      await NotificationService.to.removeFcmToken(uid!, role);
+    if (oldUid != null && role.isNotEmpty) {
+      await NotificationService.to.removeFcmToken(oldUid, role);
     }
 
     // Run driver-specific cleanup (non-blocking — errors are swallowed inside).
-    if (role == 'driver' && driverId != null) {
-      await _cleanupDriverSession(driverId);
+    if (role == 'driver' && oldUid != null) {
+      await _cleanupDriverSession(oldUid);
     }
 
     await _authService.signOut();

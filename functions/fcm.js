@@ -44,6 +44,8 @@ const CRITICAL_TYPES = new Set([
   "trip_cancelled_by_vendor",
   "vehicle_breakdown_alert",
   "bus_reached_boarding_point",
+  "new_booking_received",
+  "booking_cancellation_alert",
 ]);
 
 /** TTL in seconds per notification type. FCM max = 4 weeks (2419200 s). */
@@ -210,6 +212,16 @@ function buildMessage(token, payload) {
 async function sendToUser(uid, role, payload) {
   const db = admin.firestore();
 
+  // Inject the target role into the data payload
+  payload.data = {
+    ...payload.data,
+    targetRole: role,
+  };
+
+  // ALWAYS log the notification so it's available in the app's notification center
+  // regardless of whether the user has an active FCM token or not.
+  await logNotification(uid, role, payload);
+
   // 1. Fetch FCM token from the correct collection
   const collection = collectionForRole(role);
   const docRef = db.collection(collection).doc(uid);
@@ -253,11 +265,7 @@ async function sendToUser(uid, role, payload) {
       );
       await _logFailure(uid, role, payload, err);
     }
-    return;
   }
-
-  // 4. Write to notifications/ history
-  await logNotification(uid, role, payload);
 }
 
 // ─── Notification history logger ──────────────────────────────────────────────

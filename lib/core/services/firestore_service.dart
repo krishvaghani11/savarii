@@ -447,6 +447,17 @@ class FirestoreService extends GetxService {
     });
   }
 
+  Future<void> removeBookedSeatsFromBus(
+    String busId,
+    String journeyDate,
+    List<String> seats,
+  ) async {
+    final formattedDate = journeyDate.replaceAll('/', '-');
+    await _db.collection('buses').doc(busId).update({
+      'bookedSeatsByDate.$formattedDate': FieldValue.arrayRemove(seats),
+    });
+  }
+
   Future<int> getBookedSeatsCount(String busId, String formattedDate) async {
     try {
       final doc = await _db.collection('buses').doc(busId).get();

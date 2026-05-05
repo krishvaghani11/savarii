@@ -83,6 +83,25 @@ class CancelBookingController extends GetxController {
       // Step 5: All checks passed — cancel the ticket
       await _firestoreService.updateTicketStatus(ticket['id'], 'cancelled');
 
+      // Step 6: Unlock seats
+      final busId = ticket['busId'] as String?;
+      final journeyDate = ticket['journeyDate'] as String?;
+      List<String> seatsToUnlock = [];
+
+      if (ticket.containsKey('selectedSeats') && ticket['selectedSeats'] is List) {
+        seatsToUnlock = List<String>.from(ticket['selectedSeats']);
+      } else {
+        final busAndSeat = ticket['busAndSeat'] as String? ?? '';
+        if (busAndSeat.contains('|')) {
+          final seatPart = busAndSeat.split('|').last;
+          seatsToUnlock = seatPart.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        }
+      }
+
+      if (busId != null && busId.isNotEmpty && journeyDate != null && journeyDate.isNotEmpty && seatsToUnlock.isNotEmpty) {
+        await _firestoreService.removeBookedSeatsFromBus(busId, journeyDate, seatsToUnlock);
+      }
+
       // Show success snackbar
       Get.snackbar(
         '✅ Booking Cancelled',

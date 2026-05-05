@@ -4,6 +4,7 @@ import '../../../core/services/firestore_service.dart';
 import '../../../models/user_model.dart';
 import '../../../models/vendor_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class VendorRegistrationController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -61,8 +62,15 @@ class VendorRegistrationController extends GetxController {
 
     FocusManager.instance.primaryFocus?.unfocus();
 
+    final authController = Get.find<AuthController>();
+
     try {
       isLoading.value = true;
+
+      // 🔑 Block the auth-state listener from auto-routing while we write
+      // to Firestore. Without this, _handleAuthChanged fires before the
+      // user document exists and shows "Profile Not Found".
+      authController.isRegistering.value = true;
 
       final email = emailController.text.trim();
 
@@ -73,9 +81,10 @@ class VendorRegistrationController extends GetxController {
           );
       final uid = credential.user!.uid;
 
-      // Check if already registered
+      // Check if already registered (edge-case: shouldn't happen on new accounts)
       final existing = await _firestore.getUserProfile(uid);
       if (existing != null) {
+        authController.isRegistering.value = false;
         Get.snackbar(
           "Already Registered",
           "This email is already registered. Please login instead.",
@@ -84,7 +93,7 @@ class VendorRegistrationController extends GetxController {
         return;
       }
 
-      // ── Save user doc ──
+      // ── Write user doc ──
       await _firestore.createUserProfile(
         UserModel(
           uid: uid,
@@ -94,7 +103,7 @@ class VendorRegistrationController extends GetxController {
         ),
       );
 
-      // ── Save vendor profile doc ──
+      // ── Write vendor profile doc ──
       await _firestore.createVendorProfile(
         VendorModel(
           uid: uid,
@@ -102,20 +111,18 @@ class VendorRegistrationController extends GetxController {
           name: fullNameController.text.trim(),
           email: email,
           phone: rawPhone,
-          businessName: '', // Assuming not collected in this form
-          address: '',      // Assuming not collected in this form
+          businessName: '',
+          address: '',
           createdAt: DateTime.now(),
-        )
+        ),
       );
 
-      Get.snackbar(
-        "Success",
-        "Account created successfully!",
-        snackPosition: SnackPosition.TOP,
-      );
+      // ✅ Both docs written — navigate to vendor app
+      await authController.navigateAfterRegistration(uid, 'vendor');
 
-      // AuthController will handle routing automatically
     } catch (e) {
+      // Reset guard so the normal auth flow is not permanently blocked
+      authController.isRegistering.value = false;
       Get.snackbar("Error", e.toString());
     } finally {
       isLoading.value = false;

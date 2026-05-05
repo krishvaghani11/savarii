@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../auth/controllers/auth_controller.dart'; // Update path if needed
+import '../../auth/controllers/auth_controller.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../models/user_model.dart';
 
@@ -74,14 +74,21 @@ class CustomerRegistrationController extends GetxController {
       return;
     }
 
+    final authController = Get.find<AuthController>();
+
     try {
       isLoading.value = true;
+
+      // 🔑 Block the auth-state listener from auto-routing while Firestore
+      // writes are in progress. Without this, _handleAuthChanged fires before
+      // the user document exists and shows "Profile Not Found".
+      authController.isRegistering.value = true;
 
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
       final uid = credential.user!.uid;
       await credential.user!.updateDisplayName(fullName);
-      
+
       final firestoreService = Get.find<FirestoreService>();
       await firestoreService.createUserProfile(
         UserModel(
@@ -91,8 +98,13 @@ class CustomerRegistrationController extends GetxController {
           createdAt: DateTime.now(),
         ),
       );
-      // AuthController will auto-route using authStateChanges
+
+      // ✅ Firestore doc written — navigate to customer app
+      await authController.navigateAfterRegistration(uid, 'customer');
+
     } catch (e) {
+      // Reset guard so the normal auth flow is not permanently blocked
+      authController.isRegistering.value = false;
       Get.snackbar(
         "Registration Failed",
         e.toString(),

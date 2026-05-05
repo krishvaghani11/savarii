@@ -319,15 +319,38 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                           : const Color(0xFFD6FFE8),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      isCancelled ? 'Cancelled' : 'tickets.success_status'.tr(),
-                      style: AppTextStyles.caption.copyWith(
-                        color: isCancelled
-                            ? const Color(0xFFE82E59)
-                            : const Color(0xFF00A65A),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (ticket.isVendorBooking) ...[
+                          Container(
+                            margin: const EdgeInsets.only(right: 4),
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: isCancelled ? const Color(0xFFE82E59) : const Color(0xFF00A65A),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Text(
+                              'V',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        Text(
+                          isCancelled ? 'Cancelled' : 'tickets.success_status'.tr(),
+                          style: AppTextStyles.caption.copyWith(
+                            color: isCancelled
+                                ? const Color(0xFFE82E59)
+                                : const Color(0xFF00A65A),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }),
@@ -582,23 +605,45 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.circle,
-                                color: Color(0xFF00A65A),
-                                size: 10,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'tickets.success_label'.tr(),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: const Color(0xFF00A65A),
-                                  fontWeight: FontWeight.bold,
+                          Builder(builder: (context) {
+                            final isCancelled = ticket.status.toLowerCase() == 'cancelled';
+                            return Row(
+                              children: [
+                                if (ticket.isVendorBooking) ...[
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 4),
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: isCancelled ? const Color(0xFFE82E59) : const Color(0xFF00A65A),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Text(
+                                      'V',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Icon(
+                                    Icons.circle,
+                                    color: isCancelled ? const Color(0xFFE82E59) : const Color(0xFF00A65A),
+                                    size: 10,
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                                Text(
+                                  isCancelled ? 'Cancelled' : 'tickets.success_label'.tr(),
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: isCancelled ? const Color(0xFFE82E59) : const Color(0xFF00A65A),
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -735,6 +780,50 @@ class VendorViewTicketsView extends GetView<VendorViewTicketsController> {
                   ),
                 ],
               ),
+              if (ticket.status.toLowerCase() != 'cancelled' && ticket.isVendorBooking) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Get.defaultDialog(
+                        title: 'Cancel Ticket',
+                        middleText: 'Do you want to cancel ticket?',
+                        textConfirm: 'Yes',
+                        textCancel: 'No',
+                        confirmTextColor: Colors.white,
+                        buttonColor: AppColors.primaryAccent,
+                        cancelTextColor: AppColors.primaryDark,
+                        onConfirm: () {
+                          Get.back(); // close dialog
+                          Get.back(); // close bottom sheet
+                          controller.cancelTicket(ticket);
+                        },
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.cancel,
+                      color: AppColors.primaryAccent,
+                      size: 18,
+                    ),
+                    label: Text(
+                      'Cancel Ticket',
+                      style: AppTextStyles.buttonText.copyWith(
+                        color: AppColors.primaryAccent,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(
+                        color: AppColors.primaryAccent,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

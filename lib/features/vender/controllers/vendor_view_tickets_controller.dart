@@ -7,6 +7,9 @@ import 'package:savarii/core/services/ticket_pdf_service.dart';
 
 // A simple model to hold the ticket data
 class VendorTicketModel {
+  final String id;
+  final String customerId;
+  final String busId;
   final String passengerName;
   final String passengerPhone;
   final String bookingId;
@@ -24,6 +27,9 @@ class VendorTicketModel {
   final String status;
 
   VendorTicketModel({
+    required this.id,
+    required this.customerId,
+    required this.busId,
     required this.passengerName,
     required this.passengerPhone,
     required this.bookingId,
@@ -40,11 +46,16 @@ class VendorTicketModel {
     this.status = 'confirmed',
   });
 
+  bool get isVendorBooking => customerId.isEmpty;
+
   factory VendorTicketModel.fromMap(Map<String, dynamic> map) {
     double p(dynamic v, double fb) =>
         (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? fb;
 
     return VendorTicketModel(
+      id: map['id'] ?? '',
+      customerId: map['customerId'] ?? '',
+      busId: map['busId'] ?? '',
       passengerName: map['passengerName'] ?? 'Unknown Passenger',
       passengerPhone: map['passengerPhone'] ?? 'N/A',
       bookingId: map['bookingId'] ?? 'PNR-XXXXX',
@@ -67,6 +78,9 @@ class VendorTicketModel {
         (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? fb;
 
     return VendorTicketModel(
+      id: map['id'] ?? '',
+      customerId: map['customerId'] ?? '',
+      busId: map['busId'] ?? '',
       passengerName: map['senderName'] ?? 'Unknown Sender',
       passengerPhone: map['senderPhone'] ?? 'N/A',
       bookingId: map['trackingId'] ?? 'TRK-XXXXX',
@@ -284,5 +298,45 @@ class VendorViewTicketsController extends GetxController {
       'Opening share dialog for $ticketId',
       snackPosition: SnackPosition.TOP,
     );
+  }
+
+  Future<void> cancelTicket(VendorTicketModel ticket) async {
+    if (ticket.id.isEmpty) {
+      Get.snackbar('Error', 'Invalid ticket ID', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    
+    try {
+      if (currentMainTab.value == 0) {
+        await _firestoreService.updateTicketStatus(ticket.id, 'cancelled');
+
+        if (ticket.busId.isNotEmpty && ticket.journeyDate.isNotEmpty && ticket.busAndSeat.contains('|')) {
+          final seatPart = ticket.busAndSeat.split('|').last;
+          final seatsToUnlock = seatPart.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+          if (seatsToUnlock.isNotEmpty) {
+            await _firestoreService.removeBookedSeatsFromBus(ticket.busId, ticket.journeyDate, seatsToUnlock);
+          }
+        }
+      } else {
+        await _firestoreService.updateParcelStatus(ticket.id, 'cancelled');
+      }
+      
+      Get.snackbar(
+        'Success',
+        'Ticket cancelled successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.1),
+        colorText: Colors.green,
+      );
+    } catch (e) {
+      print('Error cancelling ticket: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to cancel ticket',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
+      );
+    }
   }
 }
