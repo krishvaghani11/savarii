@@ -14,6 +14,7 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { sendToUser } = require("./fcm");
+const { sendTicketConfirmationEmail } = require("./emailNotification");
 
 const db = admin.firestore();
 const NEARLY_FULL_THRESHOLD = 0.8;
@@ -66,6 +67,24 @@ exports.onBookingCreated = functions.firestore
     // Check seat occupancy thresholds
     if (busId && vendorId) {
       await _checkSeatOccupancy(busId, vendorId, journeyDate);
+    }
+
+    // ── Ticket Confirmation Email (onCreate path) ──────────────────────────
+    // Fires when the ticket is created already in confirmed+paid state
+    // (e.g. Razorpay / Wallet payment — ticket written in one shot).
+    const isConfirmed = ticket.status === "confirmed";
+    const isPaid =
+      ticket.paymentStatus === "paid" ||
+      ticket.paymentStatus === "SUCCESS" ||
+      ticket.paymentStatus === "success";
+
+    if (isConfirmed && isPaid && !ticket.emailSent) {
+      sendTicketConfirmationEmail(ticket, ticketId).catch((err) =>
+        functions.logger.error("[bookingTriggers] onCreate email error", {
+          ticketId,
+          message: err.message,
+        })
+      );
     }
   });
 
@@ -159,6 +178,31 @@ exports.onBookingStatusChanged = functions.firestore
     }
 
     await Promise.allSettled(tasks);
+
+    // ── Ticket Confirmation Email ──────────────────────────────────────────
+    // Fire ONLY when booking is confirmed AND payment is paid/SUCCESS,
+    // and only when transitioning INTO that state (not re-triggering).
+    const isNowConfirmed = after.status === "confirmed";
+    const isNowPaid =
+      after.paymentStatus === "paid" ||
+      after.paymentStatus === "SUCCESS" ||
+      after.paymentStatus === "success";
+
+    const wasAlreadyConfirmedAndPaid =
+      before.status === "confirmed" &&
+      (before.paymentStatus === "paid" ||
+        before.paymentStatus === "SUCCESS" ||
+        before.paymentStatus === "success");
+
+    if (isNowConfirmed && isNowPaid && !wasAlreadyConfirmedAndPaid && !after.emailSent) {
+      // Run asynchronously — do NOT block the trigger response
+      sendTicketConfirmationEmail(after, ticketId).catch((err) =>
+        functions.logger.error("[bookingTriggers] sendTicketConfirmationEmail error", {
+          ticketId,
+          message: err.message,
+        })
+      );
+    }
   });
 
 // ─── 3. onDriverAssigned ─────────────────────────────────────────────────────
@@ -361,7 +405,7 @@ exports.onTripReminders = functions.pubsub
     for (const config of reminderConfigs) {
       const targetTime = new Date(now.getTime() + config.windowHours * 60 * 60 * 1000);
       const targetDate = targetTime.toISOString().split("T")[0].replace(/-/g, "/");
-      
+
       // Note: This is a bit simplified. In a real app, you'd query by journeyDate and departureTime.
       // For now, we'll query tickets for today/tomorrow and filter in JS.
       const ticketSnap = await db
@@ -376,7 +420,7 @@ exports.onTripReminders = functions.pubsub
         if (ticket[flag]) return;
 
         const depTimeStr = ticket.boardingTime || "scheduled time";
-        
+
         tasks.push(
           sendToUser(ticket.customerId, "customer", {
             type: config.type,

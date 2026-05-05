@@ -2,13 +2,17 @@
  * Savarii Cloud Functions — index.js
  *
  * Exports:
- *   forgotPassword       — HTTP: password reset email via Resend
- *   onBookingCreated     — Firestore: booking_confirmed + new_booking_received
+ *   forgotPassword         — HTTP: password reset email via Resend
+ *   onBookingCreated       — Firestore: booking_confirmed + new_booking_received
  *   onBookingStatusChanged — Firestore: cancellation, payment, refund events
- *   onDriverAssigned     — Firestore: driver_assigned to all roles
- *   onLiveTrackingUpdate — RTDB: bus_arriving_soon + drop_point_approaching
- *   onDriverStatusChanged — Firestore: driver_offline_alert
- *   onUnexpectedLongStop — Scheduled (5 min): unexpected_long_stop
+ *   onDriverAssigned       — Firestore: driver_assigned to all roles
+ *   onLiveTrackingUpdate   — RTDB: bus_arriving_soon + drop_point_approaching
+ *   onDriverStatusChanged  — Firestore: driver_offline_alert
+ *   onUnexpectedLongStop   — Scheduled (5 min): unexpected_long_stop
+ *   resendTicketEmail      — Callable: manually resend a ticket confirmation email (v2)
+ *   getTicketAccess        — Callable: secure ticket PDF access with ownership check (v3)
+ *   cleanupOldTicketPdfs   — Scheduled (daily): delete PDFs older than 90 days (v3)
+ *   onEmailHealthCheck     — Scheduled (5 min): email failure rate monitoring (v3)
  */
 
 "use strict";
@@ -25,6 +29,21 @@ admin.initializeApp();
 // ── Notification triggers ─────────────────────────────────────────────────────
 const bookingTriggers = require("./bookingTriggers");
 const trackingTriggers = require("./trackingTriggers");
+
+// ── Email endpoints (v2) ──────────────────────────────────────────────────────
+const { resendTicketEmail } = require("./resendTicketEndpoint");
+exports.resendTicketEmail = resendTicketEmail;
+
+// ── Email endpoints (v3) ──────────────────────────────────────────────────────
+const { getTicketAccess }  = require("./ticketAccessEndpoint");
+exports.getTicketAccess    = getTicketAccess;
+
+// ── Storage cleanup + monitoring (v3) ────────────────────────────────────────
+const { cleanupOldTicketPdfs } = require("./storageCleanup");
+exports.cleanupOldTicketPdfs   = cleanupOldTicketPdfs;
+
+const { onEmailHealthCheck } = require("./monitoringService");
+exports.onEmailHealthCheck   = onEmailHealthCheck;
 
 // Booking lifecycle
 exports.onBookingCreated = bookingTriggers.onBookingCreated;

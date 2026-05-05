@@ -55,6 +55,14 @@ class CustomerSelectPointsController extends GetxController {
     }
   }
 
+  /// Extracts the time portion from a boarding point string.
+  /// Format: "City Name - HH:MM AM/PM"  →  "HH:MM AM/PM"
+  String _extractTimeFromPoint(String point) {
+    final parts = point.split(' - ');
+    if (parts.length >= 2) return parts.last.trim();
+    return '';
+  }
+
   void confirmPoints() {
     if (selectedBoardingPoint.value == 'Choose location') {
       Get.snackbar(
@@ -85,6 +93,8 @@ class CustomerSelectPointsController extends GetxController {
       'boardingPoint': selectedBoardingPoint.value,
       'droppingPoint': selectedDroppingPoint.value,
       'vendorId': vendorId,
+      // Extract "HH:MM AM/PM" from "City - HH:MM AM/PM"
+      'departureTime': _extractTimeFromPoint(selectedBoardingPoint.value),
     });
   }
 }

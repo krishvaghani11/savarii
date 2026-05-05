@@ -22,6 +22,7 @@ class PaymentDetailsController extends GetxController {
   List<Map<String, String>> passengers = [];
   String contactEmail = '';
   String contactPhone = '';
+  String _departureTime = '';
 
   // Reactive String Fields mapping straight to the View Elements
   final RxString boardingPoint = ''.obs;
@@ -57,6 +58,10 @@ class PaymentDetailsController extends GetxController {
 
       boardingPoint.value = args['boardingPoint']?.toString() ?? 'Not Selected';
       droppingPoint.value = args['droppingPoint']?.toString() ?? 'Not Selected';
+
+      // Departure time from bus selection screen
+      final rawTime = args['departureTime'] ?? args['journeyTime'] ?? '';
+      _departureTime = rawTime.toString();
 
       passengers =
           (args['passengers'] as List?)
@@ -134,17 +139,18 @@ class PaymentDetailsController extends GetxController {
     try {
       // 1. Generate & upload PDF
       final pdfData = TicketDownloadData(
-        bookingId: pnr,
-        passengerName: ticketPayload['passengerName'] as String,
+        bookingId:      pnr,
+        passengerName:  ticketPayload['passengerName'] as String,
         passengerPhone: ticketPayload['passengerPhone'] as String,
-        journeyDate: journeyDate,
-        route: ticketPayload['route'] as String,
-        busAndSeat: ticketPayload['busAndSeat'] as String,
-        paymentMethod: 'Savarii Wallet',
-        ticketPrice: baseFare.value,
-        gst: gst.value,
-        platformFee: platformFee,
-        totalPaid: totalAmount.value,
+        journeyDate:    journeyDate,
+        journeyTime:    _departureTime,
+        route:          ticketPayload['route'] as String,
+        busAndSeat:     ticketPayload['busAndSeat'] as String,
+        paymentMethod:  'Savarii Wallet',
+        ticketPrice:    baseFare.value,
+        gst:            gst.value,
+        platformFee:    platformFee,
+        totalPaid:      totalAmount.value,
       );
       final pdfBytes = await TicketPdfService().generatePdfBytes(pdfData);
       final ticketUrl = await _firestoreService.uploadTicketPdf(pnr, pdfBytes);
@@ -242,17 +248,18 @@ class PaymentDetailsController extends GetxController {
 
     try {
       final pdfData = TicketDownloadData(
-        bookingId: pnr,
-        passengerName: ticketPayload['passengerName'] as String,
+        bookingId:      pnr,
+        passengerName:  ticketPayload['passengerName'] as String,
         passengerPhone: ticketPayload['passengerPhone'] as String,
-        journeyDate: journeyDate,
-        route: ticketPayload['route'] as String,
-        busAndSeat: ticketPayload['busAndSeat'] as String,
-        paymentMethod: 'Razorpay',
-        ticketPrice: baseFare.value,
-        gst: gst.value,
-        platformFee: platformFee,
-        totalPaid: totalAmount.value,
+        journeyDate:    journeyDate,
+        journeyTime:    _departureTime,
+        route:          ticketPayload['route'] as String,
+        busAndSeat:     ticketPayload['busAndSeat'] as String,
+        paymentMethod:  'Razorpay',
+        ticketPrice:    baseFare.value,
+        gst:            gst.value,
+        platformFee:    platformFee,
+        totalPaid:      totalAmount.value,
       );
       final pdfBytes = await TicketPdfService().generatePdfBytes(pdfData);
       final ticketUrl = await _firestoreService.uploadTicketPdf(pnr, pdfBytes);
@@ -290,12 +297,17 @@ class PaymentDetailsController extends GetxController {
       'busName': busName,
       'createdAt': DateTime.now().toIso8601String(),
       'bookingId': pnr,
-      // trip_id is set to empty string at booking time.
-      // The vendor/driver side will update this field when a trip is created
-      // and assign the bus to a trip. The customer uses this to track the bus.
+      'pnr': pnr,
       'trip_id': '',
-      // status field: 'active' until the trip is completed or cancelled
-      'status': 'active',
+      // ── Email trigger fields ───────────────────────────────────────────────
+      // status=confirmed + paymentStatus=paid → Cloud Function fires email
+      'status': 'confirmed',
+      'paymentStatus': 'paid',
+      // email field used by Cloud Function to send ticket confirmation
+      'email': contactEmail.isNotEmpty
+          ? contactEmail
+          : _authService.currentUser?.email ?? '',
+      // ─────────────────────────────────────────────────────────────────────
       'passengerName': passengers.isNotEmpty
           ? passengers.first['name']
           : _authService.currentUser?.displayName ?? 'Customer',
@@ -306,15 +318,27 @@ class PaymentDetailsController extends GetxController {
       'contactEmail': contactEmail,
       'origin': boardingPoint.value,
       'destination': droppingPoint.value,
+      // Cloud Function reads fromLocation / toLocation
+      'fromLocation': boardingPoint.value,
+      'toLocation': droppingPoint.value,
       'journeyDate': journeyDate,
       'route': '${boardingPoint.value} to ${droppingPoint.value}',
       'busAndSeat': '$busName | ${selectedSeats.join(", ")}',
+      'selectedSeats': selectedSeats,
+      'seatNumbers': selectedSeats,
       'paymentMethod': paymentMethod,
       'razorpayPaymentId': razorpayId,
       'ticketPrice': baseFare.value,
+      'fare': totalAmount.value,
       'gst': gst.value,
       'platformFee': platformFee,
       'totalPaid': totalAmount.value,
+      'phoneNumber': contactPhone.isNotEmpty
+          ? contactPhone
+          : _authService.currentUser?.phoneNumber ?? '',
+      // Departure time — read from bus selection args
+      'journeyTime': _departureTime,
+      'departureTime': _departureTime,
     };
   }
 

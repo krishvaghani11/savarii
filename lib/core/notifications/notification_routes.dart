@@ -47,6 +47,7 @@ class NotificationRoutes {
     'trip_reminder_24hr': AppRoutes.myBookings,
     'trip_reminder_2hr': AppRoutes.myBookings,
     'delay_recovered': AppRoutes.trackBus,
+    'ticket_email_fallback': AppRoutes.myBookings,  // v3: push fallback when email fails
 
     // ── Vendor ────────────────────────────────────────────────────────────
     'new_booking_received': AppRoutes.vendorViewTickets,
@@ -84,6 +85,7 @@ class NotificationRoutes {
     'seat_updated',
     'trip_reminder_24hr',
     'trip_reminder_2hr',
+    'ticket_email_fallback',  // v3: push fallback when email fails
   };
 
   static const Set<String> _busLinked = {

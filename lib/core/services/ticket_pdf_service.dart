@@ -18,6 +18,7 @@ class TicketDownloadData {
   final String passengerName;
   final String passengerPhone;
   final String journeyDate;
+  final String journeyTime;   // departure time — shown on ticket
   final String route;
   final String busAndSeat;
   final String paymentMethod;
@@ -31,6 +32,7 @@ class TicketDownloadData {
     required this.passengerName,
     required this.passengerPhone,
     required this.journeyDate,
+    this.journeyTime = '',
     required this.route,
     required this.busAndSeat,
     required this.paymentMethod,
@@ -46,17 +48,19 @@ class TicketDownloadData {
         (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? fallback;
 
     return TicketDownloadData(
-      bookingId: map['bookingId'] ?? 'N/A',
+      bookingId:     map['bookingId']     ?? 'N/A',
       passengerName: map['passengerName'] ?? 'Unknown',
-      passengerPhone: map['passengerPhone'] ?? 'N/A',
-      journeyDate: map['journeyDate'] ?? 'N/A',
-      route: map['route'] ?? 'N/A',
-      busAndSeat: map['busAndSeat'] ?? 'N/A',
+      passengerPhone:map['passengerPhone']?? 'N/A',
+      journeyDate:   map['journeyDate']   ?? 'N/A',
+      journeyTime:   map['journeyTime']   ??
+                     map['departureTime'] ?? '',
+      route:         map['route']         ?? 'N/A',
+      busAndSeat:    map['busAndSeat']    ?? 'N/A',
       paymentMethod: map['paymentMethod'] ?? 'UPI',
-      ticketPrice: parse(map['ticketPrice'], 0.0),
-      gst: parse(map['gst'], 0.0),
-      platformFee: parse(map['platformFee'], 10.0),
-      totalPaid: parse(map['totalPaid'], 0.0),
+      ticketPrice:   parse(map['ticketPrice'],  0.0),
+      gst:           parse(map['gst'],          0.0),
+      platformFee:   parse(map['platformFee'],  10.0),
+      totalPaid:     parse(map['totalPaid'],    0.0),
     );
   }
 }
@@ -696,6 +700,8 @@ class TicketPdfService {
           _infoItem('Passenger Name', d.passengerName),
           _infoItem('Mobile', d.passengerPhone.isNotEmpty ? d.passengerPhone : 'N/A'),
           _infoItem('Journey Date', d.journeyDate),
+          if (d.journeyTime.isNotEmpty)
+            _infoItem('Departure Time', d.journeyTime),
         ],
       );
 

@@ -18,6 +18,7 @@ class CustomerAddPassengerController extends GetxController {
   // Dynamic Data
   String boardingPoint = '';
   String droppingPoint = '';
+  String _departureTime = '';
 
   // Contact Details
   final TextEditingController emailController = TextEditingController();
@@ -47,6 +48,7 @@ class CustomerAddPassengerController extends GetxController {
     pricePerSeat = args['seatPrice'] ?? 0.0;
     boardingPoint = args['boardingPoint'] ?? 'Central Mall Gate 2 - 09:30 PM';
     droppingPoint = args['droppingPoint'] ?? 'Highway Plaza - 06:45 AM';
+    _departureTime = args['departureTime']?.toString() ?? '';
   }
 
   // --- Bottom Sheet Logic ---
@@ -214,6 +216,7 @@ class CustomerAddPassengerController extends GetxController {
       'passengers': addedPassengers,
       'contactEmail': emailController.text.trim(),
       'contactPhone': phoneController.text.trim(),
+      'departureTime': _departureTime,
     });
   }
 
