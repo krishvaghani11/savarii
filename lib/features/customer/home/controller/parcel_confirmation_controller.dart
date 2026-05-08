@@ -43,6 +43,7 @@ class ParcelConfirmationController extends GetxController {
         trackingId: trackingId,
         senderName: parcelData['senderName'] ?? 'Sender',
         senderPhone: parcelData['senderPhone'] ?? '',
+        senderEmail: parcelData['senderEmail'] ?? '',
         receiverName: parcelData['receiverName'] ?? 'Receiver',
         receiverPhone: parcelData['receiverPhone'] ?? '',
         pickupLocation: pickupLocation,

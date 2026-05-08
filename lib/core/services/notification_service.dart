@@ -276,13 +276,15 @@ class NotificationService extends GetxService {
           .collection('notifications')
           .where('userId', isEqualTo: uid)
           .where('readStatus', isEqualTo: false)
-          .where(
-            'createdAt',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(twentyFourHoursAgo),
-          )
           .get();
 
-      for (var doc in querySnapshot.docs) {
+      // Filter by date client-side to avoid requiring a composite index
+      final filteredDocs = querySnapshot.docs.where((doc) {
+        final createdAt = (doc.data()['createdAt'] as Timestamp?)?.toDate();
+        return createdAt != null && createdAt.isAfter(twentyFourHoursAgo);
+      });
+
+      for (var doc in filteredDocs) {
         final data = doc.data();
         final type = data['type'] as String? ?? '';
         final title = data['title'] as String? ?? 'New Notification';

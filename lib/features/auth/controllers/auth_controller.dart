@@ -188,6 +188,7 @@ class AuthController extends GetxController {
   /// Sets the in-memory profile so the app can route without an extra read.
   Future<void> navigateAfterRegistration(String newUid, String role) async {
     isRegistering.value = false;
+    uid = newUid;
 
     // Populate in-memory profile so downstream code (FCM, routing) works
     // immediately without waiting for another Firestore fetch.

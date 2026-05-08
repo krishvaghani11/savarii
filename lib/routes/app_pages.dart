@@ -142,6 +142,8 @@ import 'package:savarii/features/vender/view/vendor_terms_view.dart';
 import 'package:savarii/features/vender/view/vendor_travels_detail_view.dart';
 import 'package:savarii/features/vender/view/vendor_view_tickets_view.dart';
 import 'package:savarii/features/vender/view/vendor_razorpay_view.dart';
+import 'package:savarii/features/vender/view/customize_layout_view.dart';
+import 'package:savarii/features/vender/controllers/customize_layout_controller.dart';
 import 'package:savarii/features/vender/bindings/vendor_razorpay_binding.dart';
 import '../features/splash/bindings/splash_binding.dart';
 import '../features/auth/bindings/role_selection_binding.dart';
@@ -523,6 +525,14 @@ class AppPages {
        name: AppRoutes.vendorNotifications,
        page: () => const VendorNotificationsView(),
        binding: VendorNotificationsBinding(),
+       transition: Transition.rightToLeft,
+     ),
+     GetPage(
+       name: AppRoutes.vendorCustomizeBusLayout,
+       page: () => const CustomizeLayoutView(),
+       binding: BindingsBuilder(() {
+         Get.lazyPut(() => CustomizeLayoutController());
+       }),
        transition: Transition.rightToLeft,
      ),
 

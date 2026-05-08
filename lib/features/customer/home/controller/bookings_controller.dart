@@ -287,6 +287,7 @@ class BookingsController extends GetxController {
         trackingId: parcel['trackingId'] ?? '',
         senderName: parcel['senderName'] ?? '',
         senderPhone: parcel['senderPhone'] ?? '',
+        senderEmail: parcel['senderEmail'] ?? parcel['email'] ?? '',
         receiverName: parcel['receiverName'] ?? '',
         receiverPhone: parcel['receiverPhone'] ?? '',
         pickupLocation: parcel['pickupCity'] ?? '',

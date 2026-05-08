@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/core/widgets/bus_seat_layout.dart';
+import 'package:savarii/core/widgets/seat_status_legend.dart';
 import 'package:savarii/features/customer/home/controller/seat_selection_controller.dart';
 
 class SeatSelectionView extends GetView<SeatSelectionController> {
@@ -28,7 +29,7 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
                   const SizedBox(height: 24),
                   _buildDeckToggle(),
                   const SizedBox(height: 24),
-                  _buildLegend(),
+                  const SeatStatusLegend(),
                   const SizedBox(height: 32),
                   _buildSeatGrid(),
                   const SizedBox(height: 100),
@@ -229,59 +230,7 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
     );
   }
 
-  Widget _buildLegend() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _legendItem(
-          AppColors.secondaryGreyBlue.withOpacity(0.2),
-          'Booked',
-          hasBorder: false,
-        ),
-        const SizedBox(width: 16),
-        _legendItem(AppColors.white, 'Available', hasBorder: true),
-        const SizedBox(width: 16),
-        _legendItem(
-          AppColors.primaryAccent,
-          'Selected',
-          hasBorder: false,
-          isWhiteText: true,
-        ),
-      ],
-    );
-  }
 
-  Widget _legendItem(
-    Color color,
-    String label, {
-    required bool hasBorder,
-    bool isWhiteText = false,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-            border: hasBorder
-                ? Border.all(
-                    color: AppColors.secondaryGreyBlue.withOpacity(0.5),
-                  )
-                : null,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.secondaryGreyBlue,
-          ),
-        ),
-      ],
-    );
-  }
 
   // --- Seat Grid Widgets ---
 
@@ -289,9 +238,12 @@ class SeatSelectionView extends GetView<SeatSelectionController> {
     return Obx(() {
       return BusSeatLayout(
         bookedSeats: controller.bookedSeats.toList(),
+        seatGenders: controller.seatGenders,
         selectedSeats: controller.selectedSeats.toList(),
         isUpperDeck: !controller.isLowerDeck.value,
         onSeatTap: controller.toggleSeat,
+        layoutConfig: controller.layoutConfig.value,
+        defaultPrice: controller.seatPrice,
       );
     });
   }

@@ -69,6 +69,7 @@ class ParcelDownloadData {
   final String trackingId;
   final String senderName;
   final String senderPhone;
+  final String senderEmail;
   final String receiverName;
   final String receiverPhone;
   final String pickupLocation;
@@ -87,6 +88,7 @@ class ParcelDownloadData {
     required this.trackingId,
     required this.senderName,
     required this.senderPhone,
+    required this.senderEmail,
     required this.receiverName,
     required this.receiverPhone,
     required this.pickupLocation,

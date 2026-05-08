@@ -39,7 +39,10 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryAccent,
-                      minimumSize: const Size(0, 0), // Fixes infinite width crash in Row
+                      minimumSize: const Size(
+                        0,
+                        0,
+                      ), // Fixes infinite width crash in Row
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 8,
@@ -56,13 +59,15 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
 
             // 2. Search Bar & Filter
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),    
               child: Row(
                 children: [
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.secondaryGreyBlue.withValues(alpha: 0.05),
+                        color: AppColors.secondaryGreyBlue.withValues(
+                          alpha: 0.05,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TextField(
@@ -70,7 +75,9 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                         decoration: InputDecoration(
                           hintText: 'my_buses.search_hint'.tr(),
                           hintStyle: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.secondaryGreyBlue.withValues(alpha: 0.6),
+                            color: AppColors.secondaryGreyBlue.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                           prefixIcon: const Icon(
                             Icons.search,
@@ -89,7 +96,9 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.secondaryGreyBlue.withValues(alpha: 0.05),
+                      color: AppColors.secondaryGreyBlue.withValues(
+                        alpha: 0.05,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.tune, color: AppColors.primaryDark),
@@ -183,7 +192,9 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondaryGreyBlue.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: AppColors.secondaryGreyBlue.withValues(alpha: 0.1),
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondaryGreyBlue.withValues(alpha: 0.02),
@@ -249,7 +260,12 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                   '${bus.origin} → ${bus.destination}',
                 ),
               ),
-              Expanded(child: _buildStatColumn('my_buses.total_seats'.tr(), bus.totalSeats)),
+              Expanded(
+                child: _buildStatColumn(
+                  'my_buses.total_seats'.tr(),
+                  bus.totalSeats,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -278,7 +294,9 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                 child: Obx(
                   () => _buildActionButton(
                     icon: bus.isActive.value ? Icons.map : Icons.history,
-                    label: bus.isActive.value ? 'my_buses.live_route'.tr() : 'my_buses.history'.tr(),
+                    label: bus.isActive.value
+                        ? 'my_buses.live_route'.tr()
+                        : 'my_buses.history'.tr(),
                     onTap: () => bus.isActive.value
                         ? controller.viewLiveRoute(bus.id)
                         : controller.viewHistory(bus.id),
@@ -286,6 +304,14 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          _buildActionButton(
+            icon: Icons.delete_outline,
+            label: 'Delete Bus',
+            iconColor: Colors.red,
+            textColor: Colors.red,
+            onTap: () => controller.deleteBus(bus),
           ),
         ],
       ),
@@ -342,7 +368,9 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
             ),
             const SizedBox(width: 4),
             Text(
-              isActive ? 'my_buses.status_active'.tr() : 'my_buses.status_inactive'.tr(),
+              isActive
+                  ? 'my_buses.status_active'.tr()
+                  : 'my_buses.status_inactive'.tr(),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: isActive
                     ? const Color(0xFF00A65A)
@@ -360,6 +388,8 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Color? iconColor,
+    Color? textColor,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -372,13 +402,13 @@ class VendorMyBusesView extends GetView<VendorMyBusesController> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.primaryDark, size: 16),
+            Icon(icon, color: iconColor ?? AppColors.primaryDark, size: 16),
             const SizedBox(width: 8),
             Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w700,
-                color: AppColors.primaryDark,
+                color: textColor ?? AppColors.primaryDark,
               ),
             ),
           ],

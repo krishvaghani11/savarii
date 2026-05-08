@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
+import 'package:savarii/routes/app_routes.dart';
 import '../controllers/add_bus_controller.dart';
 
 class AddBusView extends GetView<AddBusController> {
@@ -252,14 +253,6 @@ class AddBusView extends GetView<AddBusController> {
                             ),
 
                             const SizedBox(height: 24),
-                            _buildInputField(
-                              'add_bus.ticket_price'.tr(),
-                              '0',
-                              controller.priceController,
-                              keyboardType: TextInputType.number,
-                              prefixText: '₹ ',
-                              validator: controller.validateNumber,
-                            ),
                           ],
                         ),
                       ),
@@ -369,6 +362,73 @@ class AddBusView extends GetView<AddBusController> {
                               controller.licenseController,
                               validator: controller.validateRequired,
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 5. CUSTOMIZE BUS LAYOUT
+                      _buildSectionHeader(
+                        Icons.grid_view,
+                        'Customize Bus Layout',
+                      ),
+                      _buildCardContainer(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Design your custom seating arrangement, set seat types, and apply individual pricing.',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.secondaryGreyBlue,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  // Navigate to customize layout view
+                                  Get.toNamed(AppRoutes.vendorCustomizeBusLayout);
+                                },
+                                icon: const Icon(Icons.dashboard_customize, color: AppColors.primaryAccent),
+                                label: Text(
+                                  'Customize Layout',
+                                  style: AppTextStyles.buttonText.copyWith(color: AppColors.primaryAccent),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  side: const BorderSide(color: AppColors.primaryAccent, width: 1.5),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Obx(() {
+                              if (controller.layoutConfig.value != null) {
+                                return Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Custom layout saved (${controller.layoutConfig.value!.preset})',
+                                          style: AppTextStyles.bodyMedium.copyWith(color: Colors.green[800]),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            }),
                           ],
                         ),
                       ),

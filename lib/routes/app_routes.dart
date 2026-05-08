@@ -71,6 +71,7 @@ class AppRoutes {
   static const String driverDetails = '/vendor-driver-details';
   static const String editDriver = '/vendor-edit-driver';
   static const String vendorNotifications = '/vendor-notifications';
+  static const String vendorCustomizeBusLayout = '/vendor-customize-bus-layout';
 
 
 

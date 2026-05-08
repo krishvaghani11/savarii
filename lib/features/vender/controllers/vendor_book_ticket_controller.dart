@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../core/services/firestore_service.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../../models/seat_model.dart';
 
 class VendorBookTicketController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -34,8 +35,11 @@ class VendorBookTicketController extends GetxController {
 
   // Array to hold already booked seats (fetched dynamically in the future, empty for now)
   final RxList<String> bookedSeats = <String>[].obs;
+  
+  final Rx<BusLayoutConfig?> layoutConfig = Rx<BusLayoutConfig?>(null);
 
   final RxDouble pricePerSeat = 0.0.obs;
+  final RxMap<String, String> seatGenders = <String, String>{}.obs;
 
   // 3. Passenger Details
   final TextEditingController nameController = TextEditingController();
@@ -73,6 +77,12 @@ class VendorBookTicketController extends GetxController {
     // Load booked seats for the selected journey date from the date-keyed map
     _loadBookedSeatsForDate(bus);
 
+    if (bus['layoutConfig'] != null) {
+      layoutConfig.value = BusLayoutConfig.fromMap(bus['layoutConfig'] as Map<String, dynamic>);
+    } else {
+      layoutConfig.value = null;
+    }
+
     final Map<String, dynamic> route = bus['route'] ?? {};
     
     // Setup dynamic Boarding Points
@@ -103,9 +113,8 @@ class VendorBookTicketController extends GetxController {
     selectBoardingPoint(currentBoardingPoints.first);
     selectDroppingPoint(currentDroppingPoints.first);
     
-    // Parse price
-    final pt = route['ticketPrice'] ?? 0;
-    pricePerSeat.value = (pt is int) ? pt.toDouble() : (pt is double ? pt : double.tryParse(pt.toString()) ?? 0.0);
+    // Parse price - removed ticketPrice dependency
+    pricePerSeat.value = 0.0;
 
     // Clear seat selection if bus changes
     selectedSeats.clear();
@@ -136,6 +145,16 @@ class VendorBookTicketController extends GetxController {
     final bookedSeatsByDate = bus['bookedSeatsByDate'] as Map<String, dynamic>? ?? {};
     final rawBooked = bookedSeatsByDate[formattedDate] as List<dynamic>? ?? [];
     bookedSeats.assignAll(rawBooked.map((s) => s.toString()).toList());
+
+    final bookedGendersByDate = bus['bookedSeatsGendersByDate'] as Map<String, dynamic>? ?? {};
+    final rawGenders = bookedGendersByDate[formattedDate] as Map<String, dynamic>? ?? {};
+    
+    // Convert to a map of seatId -> gender
+    final Map<String, String> gendersMap = {};
+    rawGenders.forEach((key, value) {
+      gendersMap[key] = value.toString();
+    });
+    seatGenders.assignAll(gendersMap);
   }
 
   void selectBoardingPoint(Map<String, dynamic>? point) {
@@ -215,16 +234,106 @@ class VendorBookTicketController extends GetxController {
   }
 
   void toggleSeat(String seatId) {
-    if (bookedSeats.contains(seatId)) return; // Do nothing if booked
+    if (bookedSeats.contains(seatId)) return;
+
+    // Check for gender restrictions
+    final seat = _getSeatById(seatId);
+    if (seat != null) {
+      final effectiveStatus = _getEffectiveStatus(seat);
+      final gender = selectedGender.value.toLowerCase();
+
+      if (effectiveStatus == 'restricted_female' && gender != 'female') {
+        Get.snackbar(
+          'Restricted Seat',
+          'This seat is reserved for female passengers.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.pink.shade100,
+          colorText: Colors.pink.shade900,
+        );
+        return;
+      }
+
+      if (effectiveStatus == 'restricted_male' && gender != 'male') {
+        Get.snackbar(
+          'Restricted Seat',
+          'This seat is reserved for male passengers.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.blue.shade100,
+          colorText: Colors.blue.shade900,
+        );
+        return;
+      }
+    }
 
     if (selectedSeats.contains(seatId)) {
       selectedSeats.remove(seatId);
     } else {
       selectedSeats.add(seatId);
-      if(passengerCount.value < selectedSeats.length){
-          passengerCount.value = selectedSeats.length;
+    }
+    passengerCount.value = selectedSeats.length;
+  }
+
+  SeatModel? _getSeatById(String seatId) {
+    if (layoutConfig.value == null) return null;
+    if (seatId.startsWith('U')) {
+      return layoutConfig.value!.upperSeats.firstWhereOrNull((s) => s.id == seatId);
+    }
+    return layoutConfig.value!.seats.firstWhereOrNull((s) => s.id == seatId || 'U${s.id}' == seatId);
+  }
+
+  String _getEffectiveStatus(SeatModel seat) {
+    if (layoutConfig.value == null) return 'available';
+    
+    final bool useUpper = seat.id.startsWith('U');
+    final List<SeatModel> gridSeats = useUpper ? layoutConfig.value!.upperSeats : layoutConfig.value!.seats;
+    
+    final rowSeats = gridSeats.where((s) => s.row == seat.row).toList();
+    rowSeats.sort((a, b) => a.col.compareTo(b.col));
+    
+    int myIdx = rowSeats.indexWhere((s) => s.col == seat.col);
+    if (myIdx == -1) return 'available';
+
+    int start = myIdx;
+    while (start > 0 && !rowSeats[start - 1].isSpace) start--;
+    int end = myIdx;
+    while (end < rowSeats.length - 1 && !rowSeats[end + 1].isSpace) end++;
+    
+    final block = rowSeats.sublist(start, end + 1);
+    
+    for (var s in block) {
+      String sId = s.id;
+      if (useUpper && !sId.startsWith('U')) sId = 'U$sId';
+      if (bookedSeats.contains(sId)) {
+        String? nGender = seatGenders[sId];
+        if (nGender == 'female') return 'restricted_female';
+        if (nGender == 'male') return 'restricted_male';
       }
     }
+    return 'available';
+  }
+
+  double get totalPrice {
+    if (layoutConfig.value != null) {
+      double total = 0.0;
+      for (String seatId in selectedSeats) {
+        SeatModel? seat;
+        if (seatId.startsWith('U') && layoutConfig.value!.hasUpperDeck) {
+          seat = layoutConfig.value!.upperSeats.firstWhereOrNull((s) => s.id == seatId);
+        } else {
+          seat = layoutConfig.value!.seats.firstWhereOrNull(
+            (s) => s.id == seatId || 'U${s.id}' == seatId
+          );
+        }
+        
+        if (seat != null && seat.price > 0) {
+          total += seat.price;
+        } else {
+          total += pricePerSeat.value;
+        }
+      }
+      return total;
+    }
+    return selectedSeats.length * pricePerSeat.value;
   }
 
   Future<void> pickDate(BuildContext context) async {
@@ -295,7 +404,8 @@ class VendorBookTicketController extends GetxController {
         'passengerName': nameController.text.trim(),
         'passengerPhone': phoneController.text.trim(),
         'selectedSeats': selectedSeats.join(', '),
-        'totalBaseFare': selectedSeats.length * pricePerSeat.value,
+        'gender': selectedGender.value,
+        'totalBaseFare': totalPrice,
       };
 
       print("Proceeding to payment for ${nameController.text} with payload: $payload");

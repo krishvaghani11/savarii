@@ -14,6 +14,7 @@ class VendorBusModel {
   final String totalSeats;
   final String type;
   RxBool isActive;
+  final String status;
 
   VendorBusModel({
     required this.id,
@@ -24,6 +25,7 @@ class VendorBusModel {
     required this.totalSeats,
     required this.type,
     required bool isActive,
+    required this.status,
   }) : isActive = isActive.obs;
 
   factory VendorBusModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -37,6 +39,7 @@ class VendorBusModel {
       totalSeats: '${map['totalSeats'] ?? '0'} Seats',
       type: map['busType'] ?? '',
       isActive: map['isActive'] ?? true,
+      status: map['status'] ?? 'active',
     );
   }
 }
@@ -70,7 +73,7 @@ class VendorMyBusesController extends GetxController {
 
   // Derived list based on selected tab and search query
   List<VendorBusModel> get filteredBuses {
-    var buses = allBuses.toList();
+    var buses = allBuses.where((bus) => bus.status != 'bus deleted by vendor').toList();
     
     // Apply Tab Filter
     if (selectedTab.value == 1) {
@@ -135,6 +138,41 @@ class VendorMyBusesController extends GetxController {
 
   void viewHistory(String busId) {
     print("Viewing history for bus $busId");
+  }
+
+  Future<void> deleteBus(VendorBusModel bus) async {
+    // Show confirmation dialog
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Delete Bus'),
+        content: Text('Are you sure you want to delete ${bus.name}? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _firestore.deleteBus(bus.id);
+        Get.snackbar(
+          'Bus Deleted',
+          '${bus.name} has been permanently removed from your fleet.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.shade50,
+          colorText: Colors.red.shade800,
+        );
+      } catch (e) {
+        Get.snackbar('Error', 'Failed to delete bus: $e');
+      }
+    }
   }
 
   @override

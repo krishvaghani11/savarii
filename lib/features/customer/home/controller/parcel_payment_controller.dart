@@ -23,6 +23,7 @@ class ParcelPaymentController extends GetxController {
   late final double weight;
   late final String parcelType;
   late final String senderName;
+  late final String senderEmail;
   late final String receiverName;
 
   late final String busId;
@@ -65,6 +66,7 @@ class ParcelPaymentController extends GetxController {
     weight = args['weight'] ?? 1.0;
     parcelType = args['parcelType'] ?? 'Other';
     senderName = args['senderName'] ?? '';
+    senderEmail = args['senderEmail'] ?? '';
     receiverName = args['receiverName'] ?? '';
 
     busId = args['busId'] ?? '';
@@ -147,6 +149,8 @@ class ParcelPaymentController extends GetxController {
       'weight': weight,
       'parcelType': parcelType,
       'senderName': senderName,
+      'senderEmail': senderEmail,
+      'email': senderEmail, // Primary trigger field for server
       'senderPhone': args['senderPhone'] ?? '',
       'receiverName': receiverName,
       'receiverPhone': args['receiverPhone'] ?? '',
@@ -189,6 +193,7 @@ class ParcelPaymentController extends GetxController {
         trackingId: trackingId,
         senderName: senderName,
         senderPhone: args['senderPhone'] ?? '',
+        senderEmail: senderEmail,
         receiverName: receiverName,
         receiverPhone: args['receiverPhone'] ?? '',
         pickupLocation: pickupLocation,
@@ -295,6 +300,7 @@ class ParcelPaymentController extends GetxController {
         trackingId: trackingId,
         senderName: senderName,
         senderPhone: args['senderPhone'] ?? '',
+        senderEmail: senderEmail,
         receiverName: receiverName,
         receiverPhone: args['receiverPhone'] ?? '',
         pickupLocation: pickupLocation,

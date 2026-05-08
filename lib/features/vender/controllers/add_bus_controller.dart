@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
+import '../../../models/seat_model.dart';
 
 class AddBusController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -46,7 +48,6 @@ class AddBusController extends GetxController {
         toController.text = route['to'] ?? '';
         departureTime.value = route['departureTime'] ?? '--:-- --';
         arrivalTime.value = route['arrivalTime'] ?? '--:-- --';
-        priceController.text = (route['ticketPrice'] ?? '').toString();
 
         final driver = data['driver'] as Map<String, dynamic>? ?? {};
         driverNameController.text = driver['name'] ?? '';
@@ -87,6 +88,10 @@ class AddBusController extends GetxController {
             };
           }).toList());
         }
+
+        if (data['layoutConfig'] != null) {
+          layoutConfig.value = BusLayoutConfig.fromMap(data['layoutConfig'] as Map<String, dynamic>);
+        }
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load bus details');
@@ -101,7 +106,6 @@ class AddBusController extends GetxController {
   final TextEditingController totalSeatsController = TextEditingController();
   final TextEditingController fromController = TextEditingController();
   final TextEditingController toController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
   final TextEditingController driverNameController = TextEditingController();
   final TextEditingController driverMobileController = TextEditingController();
   final TextEditingController driverEmailController = TextEditingController();
@@ -139,11 +143,16 @@ class AddBusController extends GetxController {
   final RxString selectedDriverId = ''.obs;
   final RxBool isDriversLoading = false.obs;
 
+  final Rx<BusLayoutConfig?> layoutConfig = Rx<BusLayoutConfig?>(null);
+
   StreamSubscription<List<Map<String, dynamic>>>? _driversSubscription;
 
   void fetchVendorDrivers() {
-    final uid = _auth.uid;
-    if (uid == null) return;
+    final uid = _auth.uid ?? FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      print("AddBusController: Cannot fetch drivers — UID is null.");
+      return;
+    }
 
     isDriversLoading.value = true;
     print("Listening to drivers stream for Vendor: $uid...");
@@ -422,30 +431,38 @@ class AddBusController extends GetxController {
       return;
     }
 
+    if (layoutConfig.value == null) {
+      Get.snackbar(
+        "Layout Required",
+        "Please configure the bus layout and set seat prices before saving.",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange.shade50,
+        colorText: Colors.orange.shade900,
+      );
+      return;
+    }
+
     final seats = int.tryParse(totalSeatsController.text.trim());
     if (seats == null) {
       Get.snackbar("Invalid Input", "Total seats must be a valid number.");
       return;
     }
 
-    final price = int.tryParse(priceController.text.trim());
-    if (price == null) {
-      Get.snackbar("Invalid Input", "Ticket price must be a valid number.");
-      return;
-    }
-
     try {
       isLoading.value = true;
 
-      final uid = _auth.uid;
+      // Use AuthController's UID with a fallback to Firebase Auth instance for robustness
+      final uid = _auth.uid ?? FirebaseAuth.instance.currentUser?.uid;
+      print("AddBusController: Attempting to save bus with UID: $uid");
 
       if (uid == null || uid.isEmpty) {
         Get.snackbar(
-          "Session Expired",
-          "Please login again to add a bus.",
+          "Session Missing",
+          "Could not identify your vendor account. Please try logging in again.",
           snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 4),
         );
+        isLoading.value = false;
         return;
       }
 
@@ -489,7 +506,6 @@ class AddBusController extends GetxController {
           "to": toController.text.trim(),
           "departureTime": departureTime.value,
           "arrivalTime": arrivalTime.value,
-          "ticketPrice": price,
           "boardingPoints": savedBoardingPoints.toList(),
           "droppingPoints": savedDroppingPoints.toList(), // ADDED HERE
           "restStops": savedRestStops.toList(),
@@ -503,6 +519,8 @@ class AddBusController extends GetxController {
           "email": driverEmailController.text.trim(),
           "licenseNumber": licenseController.text.trim(),
         },
+
+        if (layoutConfig.value != null) "layoutConfig": layoutConfig.value!.toMap(),
 
         // SYSTEM
         "isActive": true,
@@ -550,7 +568,6 @@ class AddBusController extends GetxController {
     totalSeatsController.dispose();
     fromController.dispose();
     toController.dispose();
-    priceController.dispose();
     driverNameController.dispose();
     driverMobileController.dispose();
     driverEmailController.dispose();

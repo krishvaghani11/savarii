@@ -181,7 +181,13 @@ class PaymentDetailsController extends GetxController {
 
       // 4. Block seats on bus document
       if (busId.isNotEmpty && selectedSeats.isNotEmpty) {
-        await _firestoreService.addBookedSeatsToBus(busId, journeyDate, selectedSeats);
+        final Map<String, String> seatGendersMap = {};
+        for (int i = 0; i < selectedSeats.length; i++) {
+          if (i < passengers.length) {
+            seatGendersMap[selectedSeats[i]] = passengers[i]['gender'] ?? 'None';
+          }
+        }
+        await _firestoreService.addBookedSeatsToBus(busId, journeyDate, selectedSeats, seatGenders: seatGendersMap);
       }
 
       Get.snackbar(
@@ -268,7 +274,13 @@ class PaymentDetailsController extends GetxController {
       await _firestoreService.addTicket(ticketPayload);
 
       if (busId.isNotEmpty && selectedSeats.isNotEmpty) {
-        await _firestoreService.addBookedSeatsToBus(busId, journeyDate, selectedSeats);
+        final Map<String, String> seatGendersMap = {};
+        for (int i = 0; i < selectedSeats.length; i++) {
+          if (i < passengers.length) {
+            seatGendersMap[selectedSeats[i]] = passengers[i]['gender'] ?? 'None';
+          }
+        }
+        await _firestoreService.addBookedSeatsToBus(busId, journeyDate, selectedSeats, seatGenders: seatGendersMap);
       }
 
       debugPrint('Customer Ticket $pnr saved. Seats blocked: $selectedSeats');

@@ -27,10 +27,9 @@ class WalletTopupsController extends GetxController {
   void _loadTopups() {
     final userId = _authService.currentUser?.uid;
     if (userId != null) {
-      _firestoreService.getWalletTransactions(userId).listen((transactions) {
-        // Keep raw data for detail slider
-        _rawTransactions.value =
-            transactions.where((t) => t['isCredit'] == true).toList();
+      _firestoreService.getWalletTopups(userId).listen((transactions) {
+        // Since getWalletTopups only returns top-ups, we don't need manual filtering anymore.
+        _rawTransactions.value = transactions;
 
         // Map to display format
         topupTransactions.value = _rawTransactions.map((t) {

@@ -23,6 +23,7 @@ class VendorTicketModel {
   final double gst;
   final double platformFee;
   final String paymentMethod;
+  final String senderEmail;
   final String ticketUrl;
   final String status;
 
@@ -42,6 +43,7 @@ class VendorTicketModel {
     this.gst = 0.0,
     this.platformFee = 10.0,
     this.paymentMethod = 'UPI',
+    this.senderEmail = '',
     this.ticketUrl = '',
     this.status = 'confirmed',
   });
@@ -68,6 +70,7 @@ class VendorTicketModel {
       gst: p(map['gst'], 0.0),
       platformFee: p(map['platformFee'], 10.0),
       paymentMethod: map['paymentMethod'] ?? 'UPI',
+      senderEmail: map['passengerEmail'] ?? map['email'] ?? '',
       ticketUrl: map['ticketUrl'] ?? '',
       status: map['status'] ?? 'confirmed',
     );
@@ -93,6 +96,7 @@ class VendorTicketModel {
       gst: p(map['tax'], 0.0),
       platformFee: p(map['serviceFee'], 10.0),
       paymentMethod: map['paymentMethod'] ?? 'UPI',
+      senderEmail: map['senderEmail'] ?? map['email'] ?? '',
       ticketUrl: map['ticketUrl'] ?? '',
       status: map['status'] ?? 'confirmed',
     );
@@ -253,6 +257,7 @@ class VendorViewTicketsController extends GetxController {
         trackingId: ticket.bookingId,
         senderName: ticket.passengerName,
         senderPhone: ticket.passengerPhone,
+        senderEmail: ticket.senderEmail,
         receiverName: 'Receiver',
         receiverPhone: 'N/A',
         pickupLocation: parts.isNotEmpty ? parts[0].trim() : 'N/A',

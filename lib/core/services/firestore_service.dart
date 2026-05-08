@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -202,6 +203,23 @@ class FirestoreService extends GetxService {
 
   Future<void> updateBusData(String busId, Map<String, dynamic> busData) async {
     await _db.collection('buses').doc(busId).update(busData);
+  }
+
+  Future<void> deleteBus(String busId) async {
+    await _db.collection('buses').doc(busId).delete();
+    // Also cleanup seats sub-collection if it exists
+    final seatListSnapshot = await _db
+        .collection('seats')
+        .doc(busId)
+        .collection('seatList')
+        .get();
+    
+    final batch = _db.batch();
+    for (var doc in seatListSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(_db.collection('seats').doc(busId));
+    await batch.commit();
   }
 
   // --- Tickets Methods ---
@@ -439,12 +457,28 @@ class FirestoreService extends GetxService {
   Future<void> addBookedSeatsToBus(
     String busId,
     String journeyDate,
-    List<String> seats,
-  ) async {
+    List<String> seats, {
+    String? gender,
+    Map<String, String>? seatGenders,
+  }) async {
     final formattedDate = journeyDate.replaceAll('/', '-');
-    await _db.collection('buses').doc(busId).update({
+    final Map<String, dynamic> updateData = {
       'bookedSeatsByDate.$formattedDate': FieldValue.arrayUnion(seats),
-    });
+    };
+
+    if (gender != null && gender != 'None') {
+      for (var seatId in seats) {
+        updateData['bookedSeatsGendersByDate.$formattedDate.$seatId'] = gender.toLowerCase();
+      }
+    } else if (seatGenders != null) {
+      seatGenders.forEach((seatId, g) {
+        if (g != 'None') {
+          updateData['bookedSeatsGendersByDate.$formattedDate.$seatId'] = g.toLowerCase();
+        }
+      });
+    }
+
+    await _db.collection('buses').doc(busId).update(updateData);
   }
 
   Future<void> removeBookedSeatsFromBus(
@@ -589,9 +623,22 @@ class FirestoreService extends GetxService {
     String userId,
     Map<String, dynamic> transactionData,
   ) async {
-    // Store in root-level wallet_transactions collection with userId for cross-user queries
-    final docRef = _db.collection('wallet_transactions').doc();
-    await docRef.set({'docId': docRef.id, 'userId': userId, ...transactionData});
+    // Determine sub-collection based on credit/debit
+    final bool isTopup = transactionData['isCredit'] ?? false;
+    final String subCol = isTopup ? 'wallet_topup' : 'wallet_other';
+
+    // Store in: wallet_transactions -> {userId} -> {subCol} -> {autoId}
+    final docRef = _db
+        .collection('wallet_transactions')
+        .doc(userId)
+        .collection(subCol)
+        .doc();
+
+    await docRef.set({
+      'docId': docRef.id,
+      'userId': userId,
+      ...transactionData,
+    });
   }
 
   Future<void> debitWalletBalance({
@@ -600,7 +647,11 @@ class FirestoreService extends GetxService {
     required Map<String, dynamic> walletTransactionData,
   }) async {
     final userRef = _db.collection('users').doc(userId);
-    final txnRef = _db.collection('wallet_transactions').doc();
+    final txnRef = _db
+        .collection('wallet_transactions')
+        .doc(userId)
+        .collection('wallet_other')
+        .doc();
 
     await _db.runTransaction((transaction) async {
       final userSnapshot = await transaction.get(userRef);
@@ -630,24 +681,73 @@ class FirestoreService extends GetxService {
   }
 
   Stream<List<Map<String, dynamic>>> getWalletTransactions(String userId) {
+    final StreamController<List<Map<String, dynamic>>> controller =
+        StreamController<List<Map<String, dynamic>>>();
+
+    List<Map<String, dynamic>> topups = [];
+    List<Map<String, dynamic>> others = [];
+
+    void emitMerged() {
+      final List<Map<String, dynamic>> all = [...topups, ...others];
+      all.sort((a, b) {
+        final aDate =
+            DateTime.tryParse(a['createdAt']?.toString() ?? '') ?? DateTime(2000);
+        final bDate =
+            DateTime.tryParse(b['createdAt']?.toString() ?? '') ?? DateTime(2000);
+        return bDate.compareTo(aDate);
+      });
+      if (!controller.isClosed) {
+        controller.add(all);
+      }
+    }
+
+    final s1 = _db
+        .collection('wallet_transactions')
+        .doc(userId)
+        .collection('wallet_topup')
+        .snapshots()
+        .listen((snap) {
+      topups = snap.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      emitMerged();
+    });
+
+    final s2 = _db
+        .collection('wallet_transactions')
+        .doc(userId)
+        .collection('wallet_other')
+        .snapshots()
+        .listen((snap) {
+      others = snap.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      emitMerged();
+    });
+
+    controller.onCancel = () {
+      s1.cancel();
+      s2.cancel();
+      controller.close();
+    };
+
+    return controller.stream;
+  }
+
+  Stream<List<Map<String, dynamic>>> getWalletTopups(String userId) {
     return _db
         .collection('wallet_transactions')
-        .where('userId', isEqualTo: userId)
-        // No orderBy here — avoids requiring a composite Firestore index.
-        // We sort client-side after receiving the snapshot.
+        .doc(userId)
+        .collection('wallet_topup')
         .snapshots()
         .map((snapshot) {
-          final docs = snapshot.docs
-              .map((doc) => {'id': doc.id, ...doc.data()})
-              .toList();
-          // Sort by createdAt descending (newest first)
-          docs.sort((a, b) {
-            final aDate = DateTime.tryParse(a['createdAt']?.toString() ?? '') ?? DateTime(2000);
-            final bDate = DateTime.tryParse(b['createdAt']?.toString() ?? '') ?? DateTime(2000);
-            return bDate.compareTo(aDate);
-          });
-          return docs;
-        });
+      final docs =
+          snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      docs.sort((a, b) {
+        final aDate =
+            DateTime.tryParse(a['createdAt']?.toString() ?? '') ?? DateTime(2000);
+        final bDate =
+            DateTime.tryParse(b['createdAt']?.toString() ?? '') ?? DateTime(2000);
+        return bDate.compareTo(aDate);
+      });
+      return docs;
+    });
   }
 
   Stream<double> streamWalletBalance(String userId) {

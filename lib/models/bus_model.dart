@@ -1,3 +1,5 @@
+import 'package:savarii/models/seat_model.dart';
+
 class BusModel {
   final String id;
   final String busName;
@@ -15,6 +17,7 @@ class BusModel {
   final List<String> droppingPoints;
   final String driverName;
   final String driverPhone;
+  final BusLayoutConfig? layoutConfig;
 
   BusModel({
     required this.id,
@@ -33,6 +36,7 @@ class BusModel {
     this.driverName = 'Unknown Driver',
     this.driverPhone = 'No Contact Info',
     this.description,
+    this.layoutConfig,
   });
 
   factory BusModel.fromMap(Map<String, dynamic> map, String id) {
@@ -96,6 +100,27 @@ class BusModel {
     final drName = driverMap['name']?.toString() ?? 'Unknown Driver';
     final drPhone = driverMap['mobile']?.toString() ?? 'No Contact Info';
 
+    BusLayoutConfig? lConfig;
+    if (map['layoutConfig'] != null) {
+      lConfig = BusLayoutConfig.fromMap(map['layoutConfig'] as Map<String, dynamic>);
+      
+      // If base price is missing, use the minimum price from the layout
+      if (ticketPrice <= 0) {
+        double minPrice = double.infinity;
+        for (var s in lConfig.seats) {
+          if (!s.isSpace && s.price > 0 && s.price < minPrice) minPrice = s.price;
+        }
+        if (lConfig.hasUpperDeck) {
+          for (var s in lConfig.upperSeats) {
+            if (!s.isSpace && s.price > 0 && s.price < minPrice) minPrice = s.price;
+          }
+        }
+        if (minPrice != double.infinity) {
+          ticketPrice = minPrice.toInt();
+        }
+      }
+    }
+
     return BusModel(
       id: id,
       busName: map['busName'] ?? '',
@@ -113,6 +138,7 @@ class BusModel {
       droppingPoints: dps,
       driverName: drName,
       driverPhone: drPhone,
+      layoutConfig: lConfig,
     );
   }
 
@@ -133,6 +159,7 @@ class BusModel {
       'droppingPoints': droppingPoints,
       'driverName': driverName,
       'driverPhone': driverPhone,
+      'layoutConfig': layoutConfig?.toMap(),
     };
   }
 }

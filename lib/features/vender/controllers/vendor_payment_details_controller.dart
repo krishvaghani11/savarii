@@ -13,6 +13,7 @@ class VendorPaymentDetailsController extends GetxController {
 
   late final String passengerName;
   late final String passengerPhone;
+  late final String gender;
 
   // Fare Details
   late final double baseFare;
@@ -41,6 +42,7 @@ class VendorPaymentDetailsController extends GetxController {
     
     passengerName = args['passengerName'] ?? 'Unknown Name';
     passengerPhone = args['passengerPhone'] ?? 'Unknown Phone';
+    gender = args['gender'] ?? 'None';
 
     // Parse baseFare safely
     final tf = args['totalBaseFare'] ?? 0.0;
@@ -71,6 +73,7 @@ class VendorPaymentDetailsController extends GetxController {
       'selectedSeats': seat,
       'passengerName': passengerName,
       'passengerPhone': passengerPhone,
+      'gender': gender,
       'totalBaseFare': baseFare,
     };
 

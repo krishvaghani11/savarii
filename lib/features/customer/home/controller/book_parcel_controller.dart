@@ -313,6 +313,16 @@ class BookParcelController extends GetxController {
       return;
     }
 
+    final emailText = emailController.text.trim();
+    if (emailText.isEmpty || !GetUtils.isEmail(emailText)) {
+      Get.snackbar(
+        'Email Required',
+        'Please enter a valid email address for parcel confirmation.',
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
     if (!formKey.currentState!.validate()) return;
 
     isLoading.value = true;
@@ -387,6 +397,7 @@ class BookParcelController extends GetxController {
         'parcelType': selectedParcelType.value,
         'senderName': fullNameController.text.trim(),
         'senderPhone': mobileController.text.trim(),
+        'senderEmail': emailText,
         'receiverName': receiverNameController.text.trim(),
         'receiverPhone': receiverMobileController.text.trim(),
         'pickupResident': pickupResidentDetails.value,

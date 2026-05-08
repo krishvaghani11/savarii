@@ -5,6 +5,7 @@ import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/core/utils/locale_utils.dart';
 import 'package:savarii/core/widgets/bus_seat_layout.dart';
+import 'package:savarii/core/widgets/seat_status_legend.dart';
 import '../controllers/vendor_book_ticket_controller.dart';
 
 class VendorBookTicketView extends GetView<VendorBookTicketController> {
@@ -129,7 +130,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                           children: [
                             _buildDeckToggle(),
                             const SizedBox(height: 24),
-                            _buildSeatLegend(),
+                            const SeatStatusLegend(),
                             const SizedBox(height: 24),
                             _buildPassengerCountControl(),
                             const SizedBox(height: 24),
@@ -579,53 +580,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
     );
   }
 
-  Widget _buildSeatLegend() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildLegendItem(
-          color: AppColors.secondaryGreyBlue.withOpacity(0.2),
-          label: 'booking.booked_seats'.tr(),
-        ),
-        const SizedBox(width: 16),
-        _buildLegendItem(
-          color: AppColors.white,
-          borderColor: AppColors.secondaryGreyBlue.withOpacity(0.3),
-          label: 'booking.available_seats'.tr(),
-        ),
-        const SizedBox(width: 16),
-        _buildLegendItem(color: AppColors.primaryAccent, label: 'booking.selected'.tr()),
-      ],
-    );
-  }
 
-  Widget _buildLegendItem({
-    required Color color,
-    Color? borderColor,
-    required String label,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 14,
-          height: 14,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-            border: borderColor != null ? Border.all(color: borderColor) : null,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.secondaryGreyBlue,
-            fontSize: 11,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildPassengerCountControl() {
     return Row(
@@ -684,9 +639,12 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
     return Obx(
       () => BusSeatLayout(
         bookedSeats: controller.bookedSeats.toList(),
+        seatGenders: controller.seatGenders,
         selectedSeats: controller.selectedSeats.toList(),
         isUpperDeck: controller.selectedDeck.value == 'UPPER DECK',
         onSeatTap: controller.toggleSeat,
+        layoutConfig: controller.layoutConfig.value,
+        defaultPrice: controller.pricePerSeat.value,
       ),
     );
   }
@@ -763,7 +721,7 @@ class VendorBookTicketView extends GetView<VendorBookTicketController> {
                 ),
                 Obx(
                   () => Text(
-                    LocaleUtils.formatCurrency(context, (controller.selectedSeats.length * controller.pricePerSeat.value).toDouble()),
+                    LocaleUtils.formatCurrency(context, controller.totalPrice),
                     style: AppTextStyles.h2.copyWith(fontSize: 20),
                   ),
                 ),

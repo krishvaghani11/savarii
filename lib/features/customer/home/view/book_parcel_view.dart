@@ -102,7 +102,7 @@ class BookParcelView extends GetView<BookParcelController> {
                             _buildLabel('EMAIL ID'),
                             _buildInputField(
                               controller: controller.emailController,
-                              hint: 'Enter email address (Optional)',
+                              hint: 'Enter email address',
                               keyboardType: TextInputType.emailAddress,
                               prefixIcon: Icons.alternate_email,
                             ),

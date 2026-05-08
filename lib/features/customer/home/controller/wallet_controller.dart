@@ -27,6 +27,7 @@ class WalletController extends GetxController {
   final amountController = TextEditingController();
   final mobileController = TextEditingController();
   final nameController = TextEditingController();
+  final emailController = TextEditingController();
   final remarksController = TextEditingController();
 
   @override
@@ -114,6 +115,7 @@ class WalletController extends GetxController {
     amountController.clear();
     mobileController.clear();
     nameController.clear();
+    emailController.text = _authService.currentUser?.email ?? '';
     remarksController.clear();
 
     Get.bottomSheet(
@@ -159,6 +161,16 @@ class WalletController extends GetxController {
                   labelText: 'Mobile Number',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.phone),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email Address',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.email),
                 ),
               ),
               const SizedBox(height: 16),
@@ -256,6 +268,7 @@ class WalletController extends GetxController {
       'paymentMethod': 'Razorpay',
       'name': nameController.text.trim(),
       'mobile': mobileController.text.trim(),
+      'email': emailController.text.trim(),
       'remarks': remarksController.text.trim(),
       'createdAt': DateTime.now().toIso8601String(),
     };
@@ -294,6 +307,7 @@ class WalletController extends GetxController {
         'razorpayPaymentId': response.paymentId ?? 'N/A',
         'accountName': nameController.text.trim(),
         'mobile': mobileController.text.trim(),
+        'email': emailController.text.trim(),
         'remarks': remarksController.text.trim(),
         'rawAmount': amountAdded,
       });
@@ -495,6 +509,7 @@ class WalletController extends GetxController {
     _razorpay.clear();
     amountController.dispose();
     mobileController.dispose();
+    emailController.dispose();
     nameController.dispose();
     remarksController.dispose();
     super.onClose();

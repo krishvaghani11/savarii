@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:savarii/models/seat_model.dart';
 
 class SeatSelectionController extends GetxController {
   final String busName = Get.arguments?['busName'] ?? 'Unknown Bus';
@@ -40,6 +42,9 @@ class SeatSelectionController extends GetxController {
 
   // Booked seats loaded dynamically from Firestore per journey date
   final RxList<String> bookedSeats = <String>[].obs;
+  final RxMap<String, String> seatGenders = <String, String>{}.obs;
+
+  final Rx<BusLayoutConfig?> layoutConfig = Rx<BusLayoutConfig?>(null);
 
   @override
   void onInit() {
@@ -99,6 +104,15 @@ class SeatSelectionController extends GetxController {
 
       bookedSeats.assignAll(rawBooked.map((s) => s.toString()).toList());
 
+      final bookedGendersByDate = data['bookedSeatsGendersByDate'] as Map<String, dynamic>? ?? {};
+      final rawGenders = bookedGendersByDate[formattedDate] as Map<String, dynamic>? ?? {};
+      
+      final Map<String, String> gendersMap = {};
+      rawGenders.forEach((key, value) {
+        gendersMap[key] = value.toString();
+      });
+      seatGenders.assignAll(gendersMap);
+
       // Parse and inject the dynamic points created by the vendor
       if (routeMap['boardingPoints'] != null) {
         final List<dynamic> bps = routeMap['boardingPoints'];
@@ -118,6 +132,10 @@ class SeatSelectionController extends GetxController {
         final List<dynamic> rss = routeMap['restStops'];
         final parsedRss = rss.map((e) => Map<String, dynamic>.from(e as Map)).toList();
         restStops.assignAll(parsedRss);
+      }
+      
+      if (data['layoutConfig'] != null) {
+        layoutConfig.value = BusLayoutConfig.fromMap(data['layoutConfig'] as Map<String, dynamic>);
       }
       
       print('DEBUG: Successfully loaded ${boardingPoints.length} boarding points');
@@ -142,16 +160,97 @@ class SeatSelectionController extends GetxController {
       selectedSeats.remove(seatId);
     } else {
       if (selectedSeats.length < 6) {
-        // Limit to 6 seats per booking
+        // Optional: Check restriction and warn
+        final seat = _getSeatById(seatId);
+        if (seat != null) {
+          final status = _getEffectiveStatus(seat);
+          if (status == 'restricted_female') {
+            Get.snackbar(
+              'Reserved for Females',
+              'This seat is reserved for female passengers. Please ensure you enter correct details in the next step.',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.pink.shade50,
+              colorText: Colors.pink.shade900,
+            );
+          } else if (status == 'restricted_male') {
+             Get.snackbar(
+              'Reserved for Males',
+              'This seat is reserved for male passengers. Please ensure you enter correct details in the next step.',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.blue.shade50,
+              colorText: Colors.blue.shade900,
+            );
+          }
+        }
         selectedSeats.add(seatId);
       } else {
-        Get.snackbar('Limit Reached', 'You can only select up to 6 seats.',
-            snackPosition: SnackPosition.TOP);
+        Get.snackbar('Limit Reached', 'You can select up to 6 seats at once.', snackPosition: SnackPosition.TOP);
       }
     }
   }
 
-  double get totalPrice => selectedSeats.length * seatPrice;
+  SeatModel? _getSeatById(String seatId) {
+    if (layoutConfig.value == null) return null;
+    if (seatId.startsWith('U')) {
+      return layoutConfig.value!.upperSeats.firstWhereOrNull((s) => s.id == seatId);
+    }
+    return layoutConfig.value!.seats.firstWhereOrNull((s) => s.id == seatId || 'U${s.id}' == seatId);
+  }
+
+  String _getEffectiveStatus(SeatModel seat) {
+    if (layoutConfig.value == null) return 'available';
+    
+    final bool useUpper = seat.id.startsWith('U');
+    final List<SeatModel> gridSeats = useUpper ? layoutConfig.value!.upperSeats : layoutConfig.value!.seats;
+    
+    final rowSeats = gridSeats.where((s) => s.row == seat.row).toList();
+    rowSeats.sort((a, b) => a.col.compareTo(b.col));
+    
+    int myIdx = rowSeats.indexWhere((s) => s.col == seat.col);
+    if (myIdx == -1) return 'available';
+
+    int start = myIdx;
+    while (start > 0 && !rowSeats[start - 1].isSpace) start--;
+    int end = myIdx;
+    while (end < rowSeats.length - 1 && !rowSeats[end + 1].isSpace) end++;
+    
+    final block = rowSeats.sublist(start, end + 1);
+    
+    for (var s in block) {
+      String sId = s.id;
+      if (useUpper && !sId.startsWith('U')) sId = 'U$sId';
+      if (bookedSeats.contains(sId)) {
+        String? nGender = seatGenders[sId];
+        if (nGender == 'female') return 'restricted_female';
+        if (nGender == 'male') return 'restricted_male';
+      }
+    }
+    return 'available';
+  }
+
+  double get totalPrice {
+    if (layoutConfig.value != null) {
+      double total = 0.0;
+      for (String seatId in selectedSeats) {
+        SeatModel? seat;
+        if (seatId.startsWith('U') && layoutConfig.value!.hasUpperDeck) {
+          seat = layoutConfig.value!.upperSeats.firstWhereOrNull((s) => s.id == seatId);
+        } else {
+          seat = layoutConfig.value!.seats.firstWhereOrNull(
+            (s) => s.id == seatId || 'U${s.id}' == seatId
+          );
+        }
+        
+        if (seat != null && seat.price > 0) {
+          total += seat.price;
+        } else {
+          total += seatPrice;
+        }
+      }
+      return total;
+    }
+    return selectedSeats.length * seatPrice;
+  }
 
   void proceedToPay() {
     print("Navigating to Point Selection....");

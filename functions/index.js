@@ -29,6 +29,8 @@ admin.initializeApp();
 // ── Notification triggers ─────────────────────────────────────────────────────
 const bookingTriggers = require("./bookingTriggers");
 const trackingTriggers = require("./trackingTriggers");
+const walletTriggers = require("./walletTriggers");
+const parcelTriggers = require("./parcelTriggers");
 
 // ── Email endpoints (v2) ──────────────────────────────────────────────────────
 const { resendTicketEmail } = require("./resendTicketEndpoint");
@@ -56,6 +58,12 @@ exports.onTripReminders = bookingTriggers.onTripReminders;
 exports.onLiveTrackingUpdate = trackingTriggers.onLiveTrackingUpdate;
 exports.onDriverStatusChanged = trackingTriggers.onDriverStatusChanged;
 exports.onFleetHealthCheck = trackingTriggers.onFleetHealthCheck;
+
+// Wallet triggers
+exports.onWalletTopupCreated = walletTriggers.onWalletTopupCreated;
+
+// Parcel triggers
+exports.onParcelCreated = parcelTriggers.onParcelCreated;
 
 // CORS — accept requests from any origin (Flutter mobile clients)
 const corsHandler = cors({ origin: true });

@@ -54,6 +54,75 @@ async function sendTicketEmail(booking, ticketId, pdfUrl) {
   return { templateVersion: version };
 }
 
+/**
+ * Send wallet top-up confirmation email via Resend.
+ * @param {object} transactionData — Firestore wallet_topup document data
+ * @param {string} email — Recipient email
+ * @returns {Promise<object>}
+ */
+async function sendWalletTopupEmail(transactionData, email) {
+  if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not set");
+
+  const { buildWalletTopupEmailHtml } = require("./emailTemplate");
+  const resend = new Resend(RESEND_API_KEY);
+  
+  const html = buildWalletTopupEmailHtml({
+    name: transactionData.name || "Customer",
+    amount: transactionData.amount || 0,
+    transactionId: transactionData.transactionId || "N/A",
+    date: transactionData.createdAt ? new Date(transactionData.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : "N/A",
+    updatedBalance: transactionData.updatedBalance || transactionData.amount || 0,
+  });
+
+  const result = await resend.emails.send({
+    from: FROM_ADDRESS,
+    to: [email],
+    subject: `💰 Wallet Credited! ₹${parseFloat(transactionData.amount).toFixed(2)} added successfully`,
+    html,
+  });
+
+  if (result.error) throw new Error(result.error.message || "Resend API error");
+  return result;
+}
+
+/**
+ * Send parcel confirmation email via Resend.
+ * @param {object} parcelData — Firestore parcel document data
+ * @param {string} email — Recipient email (sender's email)
+ * @returns {Promise<object>}
+ */
+async function sendParcelConfirmationEmail(parcelData, email) {
+  if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not set");
+
+  const { buildParcelConfirmationEmailHtml } = require("./emailTemplate");
+  const resend = new Resend(RESEND_API_KEY);
+  
+  const html = buildParcelConfirmationEmailHtml({
+    senderName: parcelData.senderName || "Valued Customer",
+    trackingId: parcelData.trackingId || "N/A",
+    pickupCity: parcelData.pickupCity || "Origin",
+    dropCity: parcelData.dropCity || "Destination",
+    pickupTime: parcelData.estimatedPickupTime || "--:--",
+    dropTime: parcelData.estimatedDropoffTime || "--:--",
+    parcelType: parcelData.parcelType || "Standard",
+    weight: parcelData.weight || 0,
+    receiverName: parcelData.receiverName || "Receiver",
+    totalPaid: parcelData.totalPaid || 0,
+    paymentMethod: parcelData.paymentMethod || "Online",
+    receiptUrl: parcelData.ticketUrl || "",
+  });
+
+  const result = await resend.emails.send({
+    from: FROM_ADDRESS,
+    to: [email],
+    subject: `📦 Parcel Booked! Tracking ID: ${parcelData.trackingId}`,
+    html,
+  });
+
+  if (result.error) throw new Error(result.error.message || "Resend API error");
+  return result;
+}
+
 // ── v1 HTML Template — Savarii Brand ──────────────────────────────────────
 function _buildV1Html(booking, ticketId, pdfUrl) {
   const pnr           = booking.pnr || booking.bookingId || ticketId || "N/A";
@@ -267,4 +336,4 @@ function _esc(str) {
     .replace(/"/g, "&quot;");
 }
 
-module.exports = { sendTicketEmail };
+module.exports = { sendTicketEmail, sendWalletTopupEmail, sendParcelConfirmationEmail };

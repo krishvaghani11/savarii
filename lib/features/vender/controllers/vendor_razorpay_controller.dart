@@ -23,6 +23,7 @@ class VendorRazorpayController extends GetxController {
   late final String seat;
   late final String passengerName;
   late final String passengerPhone;
+  late final String gender;
   late final double baseFare;
   late final double gst;
   late final double platformFee;
@@ -46,6 +47,7 @@ class VendorRazorpayController extends GetxController {
     seat = args['selectedSeats'] ?? 'N/A';
     passengerName = args['passengerName'] ?? 'Unknown Passenger';
     passengerPhone = args['passengerPhone'] ?? 'N/A';
+    gender = args['gender'] ?? 'None';
 
     final tf = args['totalBaseFare'] ?? args['ticketPrice'] ?? 0.0;
     baseFare = (tf is int) ? tf.toDouble() : (tf is double ? tf : double.tryParse(tf.toString()) ?? 0.0);
@@ -156,7 +158,7 @@ class VendorRazorpayController extends GetxController {
 
       // 2. Block the booked seats on the bus document
       if (busId.isNotEmpty && seatList.isNotEmpty) {
-        await _firestoreService.addBookedSeatsToBus(busId, date, seatList);
+        await _firestoreService.addBookedSeatsToBus(busId, date, seatList, gender: gender);
       }
 
       debugPrint('Ticket $pnr saved. Seats blocked: $seatList');

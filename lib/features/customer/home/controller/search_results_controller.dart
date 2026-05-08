@@ -84,7 +84,10 @@ class SearchResultsController extends GetxController {
   /// Fetch all buses from Firestore
   Future<List<BusModel>> _getAllBuses() async {
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('buses').get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('buses')
+          .where('isActive', isEqualTo: true)
+          .get();
       return snapshot.docs
           .map((doc) => BusModel.fromMap(doc.data(), doc.id))
           .toList();
