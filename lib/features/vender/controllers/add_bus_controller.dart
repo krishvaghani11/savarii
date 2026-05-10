@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/services/city_geolocation_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 import '../../../models/seat_model.dart';
@@ -42,18 +43,26 @@ class AddBusController extends GetxController {
         busNumberController.text = data['busNumber'] ?? '';
         totalSeatsController.text = (data['totalSeats'] ?? '').toString();
         selectedBusType.value = data['busType'] ?? 'AC Sleeper';
-        
+
         final route = data['route'] as Map<String, dynamic>? ?? {};
-        fromController.text = route['from'] ?? '';
-        toController.text = route['to'] ?? '';
         departureTime.value = route['departureTime'] ?? '--:-- --';
-        arrivalTime.value = route['arrivalTime'] ?? '--:-- --';
+        arrivalTime.value   = route['arrivalTime']   ?? '--:-- --';
+
+        // Restore canonical city selections from stored strings
+        final fromStr = route['from'] as String? ?? '';
+        final toStr   = route['to']   as String? ?? '';
+        if (fromStr.isNotEmpty) {
+          selectedFromCity.value = CitySuggestion.fromCanonicalString(fromStr);
+        }
+        if (toStr.isNotEmpty) {
+          selectedToCity.value = CitySuggestion.fromCanonicalString(toStr);
+        }
 
         final driver = data['driver'] as Map<String, dynamic>? ?? {};
-        driverNameController.text = driver['name'] ?? '';
-        driverMobileController.text = driver['mobile'] ?? '';
-        driverEmailController.text = driver['email'] ?? '';
-        licenseController.text = driver['licenseNumber'] ?? '';
+        driverNameController.text   = driver['name']          ?? '';
+        driverMobileController.text = driver['mobile']        ?? '';
+        driverEmailController.text  = driver['email']         ?? '';
+        licenseController.text      = driver['licenseNumber'] ?? '';
 
         if (route['boardingPoints'] != null) {
           final List<dynamic> bps = route['boardingPoints'];
@@ -65,8 +74,7 @@ class AddBusController extends GetxController {
             };
           }).toList());
         }
-        
-        // Load dropping points if they exist
+
         if (route['droppingPoints'] != null) {
           final List<dynamic> dps = route['droppingPoints'];
           savedDroppingPoints.assignAll(dps.map((e) {
@@ -77,7 +85,7 @@ class AddBusController extends GetxController {
             };
           }).toList());
         }
-        
+
         if (route['restStops'] != null) {
           final List<dynamic> rss = route['restStops'];
           savedRestStops.assignAll(rss.map((e) {
@@ -90,7 +98,8 @@ class AddBusController extends GetxController {
         }
 
         if (data['layoutConfig'] != null) {
-          layoutConfig.value = BusLayoutConfig.fromMap(data['layoutConfig'] as Map<String, dynamic>);
+          layoutConfig.value = BusLayoutConfig.fromMap(
+              data['layoutConfig'] as Map<String, dynamic>);
         }
       }
     } catch (e) {
@@ -104,12 +113,14 @@ class AddBusController extends GetxController {
   final TextEditingController busNameController = TextEditingController();
   final TextEditingController busNumberController = TextEditingController();
   final TextEditingController totalSeatsController = TextEditingController();
-  final TextEditingController fromController = TextEditingController();
-  final TextEditingController toController = TextEditingController();
   final TextEditingController driverNameController = TextEditingController();
   final TextEditingController driverMobileController = TextEditingController();
   final TextEditingController driverEmailController = TextEditingController();
   final TextEditingController licenseController = TextEditingController();
+
+  // --- Route Cities (canonical "City, District, State" via autocomplete) ---
+  final Rxn<CitySuggestion> selectedFromCity = Rxn<CitySuggestion>();
+  final Rxn<CitySuggestion> selectedToCity = Rxn<CitySuggestion>();
 
   // Reactive States
   final RxString selectedBusType = 'AC Sleeper'.obs;
@@ -117,12 +128,12 @@ class AddBusController extends GetxController {
   final RxString arrivalTime = '--:-- --'.obs;
 
   // Boarding Point Inputs
-  final TextEditingController bpNameController = TextEditingController();
+  final Rxn<CitySuggestion> selectedBpCity = Rxn<CitySuggestion>();
   final RxString bpTime = '--:-- --'.obs;
   final RxList<Map<String, String>> savedBoardingPoints = <Map<String, String>>[].obs;
 
-  // NEW: Dropping Point Inputs
-  final TextEditingController dpNameController = TextEditingController();
+  // Dropping Point Inputs
+  final Rxn<CitySuggestion> selectedDpCity = Rxn<CitySuggestion>();
   final RxString dpTime = '--:-- --'.obs;
   final RxList<Map<String, String>> savedDroppingPoints = <Map<String, String>>[].obs;
 
@@ -233,21 +244,21 @@ class AddBusController extends GetxController {
 
   /// BOARDING POINT LOGIC
   void addBoardingPoint() {
-    if (bpNameController.text.trim().isEmpty || bpTime.value == '--:-- --') {
+    if (selectedBpCity.value == null || bpTime.value == '--:-- --') {
       Get.snackbar(
         'Incomplete Details',
-        'Please enter both the boarding point name and time before adding.',
+        'Please select a boarding city from suggestions and pick a time.',
         snackPosition: SnackPosition.TOP,
       );
       return;
     }
 
     savedBoardingPoints.add({
-      'pointName': bpNameController.text.trim(),
+      'pointName': selectedBpCity.value!.fullName,
       'time': bpTime.value,
     });
 
-    bpNameController.clear();
+    selectedBpCity.value = null;
     bpTime.value = '--:-- --';
   }
 
@@ -280,21 +291,21 @@ class AddBusController extends GetxController {
 
   /// DROPPING POINT LOGIC
   void addDroppingPoint() {
-    if (dpNameController.text.trim().isEmpty || dpTime.value == '--:-- --') {
+    if (selectedDpCity.value == null || dpTime.value == '--:-- --') {
       Get.snackbar(
         'Incomplete Details',
-        'Please enter both the dropping point name and time before adding.',
+        'Please select a dropping city from suggestions and pick a time.',
         snackPosition: SnackPosition.TOP,
       );
       return;
     }
 
     savedDroppingPoints.add({
-      'pointName': dpNameController.text.trim(),
+      'pointName': selectedDpCity.value!.fullName,
       'time': dpTime.value,
     });
 
-    dpNameController.clear();
+    selectedDpCity.value = null;
     dpTime.value = '--:-- --';
   }
 
@@ -382,15 +393,26 @@ class AddBusController extends GetxController {
 
   /// SAVE BUS + ROUTE
   Future<void> saveBusAndRoute() async {
-    // Auto-flush ghost text into arrays
-    if (bpNameController.text.trim().isNotEmpty && bpTime.value != '--:-- --') {
+    // Auto-flush pending boarding / dropping point if city+time are filled
+    if (selectedBpCity.value != null && bpTime.value != '--:-- --') {
       addBoardingPoint();
     }
-    if (dpNameController.text.trim().isNotEmpty && dpTime.value != '--:-- --') {
+    if (selectedDpCity.value != null && dpTime.value != '--:-- --') {
       addDroppingPoint();
     }
-    if (rsNameController.text.trim().isNotEmpty && rsDurationController.text.trim().isNotEmpty) {
+    if (rsNameController.text.trim().isNotEmpty &&
+        rsDurationController.text.trim().isNotEmpty) {
       addRestStop();
+    }
+
+    // Validate canonical city selections
+    if (selectedFromCity.value == null || selectedToCity.value == null) {
+      Get.snackbar(
+        'Location Required',
+        'Please select valid From and To cities from the suggestions.',
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
     }
 
     if (!formKey.currentState!.validate()) {
@@ -468,8 +490,7 @@ class AddBusController extends GetxController {
 
       // VALIDATE DRIVER ASSIGNMENT
       final mobileInfo = driverMobileController.text.trim();
-      final licenseInfo = licenseController.text.trim();
-      
+
       final QuerySnapshot driverQuery = await FirebaseFirestore.instance
           .collection('drivers')
           .where('vendorId', isEqualTo: uid)
@@ -500,14 +521,14 @@ class AddBusController extends GetxController {
         // BUS TYPE
         "busType": selectedBusType.value,
 
-        // ROUTE
+        // ROUTE — canonical "City, District, State" strings
         "route": {
-          "from": fromController.text.trim(),
-          "to": toController.text.trim(),
+          "from": selectedFromCity.value!.fullName,
+          "to":   selectedToCity.value!.fullName,
           "departureTime": departureTime.value,
-          "arrivalTime": arrivalTime.value,
+          "arrivalTime":   arrivalTime.value,
           "boardingPoints": savedBoardingPoints.toList(),
-          "droppingPoints": savedDroppingPoints.toList(), // ADDED HERE
+          "droppingPoints": savedDroppingPoints.toList(),
           "restStops": savedRestStops.toList(),
         },
 
@@ -566,15 +587,10 @@ class AddBusController extends GetxController {
     busNameController.dispose();
     busNumberController.dispose();
     totalSeatsController.dispose();
-    fromController.dispose();
-    toController.dispose();
     driverNameController.dispose();
     driverMobileController.dispose();
     driverEmailController.dispose();
     licenseController.dispose();
-
-    bpNameController.dispose();
-    dpNameController.dispose();
     rsNameController.dispose();
     rsDurationController.dispose();
     super.onClose();

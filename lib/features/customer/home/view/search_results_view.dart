@@ -123,7 +123,13 @@ class SearchResultsView extends GetView<SearchResultsController> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(controller.fromCity, style: AppTextStyles.h3),
+              Flexible(
+                child: Text(
+                  controller.fromCity,
+                  style: AppTextStyles.h3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8.0),
                 child: Icon(
@@ -132,7 +138,13 @@ class SearchResultsView extends GetView<SearchResultsController> {
                   size: 18,
                 ),
               ),
-              Text(controller.toCity, style: AppTextStyles.h3),
+              Flexible(
+                child: Text(
+                  controller.toCity,
+                  style: AppTextStyles.h3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
           Text(
@@ -344,6 +356,8 @@ class SearchResultsView extends GetView<SearchResultsController> {
                       Text(
                         bus.busName,
                         style: AppTextStyles.h3.copyWith(fontSize: 16),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       const SizedBox(height: 6),
                       Row(
@@ -410,26 +424,32 @@ class SearchResultsView extends GetView<SearchResultsController> {
             Row(
               children: [
                 // Departure
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      bus.departureTime,
-                      style: AppTextStyles.h3.copyWith(fontSize: 16),
-                    ),
-                    Text(
-                      controller.fromCity,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.secondaryGreyBlue,
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bus.departureTime,
+                        style: AppTextStyles.h3.copyWith(fontSize: 16),
                       ),
-                    ),
-                  ],
+                      Text(
+                        controller.fromCity,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.secondaryGreyBlue,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
                 ),
 
                 // Center Dotted Line with Duration
                 Expanded(
+                  flex: 3,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Column(
                       children: [
                         Text(
@@ -480,20 +500,25 @@ class SearchResultsView extends GetView<SearchResultsController> {
                 ),
 
                 // Arrival
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      bus.arrivalTime,
-                      style: AppTextStyles.h3.copyWith(fontSize: 16),
-                    ),
-                    Text(
-                      controller.toCity,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.secondaryGreyBlue,
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        bus.arrivalTime,
+                        style: AppTextStyles.h3.copyWith(fontSize: 16),
                       ),
-                    ),
-                  ],
+                      Text(
+                        controller.toCity,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.secondaryGreyBlue,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -509,21 +534,26 @@ class SearchResultsView extends GetView<SearchResultsController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.airline_seat_recline_normal,
-                      color: AppColors.secondaryGreyBlue,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$available seats available • $booked booked',
-                      style: AppTextStyles.caption.copyWith(
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.airline_seat_recline_normal,
                         color: AppColors.secondaryGreyBlue,
+                        size: 14,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          '$available seats available • $booked booked',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.secondaryGreyBlue,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: available > 0
@@ -577,21 +607,25 @@ class SearchResultsView extends GetView<SearchResultsController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Get 20% OFF',
-                style: AppTextStyles.h2.copyWith(color: AppColors.white),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Use code SAVARII20',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Get 20% OFF',
+                  style: AppTextStyles.h2.copyWith(color: AppColors.white),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  'Use code SAVARII20',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.9),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
           Container(
             padding: const EdgeInsets.all(8),

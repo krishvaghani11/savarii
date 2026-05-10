@@ -7,12 +7,15 @@ class SearchResultsController extends GetxController {
   final FirestoreService _firestoreService = Get.find<FirestoreService>();
 
   // --- Search Parameters ---
-  late String fromCity;
-  late String toCity;
+  late String fromCity;       // canonical: "City, District, State"
+  late String toCity;         // canonical: "City, District, State"
+  late String fromCityShort;  // display-only: "City"
+  late String toCityShort;    // display-only: "City"
   late DateTime travelDate;
   late int passengers;
 
-  String get travelDetails => "${travelDate.day}/${travelDate.month}/${travelDate.year} • $passengers Travelers";
+  String get travelDetails =>
+      "${travelDate.day}/${travelDate.month}/${travelDate.year} • $passengers Travelers";
 
   // State
   final RxBool isLoading = true.obs;
@@ -27,8 +30,10 @@ class SearchResultsController extends GetxController {
   void onInit() {
     super.onInit();
     final args = Get.arguments as Map<String, dynamic>;
-    fromCity = args['fromCity'];
-    toCity = args['toCity'];
+    fromCity      = args['fromCity'];       // canonical: "Bahadurpur, Banka, Bihar"
+    toCity        = args['toCity'];         // canonical: "Surat, Surat, Gujarat"
+    fromCityShort = args['fromCityShort'] ?? fromCity.split(',').first.trim();
+    toCityShort   = args['toCityShort']   ?? toCity.split(',').first.trim();
     travelDate = args['date'];
     passengers = args['passengers'];
 
@@ -41,26 +46,36 @@ class SearchResultsController extends GetxController {
       // 1. Get ALL buses from Firestore
       final allBuses = await _getAllBuses();
 
-      // 2. Filter buses: must have fromCity and toCity in route (fromCity before toCity)
+      // Filter buses: must serve fromCity → toCity in order
       final filteredBuses = allBuses.where((bus) {
-        final searchFromCity = fromCity.toLowerCase().trim();
-        final searchToCity = toCity.toLowerCase().trim();
+        final searchFrom = fromCity.toLowerCase().trim();
+        final searchTo   = toCity.toLowerCase().trim();
+
+        // Helper: does value match either the canonical string or the city-only
+        // first segment (backward-compat for buses saved before this update)
+        bool matches(String stored, String canonical) {
+          final s = stored.toLowerCase().trim();
+          if (s == canonical) return true;
+          // Fallback: match first segment (city name) of the canonical string
+          final canonicalCity = canonical.split(',').first.trim();
+          final storedCity    = s.split(',').first.trim();
+          return storedCity == canonicalCity;
+        }
 
         // 1. Direct match on main endpoints
-        final busFromCity = bus.fromCity.toLowerCase().trim();
-        final busToCity = bus.toCity.toLowerCase().trim();
-        if (busFromCity == searchFromCity && busToCity == searchToCity) {
+        if (matches(bus.fromCity, searchFrom) &&
+            matches(bus.toCity, searchTo)) {
           return true;
         }
 
-        // 2. Match intermediate route points
+        // 2. Match intermediate route points (boarding/dropping stops)
         if (bus.route.isNotEmpty) {
-          final normalizedRoute = bus.route.map((city) => city.toLowerCase().trim()).toList();
-          final fromIndex = normalizedRoute.indexOf(searchFromCity);
-          final toIndex = normalizedRoute.indexOf(searchToCity);
+          final fromIdx = bus.route.indexWhere(
+              (city) => matches(city, searchFrom));
+          final toIdx = bus.route.indexWhere(
+              (city) => matches(city, searchTo));
 
-          // Both cities must be in the route, and the boarding point must be before the dropping point
-          if (fromIndex != -1 && toIndex != -1 && fromIndex < toIndex) {
+          if (fromIdx != -1 && toIdx != -1 && fromIdx < toIdx) {
             return true;
           }
         }

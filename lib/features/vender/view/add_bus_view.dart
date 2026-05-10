@@ -4,6 +4,7 @@ import 'package:get/get.dart' hide Trans;
 import 'package:savarii/core/theme/app_colors.dart';
 import 'package:savarii/core/theme/app_text_styles.dart';
 import 'package:savarii/routes/app_routes.dart';
+import 'package:savarii/shared/widgets/city_autocomplete_field.dart';
 import '../controllers/add_bus_controller.dart';
 
 class AddBusView extends GetView<AddBusController> {
@@ -102,21 +103,29 @@ class AddBusView extends GetView<AddBusController> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: _buildInputField(
-                                    'add_bus.from'.tr(),
-                                    'Origin',
-                                    controller.fromController,
-                                    validator: controller.validateRequired,
-                                  ),
+                                  child: Obx(() => CityAutocompleteField(
+                                    label: 'add_bus.from'.tr(),
+                                    hint: 'e.g. Surat, Gujarat',
+                                    selectedCity: controller.selectedFromCity.value,
+                                    prefixIcon: Icons.trip_origin,
+                                    onSelected: (city) =>
+                                        controller.selectedFromCity.value = city,
+                                    onCleared: () =>
+                                        controller.selectedFromCity.value = null,
+                                  )),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
-                                  child: _buildInputField(
-                                    'add_bus.to'.tr(),
-                                    'Destination',
-                                    controller.toController,
-                                    validator: controller.validateRequired,
-                                  ),
+                                  child: Obx(() => CityAutocompleteField(
+                                    label: 'add_bus.to'.tr(),
+                                    hint: 'e.g. Mumbai, Maharashtra',
+                                    selectedCity: controller.selectedToCity.value,
+                                    prefixIcon: Icons.flag_outlined,
+                                    onSelected: (city) =>
+                                        controller.selectedToCity.value = city,
+                                    onCleared: () =>
+                                        controller.selectedToCity.value = null,
+                                  )),
                                 ),
                               ],
                             ),
@@ -147,16 +156,22 @@ class AddBusView extends GetView<AddBusController> {
                               controller.addBoardingPoint,
                             ),
 
-                            // Input Row
+                             // Input Row: Boarding City + Time
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: _buildSimpleTextField(
-                                    controller.bpNameController,
-                                    'add_bus.point_name'.tr(),
-                                  ),
+                                  child: Obx(() => CityAutocompleteField(
+                                    label: '',
+                                    hint: 'add_bus.point_name'.tr(),
+                                    selectedCity: controller.selectedBpCity.value,
+                                    prefixIcon: Icons.location_on_outlined,
+                                    onSelected: (city) =>
+                                        controller.selectedBpCity.value = city,
+                                    onCleared: () =>
+                                        controller.selectedBpCity.value = null,
+                                  )),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -188,16 +203,22 @@ class AddBusView extends GetView<AddBusController> {
                               controller.addDroppingPoint,
                             ),
 
-                            // Input Row
+                            // Input Row: Dropping City + Time
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: _buildSimpleTextField(
-                                    controller.dpNameController,
-                                    'add_bus.point_name'.tr(),
-                                  ),
+                                  child: Obx(() => CityAutocompleteField(
+                                    label: '',
+                                    hint: 'add_bus.point_name'.tr(),
+                                    selectedCity: controller.selectedDpCity.value,
+                                    prefixIcon: Icons.location_on_outlined,
+                                    onSelected: (city) =>
+                                        controller.selectedDpCity.value = city,
+                                    onCleared: () =>
+                                        controller.selectedDpCity.value = null,
+                                  )),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -557,29 +578,6 @@ class AddBusView extends GetView<AddBusController> {
     );
   }
 
-  Widget _buildSimpleTextField(TextEditingController ctrl, String hint) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.secondaryGreyBlue.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextFormField(
-        controller: ctrl,
-        style: AppTextStyles.bodyMedium,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.secondaryGreyBlue.withOpacity(0.6),
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 15,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildSimpleTimePicker(RxString timeVal, VoidCallback onTap) {
     return GestureDetector(

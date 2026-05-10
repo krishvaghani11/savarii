@@ -214,18 +214,18 @@ class BookTicketController extends GetxController {
 
   void selectRecentSearch(RecentSearchModel search) {
     fromController.text = search.fromName;
-    toController.text = search.toName;
+    toController.text   = search.toName;
 
-    // Create CitySuggestionModel from recent search
+    // Restore selections using stored canonical full names
     selectedFrom.value = CitySuggestionModel(
-      city: search.fromName,
-      fullName: search.fromName,
-      placeId: search.fromId,
+      city:     search.fromName,
+      fullName: search.fromFullName.isNotEmpty ? search.fromFullName : search.fromName,
+      placeId:  search.fromId,
     );
     selectedTo.value = CitySuggestionModel(
-      city: search.toName,
-      fullName: search.toName,
-      placeId: search.toId,
+      city:     search.toName,
+      fullName: search.toFullName.isNotEmpty ? search.toFullName : search.toName,
+      placeId:  search.toId,
     );
 
     searchBuses();
@@ -255,20 +255,22 @@ class BookTicketController extends GetxController {
       return;
     }
 
-    // Save recent search
+    // Save recent search with both short name (for display) and fullName (for matching)
     final newSearch = RecentSearchModel(
-      fromId: selectedFrom.value!.city,
-      fromName: selectedFrom.value!.city,
-      toId: selectedTo.value!.city,
-      toName: selectedTo.value!.city,
-      timestamp: DateTime.now(),
+      fromId:       selectedFrom.value!.placeId,
+      fromName:     selectedFrom.value!.city,
+      fromFullName: selectedFrom.value!.fullName,
+      toId:         selectedTo.value!.placeId,
+      toName:       selectedTo.value!.city,
+      toFullName:   selectedTo.value!.fullName,
+      timestamp:    DateTime.now(),
     );
 
     // Remove duplicates and add to recent searches
     recentSearches.removeWhere(
       (s) =>
-          s.fromId == selectedFrom.value!.city &&
-          s.toId == selectedTo.value!.city,
+          s.fromFullName == selectedFrom.value!.fullName &&
+          s.toFullName   == selectedTo.value!.fullName,
     );
     recentSearches.insert(0, newSearch);
 
@@ -282,10 +284,12 @@ class BookTicketController extends GetxController {
     Get.toNamed(
       '/search-results',
       arguments: {
-        'fromCity': selectedFrom.value!.city,
-        'toCity': selectedTo.value!.city,
-        'date': selectedDate.value,
-        'passengers': passengerCount.value,
+        'fromCity':      selectedFrom.value!.fullName,   // canonical string
+        'fromCityShort': selectedFrom.value!.city,       // for display
+        'toCity':        selectedTo.value!.fullName,     // canonical string
+        'toCityShort':   selectedTo.value!.city,         // for display
+        'date':          selectedDate.value,
+        'passengers':    passengerCount.value,
       },
     );
   }

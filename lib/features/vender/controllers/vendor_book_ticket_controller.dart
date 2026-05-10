@@ -294,9 +294,13 @@ class VendorBookTicketController extends GetxController {
     if (myIdx == -1) return 'available';
 
     int start = myIdx;
-    while (start > 0 && !rowSeats[start - 1].isSpace) start--;
+    while (start > 0 && !rowSeats[start - 1].isSpace) {
+      start--;
+    }
     int end = myIdx;
-    while (end < rowSeats.length - 1 && !rowSeats[end + 1].isSpace) end++;
+    while (end < rowSeats.length - 1 && !rowSeats[end + 1].isSpace) {
+      end++;
+    }
     
     final block = rowSeats.sublist(start, end + 1);
     
