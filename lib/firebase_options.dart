@@ -3,7 +3,6 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -53,8 +52,8 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static final FirebaseOptions android = FirebaseOptions(
-    apiKey: dotenv.get('FIREBASE_API_KEY'),
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyAfAEyO5kzvx201leCdPLGAMHabuwNpZSs',
     appId: '1:1057909747567:android:6570ff5efba52e2702429a',
     messagingSenderId: '1057909747567',
     projectId: 'savarii-96869',

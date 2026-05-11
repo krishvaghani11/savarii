@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "firebase": "^12.13.0",
     "twilio": "^5.13.0"
   },
   "name": "savarii",
